@@ -17,6 +17,7 @@ import { ChatProvider } from "./contexts/ChatContext";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminCars from "./pages/AdminCars";
 import AdminOrders from "./pages/AdminOrders";
 import AdminImport from "./pages/AdminImport";
 import AdminChat from "./pages/AdminChat";
@@ -53,7 +54,7 @@ const App = () => {
                     <Route index element={<AdminDashboard />} />
                     <Route path="dashboard" element={<AdminDashboard />} />
                     <Route path="tmcavto-catalog" element={<TmcAvtoCatalog />} />
-                    <Route path="cars" element={<AdminDashboard />} />
+                    <Route path="cars" element={<AdminCars />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="import" element={<AdminImport />} />
                     <Route path="settings" element={<AdminDashboard />} />

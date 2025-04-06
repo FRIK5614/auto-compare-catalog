@@ -50,20 +50,18 @@ const AdminImport: React.FC = () => {
   };
   
   const handleImportToCatalog = async () => {
-    // Convert imported cars to your application's car format and add them
     if (importedCars && importedCars.length > 0) {
       let addedCount = 0;
       
       for (const importedCar of importedCars) {
         try {
-          // Create a new car object in the format expected by the app
           const newCar = {
             id: `imported-${importedCar.id || Date.now()}`,
             brand: importedCar.brand,
             model: importedCar.model,
             year: importedCar.year,
-            bodyType: "Седан", // Default value
-            colors: ["Белый", "Черный"], // Default values
+            bodyType: "Седан",
+            colors: ["Белый", "Черный"],
             price: {
               base: importedCar.price || 0,
               withOptions: 0
@@ -143,12 +141,10 @@ const AdminImport: React.FC = () => {
       dataStr = JSON.stringify(cars, null, 2);
       filename = `cars_export_${new Date().toISOString().slice(0, 10)}.json`;
     } else if (exportFormat === 'csv') {
-      // Create CSV header
       const headers = ['id', 'brand', 'model', 'year', 'bodyType', 'price', 'country', 'isNew'];
       const csvRows = [];
       csvRows.push(headers.join(','));
 
-      // Add rows
       for (const car of cars) {
         const row = [
           car.id,
@@ -161,10 +157,8 @@ const AdminImport: React.FC = () => {
           car.isNew ? 'true' : 'false'
         ];
         
-        // Escape CSV values properly
         const escapedRow = row.map(value => {
           const strValue = String(value);
-          // If value contains comma, quote, or newline, wrap it in quotes
           if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
             return `"${strValue.replace(/"/g, '""')}"`;
           }
@@ -178,7 +172,6 @@ const AdminImport: React.FC = () => {
       filename = `cars_export_${new Date().toISOString().slice(0, 10)}.csv`;
     }
 
-    // Create download link
     const blob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -197,7 +190,6 @@ const AdminImport: React.FC = () => {
     }
 
     try {
-      // Try to parse as JSON
       const parsedData = JSON.parse(importData);
       
       if (!Array.isArray(parsedData)) {
@@ -205,7 +197,6 @@ const AdminImport: React.FC = () => {
         return;
       }
 
-      // Validate that the data has the expected fields
       for (const item of parsedData) {
         if (!item.brand || !item.model) {
           setImportError('Некоторые автомобили не содержат обязательные поля (brand, model)');
@@ -213,14 +204,12 @@ const AdminImport: React.FC = () => {
         }
       }
 
-      // Import each car
       let addedCount = 0;
       for (const carData of parsedData) {
         if (!carData.id) {
           carData.id = `imported-${Date.now()}-${addedCount}`;
         }
         
-        // Ensure the car has all required properties
         const completeCar = ensureCompleteCarObject(carData);
         
         addCar(completeCar);
@@ -237,12 +226,11 @@ const AdminImport: React.FC = () => {
       }
     } catch (err) {
       console.error('Error parsing import data:', err);
-      setImportError('О��ибка при разборе JSON данных. Убедитесь, что формат корректен.');
+      setImportError('О��иб��а при разборе JSON данных. Убедитесь, что формат корректен.');
     }
   };
 
   const ensureCompleteCarObject = (carData: Partial<Car>): Car => {
-    // This function ensures all required properties are present
     return {
       id: carData.id || `imported-${Date.now()}`,
       brand: carData.brand || 'Неизвестно',
