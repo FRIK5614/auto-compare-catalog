@@ -23,8 +23,7 @@ import {
   ArrowUpDown,
   FileUp,
   FileDown,
-  Import,
-  Export
+  Import
 } from 'lucide-react';
 import { Car } from '@/types/car';
 
@@ -238,7 +237,7 @@ const AdminImport: React.FC = () => {
       }
     } catch (err) {
       console.error('Error parsing import data:', err);
-      setImportError('Ошибка при разборе JSON данных. Убедитесь, что формат корректен.');
+      setImportError('О��ибка при разборе JSON данных. Убедитесь, что формат корректен.');
     }
   };
 
