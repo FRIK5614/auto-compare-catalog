@@ -295,7 +295,7 @@ const transformVehicleToCar = (vehicle: any): Car => {
         combined: 8.5
       }
     },
-    features: vehicle.features || [],
+    features: vehicle.features ? JSON.parse(vehicle.features) : [],
     images: [
       {
         id: `img-${vehicle.id}-1`,

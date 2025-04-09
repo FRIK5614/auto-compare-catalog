@@ -223,7 +223,7 @@ const AdminCars = () => {
         drivetrain: completeCar.drivetrain,
         dimensions: completeCar.dimensions,
         performance: completeCar.performance,
-        features: completeCar.features,
+        features: JSON.stringify(completeCar.features),
         image_url: completeCar.images && completeCar.images.length > 0 ? completeCar.images[0].url : null,
         description: completeCar.description,
         is_new: completeCar.isNew,
@@ -270,6 +270,50 @@ const AdminCars = () => {
       setPreviewImages([]);
     } catch (error) {
       console.error('Error saving car:', error);
+      
+      const completeCar: Car = {
+        id: editingCar.id || `car-${Date.now()}`,
+        brand: editingCar.brand,
+        model: editingCar.model,
+        year: editingCar.year || new Date().getFullYear(),
+        bodyType: editingCar.bodyType || 'Седан',
+        colors: editingCar.colors || ['Белый'],
+        price: editingCar.price || { base: 0, withOptions: 0 },
+        engine: editingCar.engine || {
+          type: 'Бензин',
+          displacement: 1.6,
+          power: 100,
+          torque: 150,
+          fuelType: 'Бензин'
+        },
+        transmission: editingCar.transmission || {
+          type: 'Автоматическая',
+          gears: 6
+        },
+        drivetrain: editingCar.drivetrain || 'FWD',
+        dimensions: editingCar.dimensions || {
+          length: 4500,
+          width: 1800,
+          height: 1500,
+          wheelbase: 2700,
+          weight: 1500,
+          trunkVolume: 400
+        },
+        performance: editingCar.performance || {
+          acceleration: 10,
+          topSpeed: 180,
+          fuelConsumption: {
+            city: 10,
+            highway: 7,
+            combined: 8.5
+          }
+        },
+        features: editingCar.features || [],
+        images: carImages || [],
+        description: editingCar.description || '',
+        isNew: editingCar.isNew || true,
+        country: editingCar.country || 'Россия'
+      };
       
       if (isAddingCar) {
         addCar(completeCar);

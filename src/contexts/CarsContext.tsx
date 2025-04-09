@@ -486,37 +486,40 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         
         // Сохраняем данные в Supabase
         try {
-          const vehicles = parsedData.map((car: Car) => ({
-            id: car.id,
-            brand: car.brand,
-            model: car.model,
-            year: car.year,
-            body_type: car.bodyType,
-            colors: car.colors,
-            price: car.price.base,
-            price_discount: car.price.discount,
-            engine_type: car.engine.type,
-            engine_capacity: car.engine.displacement,
-            engine_power: car.engine.power,
-            engine_torque: car.engine.torque,
-            engine_fuel_type: car.engine.fuelType,
-            transmission_type: car.transmission.type,
-            transmission_gears: car.transmission.gears,
-            drivetrain: car.drivetrain,
-            dimensions: car.dimensions,
-            performance: car.performance,
-            features: car.features,
-            image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
-            description: car.description,
-            is_new: car.isNew,
-            country: car.country,
-            view_count: car.viewCount || 0
-          }));
-          
-          // Удаляем все существующие автомобили
-          supabase.from('vehicles').delete().then(() => {
-            // Добавляем новые
-            supabase.from('vehicles').insert(vehicles);
+          // Сначала очистим таблицу
+          supabase.from('vehicles').delete().neq('id', 'placeholder').then(async () => {
+            // Теперь добавим каждый автомобиль отдельно
+            for (const car of parsedData) {
+              const vehicle = {
+                id: car.id,
+                brand: car.brand,
+                model: car.model,
+                year: car.year,
+                body_type: car.bodyType,
+                colors: car.colors,
+                price: car.price.base,
+                price_discount: car.price.discount,
+                engine_type: car.engine.type,
+                engine_capacity: car.engine.displacement,
+                engine_power: car.engine.power,
+                engine_torque: car.engine.torque,
+                engine_fuel_type: car.engine.fuelType,
+                transmission_type: car.transmission.type,
+                transmission_gears: car.transmission.gears,
+                drivetrain: car.drivetrain,
+                dimensions: car.dimensions,
+                performance: car.performance,
+                // Преобразуем features в JSON-совместимый формат
+                features: JSON.stringify(car.features),
+                image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
+                description: car.description,
+                is_new: car.isNew,
+                country: car.country,
+                view_count: car.viewCount || 0
+              };
+              
+              await supabase.from('vehicles').insert(vehicle);
+            }
           });
         } catch (err) {
           console.error("Failed to save imported data to Supabase:", err);
