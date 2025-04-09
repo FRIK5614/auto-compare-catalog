@@ -153,11 +153,16 @@ export type Database = {
           body_type: string | null
           brand: string
           color: string | null
+          colors: string[] | null
           country: string | null
           created_at: string
           description: string | null
+          dimensions: Json | null
           drivetrain: string | null
           engine_capacity: number | null
+          engine_fuel_type: string | null
+          engine_power: number | null
+          engine_torque: number | null
           engine_type: string | null
           features: Json | null
           id: string
@@ -165,7 +170,11 @@ export type Database = {
           is_new: boolean | null
           mileage: number | null
           model: string
+          performance: Json | null
           price: number
+          price_discount: number | null
+          transmission_gears: number | null
+          transmission_type: string | null
           updated_at: string
           view_count: number | null
           year: number
@@ -174,11 +183,16 @@ export type Database = {
           body_type?: string | null
           brand: string
           color?: string | null
+          colors?: string[] | null
           country?: string | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
           drivetrain?: string | null
           engine_capacity?: number | null
+          engine_fuel_type?: string | null
+          engine_power?: number | null
+          engine_torque?: number | null
           engine_type?: string | null
           features?: Json | null
           id?: string
@@ -186,7 +200,11 @@ export type Database = {
           is_new?: boolean | null
           mileage?: number | null
           model: string
+          performance?: Json | null
           price: number
+          price_discount?: number | null
+          transmission_gears?: number | null
+          transmission_type?: string | null
           updated_at?: string
           view_count?: number | null
           year: number
@@ -195,11 +213,16 @@ export type Database = {
           body_type?: string | null
           brand?: string
           color?: string | null
+          colors?: string[] | null
           country?: string | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
           drivetrain?: string | null
           engine_capacity?: number | null
+          engine_fuel_type?: string | null
+          engine_power?: number | null
+          engine_torque?: number | null
           engine_type?: string | null
           features?: Json | null
           id?: string
@@ -207,7 +230,11 @@ export type Database = {
           is_new?: boolean | null
           mileage?: number | null
           model?: string
+          performance?: Json | null
           price?: number
+          price_discount?: number | null
+          transmission_gears?: number | null
+          transmission_type?: string | null
           updated_at?: string
           view_count?: number | null
           year?: number

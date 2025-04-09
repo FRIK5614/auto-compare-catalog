@@ -1,7 +1,9 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Car, CarFilter, Order } from "../types/car";
-import { fetchAllCars } from "../services/api";
+import { fetchAllCars, fetchOrders, saveCar, updateCar, deleteCar, updateOrderStatus, incrementCarViewCount } from "../services/api";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CarsContextType {
   cars: Car[];
@@ -43,82 +45,98 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const [filter, setFilter] = useState<CarFilter>({});
   const { toast } = useToast();
 
-  useEffect(() => {
-    const savedOrders = localStorage.getItem("orders");
-    if (savedOrders) {
-      try {
-        setOrders(JSON.parse(savedOrders));
-      } catch (err) {
-        console.error("Failed to parse saved orders:", err);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (orders.length > 0) {
-      localStorage.setItem("orders", JSON.stringify(orders));
-    }
-  }, [orders]);
-
-  const loadCars = async () => {
+  // Загрузка заказов из Supabase
+  const loadOrders = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      const ordersData = await fetchOrders();
       
-      const savedCars = localStorage.getItem("carsCatalog");
-      if (savedCars) {
-        try {
-          const parsedCars = JSON.parse(savedCars);
-          console.log("Loaded cars from localStorage:", parsedCars.length);
-          setCars(parsedCars);
-          setFilteredCars(parsedCars);
-          setLoading(false);
-          
-          const savedOrders = localStorage.getItem("orders");
-          if (savedOrders) {
-            try {
-              setOrders(JSON.parse(savedOrders));
-            } catch (err) {
-              console.error("Failed to parse saved orders:", err);
-              createSampleOrders(parsedCars);
-            }
-          } else {
-            createSampleOrders(parsedCars);
-          }
-          
-          fetchAllCars().then(apiCars => {
-            if (apiCars && apiCars.length > 0) {
-              setCars(apiCars);
-              setFilteredCars(apiCars);
-              localStorage.setItem("carsCatalog", JSON.stringify(apiCars));
-            }
-          }).catch(err => {
-            console.error("Background refresh of cars failed:", err);
-          });
-          
-          return;
-        } catch (err) {
-          console.error("Failed to parse saved cars, will load from API:", err);
-        }
-      }
+      // Преобразуем в формат Order
+      const formattedOrders: Order[] = ordersData.map(order => ({
+        id: order.id,
+        carId: order.car_id,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerEmail: order.customer_email,
+        status: order.status as Order['status'],
+        createdAt: order.created_at
+      }));
       
-      const data = await fetchAllCars();
-      console.log("Loaded cars from API:", data.length);
-      setCars(data);
-      setFilteredCars(data);
-      localStorage.setItem("carsCatalog", JSON.stringify(data));
+      setOrders(formattedOrders);
+    } catch (err) {
+      console.error("Failed to load orders from Supabase:", err);
       
+      // Проверяем, есть ли данные в localStorage (для обратной совместимости)
       const savedOrders = localStorage.getItem("orders");
       if (savedOrders) {
         try {
           setOrders(JSON.parse(savedOrders));
         } catch (err) {
           console.error("Failed to parse saved orders:", err);
-          createSampleOrders(data);
         }
-      } else {
-        createSampleOrders(data);
       }
+    }
+  };
+
+  // Загрузка избранного из Supabase
+  const loadFavorites = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('car_id');
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        const favoriteIds = data.map(item => item.car_id);
+        setFavorites(favoriteIds);
+      } else {
+        // Проверяем, есть ли данные в localStorage (для обратной совместимости)
+        const savedFavorites = localStorage.getItem("favorites");
+        if (savedFavorites) {
+          setFavorites(JSON.parse(savedFavorites));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load favorites from Supabase:", err);
+      
+      // Используем localStorage как запасной вариант
+      const savedFavorites = localStorage.getItem("favorites");
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
+    }
+  };
+
+  // Загрузка сравнения из localStorage (пока оставляем в localStorage)
+  useEffect(() => {
+    const savedCompareCars = localStorage.getItem("compareCars");
+    if (savedCompareCars) {
+      setCompareCars(JSON.parse(savedCompareCars));
+    }
+  }, []);
+
+  // Сохранение сравнения в localStorage
+  useEffect(() => {
+    localStorage.setItem("compareCars", JSON.stringify(compareCars));
+  }, [compareCars]);
+
+  const loadCars = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const data = await fetchAllCars();
+      console.log("Loaded cars from API:", data.length);
+      setCars(data);
+      setFilteredCars(data);
+      
+      // Загружаем заказы
+      await loadOrders();
+      
+      // Загружаем избранное
+      await loadFavorites();
       
       setLoading(false);
     } catch (err) {
@@ -134,40 +152,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const createSampleOrders = (data: Car[]) => {
-    const sampleOrders: Order[] = [
-      {
-        id: "order1",
-        carId: data[0]?.id || "car1",
-        customerName: "Иван Иванов",
-        customerPhone: "+7 (999) 123-45-67",
-        customerEmail: "ivan@example.com",
-        status: "new",
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "order2",
-        carId: data[1]?.id || "car2",
-        customerName: "Петр Петров",
-        customerPhone: "+7 (999) 765-43-21",
-        customerEmail: "petr@example.com",
-        status: "processing",
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: "order3",
-        carId: data[2]?.id || "car3",
-        customerName: "Мария Сидорова",
-        customerPhone: "+7 (999) 555-55-55",
-        customerEmail: "maria@example.com",
-        status: "completed",
-        createdAt: new Date(Date.now() - 172800000).toISOString(),
-      },
-    ];
-    setOrders(sampleOrders);
-    localStorage.setItem("orders", JSON.stringify(sampleOrders));
-  };
-
   useEffect(() => {
     loadCars();
   }, []);
@@ -176,28 +160,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     await loadCars();
   };
 
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
-
-  useEffect(() => {
-    const savedCompareCars = localStorage.getItem("compareCars");
-    if (savedCompareCars) {
-      setCompareCars(JSON.parse(savedCompareCars));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("compareCars", JSON.stringify(compareCars));
-  }, [compareCars]);
-
+  // Фильтрация автомобилей
   useEffect(() => {
     let result = [...cars];
 
@@ -244,22 +207,75 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setFilteredCars(result);
   }, [cars, filter]);
 
-  const addToFavorites = (carId: string) => {
+  // Добавление в избранное
+  const addToFavorites = async (carId: string) => {
     if (!favorites.includes(carId)) {
-      setFavorites([...favorites, carId]);
-      toast({
-        title: "Добавлено в избранное",
-        description: "Автомобиль добавлен в список избранного"
-      });
+      try {
+        // Добавляем в Supabase
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            car_id: carId,
+            user_id: 'anonymous' // Временное решение, в будущем будет использоваться auth.uid()
+          });
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Обновляем состояние
+        setFavorites([...favorites, carId]);
+        
+        toast({
+          title: "Добавлено в избранное",
+          description: "Автомобиль добавлен в список избранного"
+        });
+      } catch (err) {
+        console.error("Failed to add to favorites:", err);
+        
+        // Используем локальное состояние как запасной вариант
+        setFavorites([...favorites, carId]);
+        
+        toast({
+          title: "Добавлено в избранное",
+          description: "Автомобиль добавлен в список избранного (локально)"
+        });
+      }
     }
   };
 
-  const removeFromFavorites = (carId: string) => {
-    setFavorites(favorites.filter(id => id !== carId));
-    toast({
-      title: "Удалено из избранного",
-      description: "Автомобиль удален из списка избранного"
-    });
+  // Удаление из избранного
+  const removeFromFavorites = async (carId: string) => {
+    try {
+      // Удаляем из Supabase
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('car_id', carId)
+        .eq('user_id', 'anonymous');
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Обновляем состояние
+      setFavorites(favorites.filter(id => id !== carId));
+      
+      toast({
+        title: "Удалено из избранного",
+        description: "Автомобиль удален из списка избранного"
+      });
+    } catch (err) {
+      console.error("Failed to remove from favorites:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      setFavorites(favorites.filter(id => id !== carId));
+      
+      toast({
+        title: "Удалено из избранного",
+        description: "Автомобиль удален из списка избранного (локально)"
+      });
+    }
   };
 
   const addToCompare = (carId: string) => {
@@ -298,56 +314,159 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     return cars.find(car => car.id === id);
   };
 
-  const viewCar = (carId: string) => {
-    setCars(prevCars => 
-      prevCars.map(car => 
-        car.id === carId 
-          ? { ...car, viewCount: (car.viewCount || 0) + 1 } 
-          : car
-      )
-    );
+  // Просмотр автомобиля
+  const viewCar = async (carId: string) => {
+    try {
+      // Увеличиваем счетчик просмотров в Supabase
+      await incrementCarViewCount(carId);
+      
+      // Обновляем локальное состояние
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === carId 
+            ? { ...car, viewCount: (car.viewCount || 0) + 1 } 
+            : car
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update view count:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === carId 
+            ? { ...car, viewCount: (car.viewCount || 0) + 1 } 
+            : car
+        )
+      );
+    }
   };
 
-  const deleteCar = (carId: string) => {
-    setCars(prevCars => prevCars.filter(car => car.id !== carId));
-    toast({
-      title: "Автомобиль удален",
-      description: "Автомобиль был успешно удален из каталога"
-    });
+  // Удаление автомобиля
+  const deleteCar = async (carId: string) => {
+    try {
+      // Удаляем из Supabase
+      await deleteCar(carId);
+      
+      // Обновляем локальное состояние
+      setCars(prevCars => prevCars.filter(car => car.id !== carId));
+      
+      toast({
+        title: "Автомобиль удален",
+        description: "Автомобиль был успешно удален из каталога"
+      });
+    } catch (err) {
+      console.error("Failed to delete car:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      setCars(prevCars => prevCars.filter(car => car.id !== carId));
+      
+      toast({
+        title: "Автомобиль удален",
+        description: "Автомобиль был успешно удален из каталога (локально)"
+      });
+    }
   };
 
-  const updateCar = (updatedCar: Car) => {
-    setCars(prevCars => 
-      prevCars.map(car => 
-        car.id === updatedCar.id ? updatedCar : car
-      )
-    );
-    toast({
-      title: "Автомобиль обновлен",
-      description: "Информация об автомобиле была успешно обновлена"
-    });
+  // Обновление автомобиля
+  const updateCar = async (updatedCar: Car) => {
+    try {
+      // Обновляем в Supabase
+      await updateCar(updatedCar);
+      
+      // Обновляем локальное состояние
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === updatedCar.id ? updatedCar : car
+        )
+      );
+      
+      toast({
+        title: "Автомобиль обновлен",
+        description: "Информация об автомобиле была успешно обновлена"
+      });
+    } catch (err) {
+      console.error("Failed to update car:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === updatedCar.id ? updatedCar : car
+        )
+      );
+      
+      toast({
+        title: "Автомобиль обновлен",
+        description: "Информация об автомобиле была успешно обновлена (локально)"
+      });
+    }
   };
 
-  const addCar = (newCar: Car) => {
-    setCars(prevCars => [...prevCars, newCar]);
-    toast({
-      title: "Автомобиль добавлен",
-      description: "Новый автомобиль был успешно добавлен в каталог"
-    });
+  // Добавление автомобиля
+  const addCar = async (newCar: Car) => {
+    try {
+      // Сохраняем в Supabase
+      const savedCar = await saveCar(newCar);
+      
+      // Обновляем локальное состояние с сохраненным автомобилем
+      setCars(prevCars => [...prevCars, savedCar]);
+      
+      toast({
+        title: "Автомобиль добавлен",
+        description: "Новый автомобиль был успешно добавлен в каталог"
+      });
+    } catch (err) {
+      console.error("Failed to add car:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      setCars(prevCars => [...prevCars, newCar]);
+      
+      toast({
+        title: "Автомобиль добавлен",
+        description: "Новый автомобиль был успешно добавлен в каталог (локально)"
+      });
+    }
   };
 
-  const processOrder = (orderId: string, status: Order['status']) => {
-    const updatedOrders = orders.map(order => 
-      order.id === orderId ? { ...order, status } : order
-    );
-    
-    setOrders(updatedOrders);
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
-    
-    toast({
-      title: "Заказ обновлен",
-      description: `Статус заказа изменен на: ${status}`
-    });
+  // Обработка заказа
+  const processOrder = async (orderId: string, status: Order['status']) => {
+    try {
+      // Обновляем статус в Supabase
+      const success = await updateOrderStatus(orderId, status);
+      
+      if (!success) {
+        throw new Error("Failed to update order status");
+      }
+      
+      // Обновляем локальное состояние
+      const updatedOrders = orders.map(order => 
+        order.id === orderId ? { ...order, status } : order
+      );
+      
+      setOrders(updatedOrders);
+      
+      toast({
+        title: "Заказ обновлен",
+        description: `Статус заказа изменен на: ${status}`
+      });
+    } catch (err) {
+      console.error("Failed to process order:", err);
+      
+      // Используем локальное состояние как запасной вариант
+      const updatedOrders = orders.map(order => 
+        order.id === orderId ? { ...order, status } : order
+      );
+      
+      setOrders(updatedOrders);
+      
+      // Сохраняем в localStorage для обратной совместимости
+      localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      
+      toast({
+        title: "Заказ обновлен",
+        description: `Статус заказа изменен на: ${status} (локально)`
+      });
+    }
   };
 
   const getOrders = () => {
@@ -364,7 +483,45 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       if (Array.isArray(parsedData) && parsedData.length > 0) {
         setCars(parsedData);
         setFilteredCars(parsedData);
-        localStorage.setItem("carsCatalog", data);
+        
+        // Сохраняем данные в Supabase
+        try {
+          const vehicles = parsedData.map((car: Car) => ({
+            id: car.id,
+            brand: car.brand,
+            model: car.model,
+            year: car.year,
+            body_type: car.bodyType,
+            colors: car.colors,
+            price: car.price.base,
+            price_discount: car.price.discount,
+            engine_type: car.engine.type,
+            engine_capacity: car.engine.displacement,
+            engine_power: car.engine.power,
+            engine_torque: car.engine.torque,
+            engine_fuel_type: car.engine.fuelType,
+            transmission_type: car.transmission.type,
+            transmission_gears: car.transmission.gears,
+            drivetrain: car.drivetrain,
+            dimensions: car.dimensions,
+            performance: car.performance,
+            features: car.features,
+            image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
+            description: car.description,
+            is_new: car.isNew,
+            country: car.country,
+            view_count: car.viewCount || 0
+          }));
+          
+          // Удаляем все существующие автомобили
+          supabase.from('vehicles').delete().then(() => {
+            // Добавляем новые
+            supabase.from('vehicles').insert(vehicles);
+          });
+        } catch (err) {
+          console.error("Failed to save imported data to Supabase:", err);
+        }
+        
         toast({
           title: "Импорт завершен",
           description: `Импортировано ${parsedData.length} автомобилей`
@@ -388,12 +545,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
   };
-
-  useEffect(() => {
-    if (cars.length > 0) {
-      localStorage.setItem("carsCatalog", JSON.stringify(cars));
-    }
-  }, [cars]);
 
   return (
     <CarsContext.Provider

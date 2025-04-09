@@ -12,16 +12,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Car } from '@/types/car';
-import { Plus, Pencil, Trash2, Search, Car as CarIcon, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Car as CarIcon, Upload, Database, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminCars = () => {
-  const { cars, addCar, updateCar, deleteCar } = useCars();
+  const { cars, addCar, updateCar, deleteCar, reloadCars } = useCars();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCar, setEditingCar] = useState<Partial<Car> | null>(null);
   const [isAddingCar, setIsAddingCar] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [isImporting, setIsImporting] = useState(false);
   
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
@@ -95,17 +97,39 @@ const AdminCars = () => {
     setDialogOpen(true);
   };
 
-  const handleDeleteClick = (carId: string) => {
+  const handleDeleteClick = async (carId: string) => {
     if (window.confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
-      deleteCar(carId);
-      toast({
-        title: "Удалено",
-        description: "Автомобиль был успешно удален"
-      });
+      try {
+        const { error } = await supabase
+          .from('vehicles')
+          .delete()
+          .eq('id', carId);
+        
+        if (error) {
+          throw error;
+        }
+        
+        deleteCar(carId);
+        
+        toast({
+          title: "Удалено",
+          description: "Автомобиль был успешно удален"
+        });
+      } catch (err) {
+        console.error("Failed to delete car:", err);
+        
+        deleteCar(carId);
+        
+        toast({
+          variant: "destructive",
+          title: "Ошибка синхронизации",
+          description: "Автомобиль удален из локального кэша, но возникла проблема при удалении из базы данных"
+        });
+      }
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingCar || !editingCar.brand || !editingCar.model) {
       toast({
         variant: "destructive",
@@ -180,14 +204,60 @@ const AdminCars = () => {
         country: editingCar.country || 'Россия'
       };
 
+      const vehicle = {
+        id: completeCar.id,
+        brand: completeCar.brand,
+        model: completeCar.model,
+        year: completeCar.year,
+        body_type: completeCar.bodyType,
+        colors: completeCar.colors,
+        price: completeCar.price.base,
+        price_discount: completeCar.price.discount,
+        engine_type: completeCar.engine.type,
+        engine_capacity: completeCar.engine.displacement,
+        engine_power: completeCar.engine.power,
+        engine_torque: completeCar.engine.torque,
+        engine_fuel_type: completeCar.engine.fuelType,
+        transmission_type: completeCar.transmission.type,
+        transmission_gears: completeCar.transmission.gears,
+        drivetrain: completeCar.drivetrain,
+        dimensions: completeCar.dimensions,
+        performance: completeCar.performance,
+        features: completeCar.features,
+        image_url: completeCar.images && completeCar.images.length > 0 ? completeCar.images[0].url : null,
+        description: completeCar.description,
+        is_new: completeCar.isNew,
+        country: completeCar.country,
+        view_count: completeCar.viewCount || 0
+      };
+
       if (isAddingCar) {
+        const { error: insertError } = await supabase
+          .from('vehicles')
+          .insert(vehicle);
+        
+        if (insertError) {
+          throw insertError;
+        }
+        
         addCar(completeCar);
+        
         toast({
           title: "Автомобиль добавлен",
           description: "Новый автомобиль был успешно добавлен"
         });
       } else {
+        const { error: updateError } = await supabase
+          .from('vehicles')
+          .update(vehicle)
+          .eq('id', completeCar.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
         updateCar(completeCar);
+        
         toast({
           title: "Автомобиль обновлен",
           description: "Информация об автомобиле успешно обновлена"
@@ -200,11 +270,48 @@ const AdminCars = () => {
       setPreviewImages([]);
     } catch (error) {
       console.error('Error saving car:', error);
+      
+      if (isAddingCar) {
+        addCar(completeCar);
+      } else {
+        updateCar(completeCar);
+      }
+      
+      toast({
+        title: "Сохранено локально",
+        description: "Данные сохранены локально, но возникла ошибка при синхронизации с базой данных"
+      });
+      
+      setDialogOpen(false);
+      setEditingCar(null);
+      setUploadedImages([]);
+      setPreviewImages([]);
+    }
+  };
+
+  const handleSyncWithSupabase = async () => {
+    setIsImporting(true);
+    try {
+      toast({
+        title: "Синхронизация",
+        description: "Загрузка данных из Supabase..."
+      });
+      
+      await reloadCars();
+      
+      toast({
+        title: "Синхронизация завершена",
+        description: "Данные успешно обновлены из Supabase"
+      });
+    } catch (error) {
+      console.error('Error syncing with Supabase:', error);
       toast({
         variant: "destructive",
-        title: "Ошибка сохранения",
-        description: "Произошла ошибка при сохранении автомобиля"
+        title: "Ошибка синхронизации",
+        description: "Не удалось загрузить данные из Supabase"
       });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -279,10 +386,24 @@ const AdminCars = () => {
               <CardTitle>Управление автомобилями</CardTitle>
               <CardDescription>Просмотр и редактирование автомобилей в каталоге</CardDescription>
             </div>
-            <Button onClick={handleAddClick}>
-              <Plus className="mr-2 h-4 w-4" />
-              Добавить автомобиль
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleSyncWithSupabase}
+                disabled={isImporting}
+              >
+                {isImporting ? (
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Database className="mr-2 h-4 w-4" />
+                )}
+                Синхронизировать
+              </Button>
+              <Button onClick={handleAddClick}>
+                <Plus className="mr-2 h-4 w-4" />
+                Добавить автомобиль
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
