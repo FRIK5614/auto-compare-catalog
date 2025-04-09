@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +23,8 @@ import AdminImport from "./pages/AdminImport";
 import AdminChat from "./pages/AdminChat";
 import AdminCars from "./pages/AdminCars";
 import ChatWidget from "./components/ChatWidget";
+import { supabase } from "./integrations/supabase/client";
+import 'swiper/css';
 
 // Create a new query client instance with default options
 const queryClient = new QueryClient({
@@ -38,6 +40,38 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Create storage bucket for car images if it doesn't exist
+  useEffect(() => {
+    const setupStorage = async () => {
+      try {
+        // Check if the bucket exists (we can only do this indirectly)
+        const { data: buckets, error } = await supabase.storage.listBuckets();
+        
+        if (!error && buckets) {
+          const carImagesBucketExists = buckets.some(bucket => bucket.name === 'car-images');
+          
+          if (!carImagesBucketExists) {
+            // Bucket doesn't exist, create it
+            const { data, error: createError } = await supabase.storage.createBucket('car-images', {
+              public: true, // Make it publicly accessible
+              fileSizeLimit: 10485760, // 10MB limit
+            });
+            
+            if (createError) {
+              console.error('Error creating car-images bucket:', createError);
+            } else {
+              console.log('Created car-images bucket successfully');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking/creating storage bucket:', err);
+      }
+    };
+    
+    setupStorage();
+  }, []);
 
   return (
     <>

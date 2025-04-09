@@ -27,7 +27,8 @@ export const useCars = () => {
     processOrder,
     getOrders,
     exportCarsData,
-    importCarsData
+    importCarsData,
+    uploadCarImage
   } = useGlobalCars();
 
   const favoriteCars = cars.filter(car => favorites.includes(car.id));
@@ -117,6 +118,7 @@ export const useCars = () => {
     getYearRange,
     exportCarsData,
     importCarsData,
+    uploadCarImage,
     // Export these functions to fix the build errors
     addToFavorites,
     removeFromFavorites,

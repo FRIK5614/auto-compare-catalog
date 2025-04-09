@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ComparePanel from "@/components/ComparePanel";
@@ -9,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CarsProvider } from "@/contexts/CarsContext";
 import { useCars } from "@/hooks/useCars";
-import { Heart, BarChart2, ChevronRight, ChevronLeft, Share2, Phone } from "lucide-react";
+import { Heart, BarChart2, ChevronRight, ChevronLeft, Share2, Phone, ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("ru-RU", {
@@ -23,11 +25,20 @@ const formatPrice = (price: number) => {
 
 const CarDetailsContent = () => {
   const { id } = useParams<{ id: string }>();
-  const { getCarById, toggleFavorite, toggleCompare, isFavorite, isInCompare } = useCars();
+  const { getCarById, cars, toggleFavorite, toggleCompare, isFavorite, isInCompare, viewCar } = useCars();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
   
   const car = getCarById(id || "");
+  
+  useEffect(() => {
+    if (car) {
+      viewCar(car.id);
+    }
+  }, [car, viewCar]);
   
   if (!car) {
     return (
@@ -48,6 +59,23 @@ const CarDetailsContent = () => {
       </div>
     );
   }
+
+  // Find next and previous cars in the list for navigation
+  const currentIndex = cars.findIndex(c => c.id === car.id);
+  const prevCar = currentIndex > 0 ? cars[currentIndex - 1] : null;
+  const nextCar = currentIndex < cars.length - 1 ? cars[currentIndex + 1] : null;
+
+  const goToPreviousCar = () => {
+    if (prevCar) {
+      navigate(`/car/${prevCar.id}`);
+    }
+  };
+
+  const goToNextCar = () => {
+    if (nextCar) {
+      navigate(`/car/${nextCar.id}`);
+    }
+  };
 
   const handlePrevImage = () => {
     setActiveImageIndex((prev) => 
@@ -73,6 +101,36 @@ const CarDetailsContent = () => {
         window.location.href = "tel:+74951234567";
       });
   };
+  
+  // Swipe handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 100; // Min swipe distance
+    
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // Swipe left - show next image
+        handleNextImage();
+      } else {
+        // Swipe right - show previous image
+        handlePrevImage();
+      }
+    }
+    
+    // Reset
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,9 +142,9 @@ const CarDetailsContent = () => {
           <div className="flex items-center text-sm text-auto-gray-600">
             <Link to="/" className="hover:text-auto-blue-600">Главная</Link>
             <ChevronRight className="h-3 w-3 mx-2" />
-            <Link to="/" className="hover:text-auto-blue-600">Каталог</Link>
+            <Link to="/catalog" className="hover:text-auto-blue-600">Каталог</Link>
             <ChevronRight className="h-3 w-3 mx-2" />
-            <Link to={`/?brand=${car.brand}`} className="hover:text-auto-blue-600">{car.brand}</Link>
+            <Link to={`/catalog?brand=${car.brand}`} className="hover:text-auto-blue-600">{car.brand}</Link>
             <ChevronRight className="h-3 w-3 mx-2" />
             <span className="text-auto-gray-900">{car.model}</span>
           </div>
@@ -167,6 +225,28 @@ const CarDetailsContent = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="relative h-[300px] sm:h-[400px] md:h-[500px]">
+                {/* Car Navigation */}
+                <div className="absolute top-4 right-4 z-20 flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={goToPreviousCar}
+                    disabled={!prevCar}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={goToNextCar}
+                    disabled={!nextCar}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                
                 {car.isNew && (
                   <Badge className="absolute top-4 left-4 z-10 bg-auto-blue-600">Новинка</Badge>
                 )}
@@ -175,6 +255,9 @@ const CarDetailsContent = () => {
                   src={car.images[activeImageIndex].url}
                   alt={car.images[activeImageIndex].alt}
                   className="w-full h-full object-cover"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                 />
                 
                 <Button
@@ -474,7 +557,9 @@ const CarDetailsContent = () => {
             </div>
             
             {/* Request Form */}
-            <PurchaseRequestForm car={car} />
+            <div className="flex justify-center items-center w-full">
+              <PurchaseRequestForm car={car} />
+            </div>
             
             {/* Colors */}
             {car.colors.length > 0 && (

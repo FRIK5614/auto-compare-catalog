@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminCars = () => {
-  const { cars, addCar, updateCar, deleteCar, reloadCars } = useCars();
+  const { cars, addCar, updateCar, deleteCar, reloadCars, uploadCarImage } = useCars();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCar, setEditingCar] = useState<Partial<Car> | null>(null);
   const [isAddingCar, setIsAddingCar] = useState(false);
@@ -28,6 +28,7 @@ const AdminCars = () => {
   
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const filteredCars = cars
     .filter(car => 
@@ -141,20 +142,31 @@ const AdminCars = () => {
     }
 
     try {
-      const carImages = [...(editingCar.images || [])];
+      setUploading(true);
       
-      if (previewImages.length > 0) {
-        previewImages.forEach((url, index) => {
-          carImages.push({
-            id: `img-${Date.now()}-${index}`,
-            url: url,
-            alt: `${editingCar.brand} ${editingCar.model}`
-          });
-        });
+      // Process uploaded images
+      const carImagesList = [...(editingCar.images || [])];
+      
+      // Upload new images
+      if (uploadedImages.length > 0) {
+        for (const file of uploadedImages) {
+          try {
+            const result = await uploadCarImage(file);
+            if (result && result.url) {
+              carImagesList.push({
+                id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                url: result.url,
+                alt: `${editingCar.brand} ${editingCar.model}`
+              });
+            }
+          } catch (error) {
+            console.error("Error uploading image:", error);
+          }
+        }
       }
 
-      if (carImages.length === 0) {
-        carImages.push({
+      if (carImagesList.length === 0) {
+        carImagesList.push({
           id: `img-${Date.now()}`,
           url: '/placeholder.svg',
           alt: 'Car Image'
@@ -199,7 +211,7 @@ const AdminCars = () => {
           }
         },
         features: editingCar.features || [],
-        images: carImages,
+        images: carImagesList,
         description: editingCar.description || '',
         isNew: editingCar.isNew || true,
         country: editingCar.country || 'Россия'
@@ -275,6 +287,26 @@ const AdminCars = () => {
       
       // Fall back to local update if Supabase fails
       if (editingCar) {
+        const carImagesList = [...(editingCar.images || [])];
+        
+        if (previewImages.length > 0) {
+          previewImages.forEach((url, index) => {
+            carImagesList.push({
+              id: `img-${Date.now()}-${index}`,
+              url: url,
+              alt: `${editingCar.brand} ${editingCar.model}`
+            });
+          });
+        }
+
+        if (carImagesList.length === 0) {
+          carImagesList.push({
+            id: `img-${Date.now()}`,
+            url: '/placeholder.svg',
+            alt: 'Car Image'
+          });
+        }
+        
         const completeCar: Car = {
           id: editingCar.id || `car-${Date.now()}`,
           brand: editingCar.brand,
@@ -313,7 +345,7 @@ const AdminCars = () => {
             }
           },
           features: editingCar.features || [],
-          images: carImages,
+          images: carImagesList,
           description: editingCar.description || '',
           isNew: editingCar.isNew || true,
           country: editingCar.country || 'Россия'
@@ -335,6 +367,8 @@ const AdminCars = () => {
       setEditingCar(null);
       setUploadedImages([]);
       setPreviewImages([]);
+    } finally {
+      setUploading(false);
     }
   };
 
