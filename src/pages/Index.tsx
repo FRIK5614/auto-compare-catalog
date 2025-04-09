@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FeaturedCars from "@/components/FeaturedCars";
@@ -19,6 +20,7 @@ const IndexContent = () => {
   const [visibleCars, setVisibleCars] = useState(12);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const consultFormRef = React.useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const newFilter: any = { ...filter };
@@ -41,7 +43,9 @@ const IndexContent = () => {
   }, [searchParams, setFilter]);
 
   const loadMore = () => {
-    setVisibleCars(prev => prev + 12);
+    // Navigate to catalog page instead of showing more on home page
+    const params = new URLSearchParams(searchParams);
+    navigate(`/catalog?${params.toString()}`);
   };
 
   const newCars = cars.filter(car => car.isNew);
@@ -74,7 +78,11 @@ const IndexContent = () => {
                 Более 1000 моделей автомобилей с подробными характеристиками, ценами и возможностью сравнения
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Button size="lg" className="bg-white text-auto-blue-800 hover:bg-blue-50">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-auto-blue-800 hover:bg-blue-50"
+                  onClick={() => navigate('/catalog')}
+                >
                   <Car className="mr-2 h-5 w-5" />
                   Все автомобили
                 </Button>
@@ -133,7 +141,7 @@ const IndexContent = () => {
         </div>
       </section>
 
-      <SearchFiltersModal isOpen={isFilterModalOpen} onClose={closeFilterModal} />
+      <SearchFiltersModal isOpen={isFilterModalOpen} onClose={closeFilterModal} scrollToContactForm={scrollToConsultForm} />
 
       <section className="py-12 bg-auto-gray-50">
         <div className="container mx-auto px-4">
@@ -220,12 +228,12 @@ const IndexContent = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCars.slice(0, visibleCars).map(car => (
+                    {filteredCars.slice(0, 12).map(car => (
                       <CarCard key={car.id} car={car} />
                     ))}
                   </div>
                   
-                  {visibleCars < filteredCars.length && (
+                  {filteredCars.length > 12 && (
                     <div className="mt-8 flex justify-center">
                       <Button 
                         onClick={loadMore} 

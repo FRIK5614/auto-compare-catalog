@@ -64,6 +64,29 @@ export const useCars = () => {
       .slice(0, limit);
   };
   
+  // Get unique values for filters
+  const getUniqueValues = <T extends keyof Car>(field: T): Car[T][] => {
+    const values = cars.map(car => car[field]);
+    return [...new Set(values)].filter(Boolean) as Car[T][];
+  };
+  
+  // Get min and max values for numerical filters
+  const getPriceRange = () => {
+    const prices = cars.map(car => car.price.base);
+    return {
+      min: Math.min(...prices),
+      max: Math.max(...prices)
+    };
+  };
+  
+  const getYearRange = () => {
+    const years = cars.map(car => car.year);
+    return {
+      min: Math.min(...years),
+      max: Math.max(...years)
+    };
+  };
+  
   return {
     cars,
     filteredCars,
@@ -89,6 +112,9 @@ export const useCars = () => {
     processOrder,
     getOrders,
     getMostViewedCars,
+    getUniqueValues,
+    getPriceRange,
+    getYearRange,
     exportCarsData,
     importCarsData,
     // Export these functions to fix the build errors

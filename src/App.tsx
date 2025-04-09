@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import CarDetails from "./pages/CarDetails";
 import CompareCars from "./pages/CompareCars";
 import Favorites from "./pages/Favorites";
+import Catalog from "./pages/Catalog";
 import NotFound from "./pages/NotFound";
 import TmcAvtoCatalog from "./components/TmcAvtoCatalog";
 import { AdminProvider } from "./contexts/AdminContext";
@@ -48,6 +49,7 @@ const AppContent = () => {
           <Route path="/car/:id" element={<CarDetails />} />
           <Route path="/compare" element={<CompareCars />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/catalog" element={<Catalog />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
