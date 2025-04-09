@@ -13,7 +13,8 @@ import {
   FileArchive, 
   Package,
   MessageCircle,
-  Menu
+  Menu,
+  X
 } from 'lucide-react';
 import { useCars } from '@/hooks/useCars';
 import { useChat } from '@/contexts/ChatContext';

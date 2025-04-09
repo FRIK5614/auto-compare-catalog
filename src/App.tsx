@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import CarDetails from "./pages/CarDetails";
 import CompareCars from "./pages/CompareCars";
@@ -22,8 +22,8 @@ import AdminImport from "./pages/AdminImport";
 import AdminChat from "./pages/AdminChat";
 import AdminCars from "./pages/AdminCars";
 import ChatWidget from "./components/ChatWidget";
-import { useLocation } from "react-router-dom";
 
+// Create a new query client instance with default options
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -33,6 +33,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// AppContent component to handle routes and conditional rendering of ChatWidget
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -73,6 +74,7 @@ const AppContent = () => {
   );
 };
 
+// Main App component
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>

@@ -49,13 +49,13 @@ const FeaturedCars = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Всегда двигаемся на один автомобиль за раз
+  // Always move one car at a time
   const handlePrevious = () => {
     setCurrentIndex((prev) => Math.max(0, prev - 1));
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(cars.length - 1, prev + 1));
+    setCurrentIndex((prev) => Math.min(cars.length - visibleCount, prev + 1));
   };
 
   return (
@@ -75,6 +75,7 @@ const FeaturedCars = ({
                 onClick={handlePrevious}
                 disabled={currentIndex === 0}
                 className="rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
+                aria-label="Previous car"
               >
                 <ChevronLeft className="h-5 w-5 text-white" />
               </Button>
@@ -84,6 +85,7 @@ const FeaturedCars = ({
                 onClick={handleNext}
                 disabled={currentIndex >= cars.length - visibleCount}
                 className="rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
+                aria-label="Next car"
               >
                 <ChevronRight className="h-5 w-5 text-white" />
               </Button>
