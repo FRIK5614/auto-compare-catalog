@@ -1,15 +1,12 @@
 
 import React, { useEffect, useState } from "react";
-import { ExternalLink, MoreHorizontal } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import ErrorState from "@/components/ErrorState";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext } from "@/components/ui/pagination";
 import { useToast } from "@/hooks/use-toast";
+import { PostsGrid, LoadMoreButton } from "@/components/telegram-feed";
 
 interface TelegramPost {
   id: number;
@@ -97,18 +94,6 @@ const HotOffers = () => {
     fetchTelegramPosts(0);
   }, []);
   
-  // Format the timestamp to a readable date
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('ru-RU', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -129,101 +114,25 @@ const HotOffers = () => {
         </div>
         
         <div className="grid gap-6">
-          {loading && offset === 0 ? (
-            // Loading skeletons for initial load
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <Card key={`skeleton-${index}`}>
-                  <CardHeader>
-                    <Skeleton className="h-5 w-40" />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-40 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : error ? (
-            // Error state
-            <ErrorState 
-              message={error}
-              onRetry={() => fetchTelegramPosts(0)}
+          {/* Posts Grid Component */}
+          <PostsGrid 
+            posts={posts}
+            loading={loading}
+            error={error}
+            offset={offset}
+            onRetry={() => fetchTelegramPosts(0)}
+          />
+          
+          {/* Pagination controls */}
+          <div className="mt-8 flex justify-center">
+            <LoadMoreButton
+              loading={loading}
+              hasMore={hasMore}
+              postsExist={posts.length > 0}
+              offset={offset}
+              onLoadMore={loadMorePosts}
             />
-          ) : posts.length === 0 ? (
-            // Empty state
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <p className="text-gray-500">Публикации не найдены</p>
-                <div className="mt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => window.open('https://t.me/VoeAVTO', '_blank')}
-                  >
-                    Перейти в группу Telegram
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            // Display posts
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="text-lg">Опубликовано {formatDate(post.date)}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Post text with line breaks preserved */}
-                      <div className="whitespace-pre-line">{post.text}</div>
-                      
-                      {/* Display photo if available */}
-                      {post.photo_url && (
-                        <div className="mt-4">
-                          <img 
-                            src={post.photo_url} 
-                            alt="Изображение из Telegram" 
-                            className="rounded-lg max-h-[300px] w-auto mx-auto"
-                            loading="lazy"
-                            onError={(e) => {
-                              // Fallback if image fails to load
-                              console.error("Image failed to load:", post.photo_url);
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              
-              {/* Pagination controls */}
-              <div className="mt-8 flex justify-center">
-                {loading && offset > 0 ? (
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-10 w-32" />
-                    <MoreHorizontal className="text-gray-400" />
-                  </div>
-                ) : hasMore ? (
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    onClick={loadMorePosts}
-                    disabled={loading}
-                    className="w-full md:w-auto"
-                  >
-                    {loading ? "Загрузка..." : "Показать ещё"}
-                  </Button>
-                ) : posts.length > 0 ? (
-                  <p className="text-gray-500 py-2">Больше публикаций нет</p>
-                ) : null}
-              </div>
-            </>
-          )}
+          </div>
         </div>
       </main>
       
