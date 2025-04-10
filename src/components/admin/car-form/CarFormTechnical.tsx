@@ -8,19 +8,9 @@ import CarFormTransmission from "./CarFormTransmission";
 
 interface CarFormTechnicalProps {
   car: Car;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleNumberInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setCar: React.Dispatch<React.SetStateAction<Car | null>>;
-  handleSelectChange: (name: string, value: string) => void;
 }
 
-const CarFormTechnical = ({
-  car,
-  handleInputChange,
-  handleNumberInputChange,
-  setCar,
-  handleSelectChange,
-}: CarFormTechnicalProps) => {
+const CarFormTechnical = ({ car }: CarFormTechnicalProps) => {
   return (
     <Card className="col-span-1 md:col-span-3">
       <CardHeader>
@@ -28,22 +18,12 @@ const CarFormTechnical = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Двигатель */}
-        <CarFormEngine
-          car={car}
-          handleInputChange={handleInputChange}
-          handleNumberInputChange={handleNumberInputChange}
-          setCar={setCar}
-        />
+        <CarFormEngine car={car} />
 
         <Separator />
 
         {/* Трансмиссия */}
-        <CarFormTransmission
-          car={car}
-          handleNumberInputChange={handleNumberInputChange}
-          setCar={setCar}
-          handleSelectChange={handleSelectChange}
-        />
+        <CarFormTransmission car={car} />
       </CardContent>
     </Card>
   );

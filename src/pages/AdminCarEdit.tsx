@@ -8,7 +8,10 @@ import { ArrowLeft, Save } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CarFormBasicInfo, CarFormImage, CarFormTechnical } from "@/components/admin/car-form";
+import { CarFormValues, carFormSchema, mapCarToFormValues, mapFormValuesToCar } from "@/components/admin/car-form/validation";
 
 const AdminCarEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +24,38 @@ const AdminCarEdit = () => {
   const [car, setCar] = useState<Car | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Initialize form with resolver
+  const methods = useForm<CarFormValues>({
+    resolver: zodResolver(carFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      brand: "",
+      model: "",
+      year: new Date().getFullYear(),
+      bodyType: "",
+      country: "",
+      price: {
+        base: 0,
+      },
+      description: "",
+      isNew: true,
+      engine: {
+        type: "",
+        displacement: 0,
+        power: 0,
+        torque: 0,
+        fuelType: "",
+      },
+      transmission: {
+        type: "",
+        gears: 0,
+      },
+      drivetrain: "",
+    },
+  });
+  
+  const { handleSubmit, reset, formState: { errors, isValid, isDirty } } = methods;
 
   // Перезагрузка данных автомобилей при монтировании компонента
   useEffect(() => {
@@ -38,6 +73,8 @@ const AdminCarEdit = () => {
       
       if (carData) {
         setCar(carData);
+        reset(mapCarToFormValues(carData));
+        
         if (carData.images && carData.images.length > 0) {
           setImagePreview(carData.images[0].url);
         } else if (carData.image_url) {
@@ -53,7 +90,7 @@ const AdminCarEdit = () => {
       }
     } else {
       // Инициализация нового авто
-      setCar({
+      const newCar: Car = {
         id: uuidv4(),
         brand: "",
         model: "",
@@ -98,89 +135,12 @@ const AdminCarEdit = () => {
         isNew: true,
         country: "",
         image_url: "",
-      });
+      };
+      
+      setCar(newCar);
+      reset(mapCarToFormValues(newCar));
     }
-  }, [id, isNewCar, getCarById, navigate, toast, cars]);
-
-  // Обработка изменений базовых полей
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setCar((prev) => {
-      if (!prev) return null;
-      
-      // Обработка вложенных свойств
-      if (name.includes(".")) {
-        const [parent, child] = name.split(".");
-        const parentObj = prev[parent as keyof typeof prev];
-        
-        if (typeof parentObj === 'object' && parentObj !== null) {
-          return {
-            ...prev,
-            [parent]: {
-              ...parentObj,
-              [child]: value,
-            },
-          };
-        }
-        
-        return prev;
-      }
-      
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
-  };
-
-  // Обработка изменений числовых полей
-  const handleNumberInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value } = e.target;
-    const numValue = parseFloat(value);
-    
-    setCar((prev) => {
-      if (!prev) return null;
-      
-      // Обработка вложенных свойств
-      if (name.includes(".")) {
-        const [parent, child] = name.split(".");
-        const parentObj = prev[parent as keyof typeof prev];
-        
-        if (typeof parentObj === 'object' && parentObj !== null) {
-          return {
-            ...prev,
-            [parent]: {
-              ...parentObj,
-              [child]: isNaN(numValue) ? 0 : numValue,
-            },
-          };
-        }
-        
-        return prev;
-      }
-      
-      return {
-        ...prev,
-        [name]: isNaN(numValue) ? 0 : numValue,
-      };
-    });
-  };
-
-  // Обработка select полей
-  const handleSelectChange = (name: string, value: string) => {
-    setCar((prev) => {
-      if (!prev) return null;
-      
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
-  };
+  }, [id, isNewCar, getCarById, navigate, toast, cars, reset]);
 
   // Обработка загрузки изображения
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,40 +158,30 @@ const AdminCarEdit = () => {
   };
 
   // Сохранение автомобиля
-  const handleSave = async () => {
+  const onSubmit = async (data: CarFormValues) => {
     if (!car) return;
     
     setLoading(true);
     
     try {
+      let imageUrl: string | undefined;
+      
       // Загрузка изображения, если оно выбрано
       if (imageFile) {
-        const imageUrl = await uploadCarImage(imageFile);
-        
-        if (car.images && car.images.length > 0) {
-          car.images[0].url = imageUrl;
-        } else {
-          car.images = [
-            {
-              id: uuidv4(),
-              url: imageUrl,
-              alt: `${car.brand} ${car.model}`,
-            },
-          ];
-        }
-        
-        // Для совместимости с legacy полями
-        car.image_url = imageUrl;
+        imageUrl = await uploadCarImage(imageFile);
       }
       
+      // Обновляем объект автомобиля с данными формы
+      const updatedCar = mapFormValuesToCar(data, car, imageUrl);
+      
       if (isNewCar) {
-        await addCar(car);
+        await addCar(updatedCar);
         toast({
           title: "Автомобиль добавлен",
           description: "Новый автомобиль успешно добавлен",
         });
       } else {
-        await updateCar(car);
+        await updateCar(updatedCar);
         toast({
           title: "Автомобиль обновлен",
           description: "Информация об автомобиле успешно обновлена",
@@ -273,57 +223,67 @@ const AdminCarEdit = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/admin/cars")}
-              className="mr-2"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-            <h1 className="text-2xl font-bold">
-              {isNewCar ? "Добавление автомобиля" : "Редактирование автомобиля"}
-            </h1>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/admin/cars")}
+                  className="mr-2"
+                  type="button"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Назад
+                </Button>
+                <h1 className="text-2xl font-bold">
+                  {isNewCar ? "Добавление автомобиля" : "Редактирование автомобиля"}
+                </h1>
+              </div>
+              <Button
+                type="submit"
+                disabled={loading || !isValid}
+                className="flex items-center"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Сохранить
+              </Button>
+            </div>
+
+            {/* Отображение ошибок формы */}
+            {Object.keys(errors).length > 0 && (
+              <div className="bg-destructive/15 text-destructive p-3 rounded-md mb-6">
+                <p className="font-medium">Пожалуйста, исправьте следующие ошибки:</p>
+                <ul className="ml-4 list-disc">
+                  {Object.entries(errors).map(([key, error]) => {
+                    if (key === 'engine' || key === 'transmission' || key === 'price') {
+                      return null; // Пропускаем объекты, их ошибки отображаются отдельно
+                    }
+                    return (
+                      <li key={key}>{error?.message as string}</li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Основная информация */}
+              <CarFormBasicInfo car={car} />
+
+              {/* Изображение */}
+              <CarFormImage
+                imagePreview={imagePreview}
+                handleImageUpload={handleImageUpload}
+              />
+
+              {/* Технические характеристики */}
+              <CarFormTechnical car={car} />
+            </div>
           </div>
-          <Button
-            onClick={handleSave}
-            disabled={loading}
-            className="flex items-center"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Сохранить
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Основная информация */}
-          <CarFormBasicInfo
-            car={car}
-            handleInputChange={handleInputChange}
-            handleNumberInputChange={handleNumberInputChange}
-            handleSelectChange={handleSelectChange}
-            setCar={setCar}
-          />
-
-          {/* Изображение */}
-          <CarFormImage
-            imagePreview={imagePreview}
-            handleImageUpload={handleImageUpload}
-          />
-
-          {/* Технические характеристики */}
-          <CarFormTechnical
-            car={car}
-            handleInputChange={handleInputChange}
-            handleNumberInputChange={handleNumberInputChange}
-            setCar={setCar}
-            handleSelectChange={handleSelectChange}
-          />
-        </div>
-      </div>
+        </form>
+      </FormProvider>
     </AdminLayout>
   );
 };

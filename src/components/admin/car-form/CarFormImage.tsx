@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
+import { FormItem } from "@/components/ui/form";
 
 interface CarFormImageProps {
   imagePreview: string | null;
@@ -27,21 +28,28 @@ const CarFormImage = ({ imagePreview, handleImageUpload }: CarFormImageProps) =>
             />
           </div>
         )}
-        <Label htmlFor="image" className="cursor-pointer">
-          <Button variant="outline" className="w-full" asChild>
-            <div>
-              <Upload className="h-4 w-4 mr-2" />
-              Загрузить изображение
-            </div>
-          </Button>
-          <Input
-            id="image"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-        </Label>
+        <FormItem className="space-y-2">
+          <Label htmlFor="image" className="cursor-pointer">
+            <Button variant="outline" className="w-full" asChild>
+              <div>
+                <Upload className="h-4 w-4 mr-2" />
+                Загрузить изображение
+              </div>
+            </Button>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </Label>
+          {!imagePreview && (
+            <p className="text-sm text-muted-foreground">
+              Рекомендуется загрузить изображение автомобиля
+            </p>
+          )}
+        </FormItem>
       </CardContent>
     </Card>
   );
