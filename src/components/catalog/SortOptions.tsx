@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   Select,
@@ -98,7 +97,6 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
     };
   }, [isOpen]);
 
-  // Simplified event blocking - only applied to content, not the trigger
   const blockEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     if (e.nativeEvent) {
@@ -144,10 +142,6 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         <SelectContent 
           position="popper" 
           className="z-[3000] bg-white"
-          onPointerDownOutside={(e) => {
-            e.preventDefault();
-            blockEvents(e);
-          }}
           onClick={blockEvents}
         >
           {sortOptions.map(option => (
