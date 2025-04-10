@@ -152,7 +152,6 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         <SelectContent 
           position="popper" 
           className="z-[3000] bg-white"
-          onInteractOutside={(e) => e.preventDefault()}
         >
           {sortOptions.map(option => (
             <SelectItem 
