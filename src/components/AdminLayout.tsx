@@ -88,9 +88,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         />
 
         <SidebarInset className="bg-background flex-1 p-0 md:p-2 mt-[60px] md:mt-0">
-          <div className="w-full">
-            {children || <Outlet />}
-          </div>
+          {children || <Outlet />}
         </SidebarInset>
       </div>
     </SidebarProvider>

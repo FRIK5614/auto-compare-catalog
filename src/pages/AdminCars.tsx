@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -10,6 +11,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import AdminCarsList from "@/components/AdminCarsList";
 import { CarDeleteDialog } from "@/components/admin/car-form";
+
 const AdminCars = () => {
   const {
     cars,
@@ -23,15 +25,16 @@ const AdminCars = () => {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importData, setImportData] = useState("");
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const filteredCars = cars.filter(car => car.brand.toLowerCase().includes(searchTerm.toLowerCase()) || car.model.toLowerCase().includes(searchTerm.toLowerCase()));
+  const { toast } = useToast();
+  
+  const filteredCars = cars.filter(car => 
+    car.brand.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    car.model.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   const handleExport = () => {
     const data = exportCarsData();
-    const blob = new Blob([data], {
-      type: "application/json"
-    });
+    const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -40,11 +43,13 @@ const AdminCars = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
     toast({
       title: "Экспорт выполнен",
       description: `Экспортировано ${cars.length} автомобилей`
     });
   };
+  
   const handleImport = async () => {
     try {
       const success = await importCarsData(importData);
@@ -60,10 +65,12 @@ const AdminCars = () => {
       });
     }
   };
+  
   const openDeleteDialog = (car: Car) => {
     setCarToDelete(car);
     setIsDeleteDialogOpen(true);
   };
+  
   const confirmDelete = async () => {
     if (carToDelete) {
       await deleteCar(carToDelete.id);
@@ -71,14 +78,17 @@ const AdminCars = () => {
       setIsDeleteDialogOpen(false);
     }
   };
+  
   const handleDelete = (id: string) => {
     const car = cars.find(c => c.id === id);
     if (car) {
       openDeleteDialog(car);
     }
   };
-  return <AdminLayout>
-      <div className="p-6 px-[4px]">
+
+  return (
+    <AdminLayout>
+      <div className="p-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Управление автомобилями</h1>
           <div className="flex gap-2">
@@ -98,12 +108,27 @@ const AdminCars = () => {
         </div>
 
         <div className="mb-4">
-          <Input placeholder="Поиск по марке или модели..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="max-w-md" />
+          <Input 
+            placeholder="Поиск по марке или модели..." 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            className="max-w-md" 
+          />
         </div>
 
-        <AdminCarsList cars={filteredCars} onEdit={id => navigate(`/admin/cars/edit/${id}`)} onDelete={handleDelete} onView={id => navigate(`/car/${id}`)} />
+        <AdminCarsList 
+          cars={filteredCars} 
+          onEdit={id => navigate(`/admin/cars/edit/${id}`)} 
+          onDelete={handleDelete} 
+          onView={id => navigate(`/car/${id}`)} 
+        />
 
-        <CarDeleteDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} onConfirm={confirmDelete} carName={carToDelete ? `${carToDelete.brand} ${carToDelete.model}` : undefined} />
+        <CarDeleteDialog 
+          open={isDeleteDialogOpen} 
+          onOpenChange={setIsDeleteDialogOpen} 
+          onConfirm={confirmDelete} 
+          carName={carToDelete ? `${carToDelete.brand} ${carToDelete.model}` : undefined} 
+        />
 
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
@@ -115,7 +140,12 @@ const AdminCars = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="my-4">
-              <textarea className="w-full h-64 p-2 border rounded-md" value={importData} onChange={e => setImportData(e.target.value)} placeholder='[{"id": "1", "brand": "BMW", ...}]' />
+              <textarea 
+                className="w-full h-64 p-2 border rounded-md" 
+                value={importData} 
+                onChange={e => setImportData(e.target.value)} 
+                placeholder='[{"id": "1", "brand": "BMW", ...}]' 
+              />
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Отмена</AlertDialogCancel>
@@ -126,6 +156,8 @@ const AdminCars = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminLayout>;
+    </AdminLayout>
+  );
 };
+
 export default AdminCars;
