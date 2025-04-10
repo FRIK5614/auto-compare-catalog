@@ -98,9 +98,7 @@ const FeaturedCars = ({
         {loading ? (
           <LoadingState count={visibleCount} type="card" />
         ) : !error && cars.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <p className="text-auto-gray-600">В этой категории нет автомобилей</p>
-          </div>
+          <LoadingState count={visibleCount} type="card" />
         ) : !error && (
           <div className="relative overflow-hidden">
             <div

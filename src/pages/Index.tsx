@@ -13,9 +13,10 @@ import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
 import { CarsProvider } from "@/contexts/CarsContext";
 import { ChevronDown, Car, CarFront, Settings, UserRound } from "lucide-react";
+import LoadingState from "@/components/LoadingState";
 
 const IndexContent = () => {
-  const { cars, filteredCars, setFilter, filter } = useCars();
+  const { cars, filteredCars, setFilter, filter, loading, error, reloadCars } = useCars();
   const [searchParams] = useSearchParams();
   const [visibleCars, setVisibleCars] = useState(12);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -179,21 +180,27 @@ const IndexContent = () => {
         </div>
       </section>
 
-      {newCars.length > 0 && (
+      {newCars.length > 0 || loading ? (
         <FeaturedCars 
           cars={newCars} 
           title="Новые поступления" 
           subtitle="Самые свежие модели в нашем каталоге"
+          loading={loading}
+          error={error}
+          onRetry={reloadCars}
         />
-      )}
+      ) : null}
       
-      {popularCars.length > 0 && (
+      {popularCars.length > 0 || loading ? (
         <FeaturedCars 
           cars={popularCars} 
           title="Популярные модели" 
           subtitle="Автомобили, которые чаще всего выбирают наши пользователи"
+          loading={loading}
+          error={error}
+          onRetry={reloadCars}
         />
-      )}
+      ) : null}
 
       <section className="py-12 bg-auto-gray-50">
         <div className="container mx-auto px-4">
@@ -205,7 +212,9 @@ const IndexContent = () => {
             </div>
             
             <div className="md:w-3/4 lg:w-4/5">
-              {filteredCars.length === 0 ? (
+              {loading ? (
+                <LoadingState count={visibleCars} type="card" />
+              ) : filteredCars.length === 0 ? (
                 <div className="flex flex-col items-center justify-center bg-white p-8 rounded-lg text-center">
                   <Car className="h-16 w-16 text-auto-gray-300 mb-4" />
                   <h3 className="text-xl font-semibold text-auto-gray-700 mb-2">Автомобили не найдены</h3>
@@ -228,12 +237,12 @@ const IndexContent = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCars.slice(0, 12).map(car => (
+                    {filteredCars.slice(0, visibleCars).map(car => (
                       <CarCard key={car.id} car={car} />
                     ))}
                   </div>
                   
-                  {filteredCars.length > 12 && (
+                  {filteredCars.length > visibleCars && (
                     <div className="mt-8 flex justify-center">
                       <Button 
                         onClick={loadMore} 
