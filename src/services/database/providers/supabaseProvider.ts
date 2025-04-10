@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Car } from "@/types/car";
-import { transformVehicleToCar, transformCarToVehicle } from "@/services/api";
+import { transformVehicleToCar } from "@/services/api";
 import { loadFavoritesFromLocalStorage } from "@/contexts/cars/utils";
 import { DatabaseProvider } from "../DatabaseProvider";
 
@@ -227,7 +226,7 @@ export const supabaseProvider: DatabaseProvider = {
         throw updateError;
       }
     } catch (error) {
-      console.error("Ошибка при обновлении счетчика просмотров:", error);
+      console.error("Ошибка при обновлении счетчика просмо��ров:", error);
     }
   },
 

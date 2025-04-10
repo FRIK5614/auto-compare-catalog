@@ -219,7 +219,7 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
 /**
  * Функция для преобразования объекта из таблицы vehicles в формат Car
  */
-const transformVehicleToCar = (vehicle: any): Car => {
+export const transformVehicleToCar = (vehicle: any): Car => {
   // Безопасная обработка поля features
   let featuresData = [];
   try {
