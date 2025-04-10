@@ -1,12 +1,12 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car } from "@/types/car";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 export const useCarDetails = () => {
   const {
     cars,
-    getCarById,
+    getCarById: originalGetCarById,
     reloadCars,
     viewCar,
     deleteCar,
@@ -17,12 +17,12 @@ export const useCarDetails = () => {
     error
   } = useGlobalCars();
   
-  // Используем ref, чтобы отслеживать первоначальную загрузку
+  // Use refs to track initial load
   const initialLoadDone = useRef(false);
   const initialLoadStarted = useRef(false);
   const initialLoadTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Загружаем автомобили только при первом монтировании с защитой от повторных вызовов
+  // Load cars only on first mount with protection against multiple calls
   useEffect(() => {
     if (!initialLoadDone.current && !initialLoadStarted.current && cars.length === 0 && !loading && !error) {
       initialLoadStarted.current = true;
@@ -71,7 +71,7 @@ export const useCarDetails = () => {
           console.error("Error loading cars:", err);
           initialLoadDone.current = true;
         });
-      }, 500);
+      }, 300);
     } else if (cars.length > 0) {
       initialLoadDone.current = true;
     }
@@ -84,19 +84,19 @@ export const useCarDetails = () => {
     };
   }, [cars.length, reloadCars, loading, error]);
 
-  // Улучшенная версия getCarById с поддержкой числовых и UUID идентификаторов
-  const enhancedGetCarById = (id: string) => {
+  // Enhanced version of getCarById with support for numeric and UUID identifiers
+  const enhancedGetCarById = useCallback((id: string): Car | undefined => {
     if (!id) return undefined;
     
     console.log('Looking for car with ID:', id);
     console.log('Available cars:', cars.length);
     
-    // Пробуем найти по точному совпадению ID (UUID)
+    // Try to find by exact ID match (UUID)
     let car = cars.find(car => car.id === id);
     
-    // Если не нашли и ID выглядит как число, попробуем найти в массиве автомобилей с индексом
+    // If not found and ID looks like a number, try to find in cars array by index
     if (!car && /^\d+$/.test(id)) {
-      const index = parseInt(id) - 1; // Преобразуем в индекс массива (0-based)
+      const index = parseInt(id) - 1; // Convert to array index (0-based)
       if (index >= 0 && index < cars.length) {
         car = cars[index];
       }
@@ -104,7 +104,7 @@ export const useCarDetails = () => {
     
     console.log('Found car:', car ? 'Yes' : 'No');
     return car;
-  };
+  }, [cars]);
 
   return {
     cars,

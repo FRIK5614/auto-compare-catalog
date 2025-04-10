@@ -13,6 +13,7 @@ export const processOrder = async (
   onError: (message: string) => void
 ) => {
   try {
+    console.log('Processing order:', orderId, 'New status:', status);
     const success = await updateOrderStatus(orderId, status);
     
     if (!success) {
@@ -31,21 +32,25 @@ export const processOrder = async (
       try {
         // Get the order that was just processed
         const orderToNotify = updatedOrders.find(o => o.id === orderId);
+        console.log('Sending Telegram notification for order:', orderToNotify);
+        
         if (orderToNotify) {
           // Get the car details for the order
           const { data, error } = await supabase.functions.invoke('telegram-notify', {
             body: { 
               order: orderToNotify,
-              // In a real implementation, these would come from admin settings
+              // These would ideally come from admin settings
               adminChatIds: ["ADMIN_CHAT_ID_1", "ADMIN_CHAT_ID_2"] 
             }
           });
           
-          console.log('Telegram notification sent:', data);
+          console.log('Telegram notification response:', data);
           
           if (error) {
             console.error('Error sending Telegram notification:', error);
           }
+        } else {
+          console.error('Could not find order for Telegram notification:', orderId);
         }
       } catch (notifyError) {
         console.error('Failed to send Telegram notification:', notifyError);
@@ -60,6 +65,7 @@ export const processOrder = async (
   } catch (err) {
     console.error("Failed to process order:", err);
     
+    // Even if the API call fails, we'll update orders locally
     const updatedOrders = orders.map(order => 
       order.id === orderId ? { ...order, status } : order
     );

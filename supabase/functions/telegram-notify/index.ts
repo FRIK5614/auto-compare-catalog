@@ -13,6 +13,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log("Received telegram-notify request");
+    
     // Get order data from request body
     const { order, adminChatIds } = await req.json();
     
@@ -21,7 +23,13 @@ Deno.serve(async (req) => {
     }
 
     if (!adminChatIds || !adminChatIds.length) {
-      throw new Error('Admin chat IDs are required for notification');
+      console.log("No admin chat IDs provided, using default");
+      // If no admin IDs are provided, use default from environment variable
+      adminChatIds = [Deno.env.get('TELEGRAM_ADMIN_CHAT_ID')];
+      
+      if (!adminChatIds[0]) {
+        throw new Error('No admin chat IDs available for notification');
+      }
     }
 
     // Fetch the Telegram bot token from the environment
@@ -29,6 +37,8 @@ Deno.serve(async (req) => {
     if (!telegramToken) {
       throw new Error('TELEGRAM_BOT_TOKEN not found in environment variables');
     }
+
+    console.log(`Found Telegram token, sending to ${adminChatIds.length} admins`);
 
     // Create the message text
     const car = order.car || { brand: 'Неизвестно', model: 'Неизвестно' };
@@ -47,6 +57,10 @@ Deno.serve(async (req) => {
 
     // Send notification to each admin
     const notificationPromises = adminChatIds.map(async (chatId) => {
+      if (!chatId) return { success: false, error: "Invalid chat ID" };
+      
+      console.log(`Sending notification to chat ID: ${chatId}`);
+      
       const response = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
         method: 'POST',
         headers: {
@@ -59,16 +73,19 @@ Deno.serve(async (req) => {
         }),
       });
 
+      const responseData = await response.json();
+      console.log("Telegram API response:", JSON.stringify(responseData));
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Failed to send notification to chat ID ${chatId}:`, errorData);
-        return { chatId, success: false, error: errorData };
+        console.error(`Failed to send notification to chat ID ${chatId}:`, responseData);
+        return { chatId, success: false, error: responseData };
       }
 
       return { chatId, success: true };
     });
 
     const results = await Promise.all(notificationPromises);
+    console.log("Notification results:", JSON.stringify(results));
     
     return new Response(JSON.stringify({ 
       message: 'Notifications sent',

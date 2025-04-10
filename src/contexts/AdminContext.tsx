@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Car, Order } from '../types/car';
 import { useCars as useGlobalCars } from './CarsContext';
 import { useToast } from '@/hooks/use-toast';
@@ -112,11 +112,13 @@ type AdminContextType = {
   siteConfig: SiteConfig;
   updateSiteConfig: (config: Partial<SiteConfig>) => void;
   applyConfigToSite: () => void;
+  saveTelegramConfig: (botToken: string, adminChatId: string) => void;
 };
 
 const ADMIN_PASSWORD = "admin123"; // In a real app, use a more secure method
 const ADMIN_STORAGE_KEY = "tmcavto_is_admin";
 const SITE_CONFIG_KEY = "tmcavto_site_config";
+const TELEGRAM_CONFIG_KEY = "tmcavto_telegram_config";
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
@@ -126,6 +128,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const globalCars = useGlobalCars();
   const { toast } = useToast();
 
+  // Load admin status and site configuration from localStorage
   useEffect(() => {
     const storedAdminStatus = localStorage.getItem(ADMIN_STORAGE_KEY);
     if (storedAdminStatus === 'true') {
@@ -144,6 +147,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } catch (error) {
         console.error("Failed to parse site configuration:", error);
         setSiteConfig(DEFAULT_CONFIG);
+      }
+    }
+    
+    // Load Telegram config separately (for security reasons)
+    const storedTelegramConfig = localStorage.getItem(TELEGRAM_CONFIG_KEY);
+    if (storedTelegramConfig) {
+      try {
+        const { botToken, adminChatId } = JSON.parse(storedTelegramConfig);
+        if (botToken && adminChatId) {
+          setSiteConfig(prev => ({
+            ...prev,
+            telegram: {
+              ...prev.telegram,
+              botToken,
+              adminChatId
+            }
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to parse Telegram configuration:", error);
       }
     }
   }, []);
@@ -167,7 +190,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Apply configuration to various parts of the site
-  const applyConfiguration = (config: SiteConfig) => {
+  const applyConfiguration = useCallback((config: SiteConfig) => {
     // Update page title and meta description
     if (config.seo) {
       document.title = config.seo.metaTitle;
@@ -208,16 +231,38 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Add other site-wide configuration application logic here
     console.log('Applied site configuration:', config);
-  };
+  }, []);
 
-  const updateSiteConfig = (config: Partial<SiteConfig>) => {
+  const updateSiteConfig = useCallback((config: Partial<SiteConfig>) => {
     const newConfig = {...siteConfig, ...config};
     setSiteConfig(newConfig);
     
     try {
-      localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(newConfig));
+      // Save Telegram config separately for security
+      const { botToken, adminChatId } = newConfig.telegram;
+      const configToSave = {
+        ...newConfig,
+        telegram: {
+          ...newConfig.telegram,
+          botToken: undefined,
+          adminChatId: undefined
+        }
+      };
+      
+      localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(configToSave));
+      
+      // Save Telegram config separately if it exists
+      if (botToken && adminChatId) {
+        localStorage.setItem(TELEGRAM_CONFIG_KEY, JSON.stringify({ botToken, adminChatId }));
+      }
+      
       applyConfiguration(newConfig);
       console.log("Site configuration saved and applied", newConfig);
+      
+      toast({
+        title: "Настройки сохранены",
+        description: "Настройки сайта успешно сохранены и применены"
+      });
     } catch (error) {
       console.error("Failed to save site configuration:", error);
       toast({
@@ -226,15 +271,42 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: "Не удалось сохранить настройки сайта"
       });
     }
-  };
+  }, [siteConfig, applyConfiguration, toast]);
   
-  const applyConfigToSite = () => {
+  const applyConfigToSite = useCallback(() => {
     applyConfiguration(siteConfig);
     toast({
       title: "Настройки применены",
       description: "Настройки сайта успешно применены"
     });
-  };
+  }, [siteConfig, applyConfiguration, toast]);
+  
+  const saveTelegramConfig = useCallback((botToken: string, adminChatId: string) => {
+    try {
+      localStorage.setItem(TELEGRAM_CONFIG_KEY, JSON.stringify({ botToken, adminChatId }));
+      
+      setSiteConfig(prev => ({
+        ...prev,
+        telegram: {
+          ...prev.telegram,
+          botToken,
+          adminChatId
+        }
+      }));
+      
+      toast({
+        title: "Настройки Telegram сохранены",
+        description: "Настройки для уведомлений в Telegram успешно сохранены"
+      });
+    } catch (error) {
+      console.error("Failed to save Telegram configuration:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось сохранить настройки Telegram"
+      });
+    }
+  }, [toast]);
 
   const deleteCar = async (carId: string) => {
     return globalCars.deleteCar(carId);
@@ -251,7 +323,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       deleteCar,
       siteConfig,
       updateSiteConfig,
-      applyConfigToSite
+      applyConfigToSite,
+      saveTelegramConfig
     }}>
       {children}
     </AdminContext.Provider>

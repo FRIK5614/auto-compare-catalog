@@ -47,14 +47,14 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
       ]
     },
     {
-      title: "Импорт/Экспорт",
+      title: "Каталог",
       items: [
         { icon: FileArchive, title: "Импорт данных", path: "/admin/import" },
-        { icon: Package, title: "Каталог TMC Авто", path: "/admin/tmcavto-catalog" },
+        { icon: Package, title: "Каталог TMC", path: "/admin/tmcavto-catalog" },
       ]
     },
     {
-      title: "Система",
+      title: "Настройки",
       items: [
         { icon: Settings, title: "Настройки", path: "/admin/settings" },
       ]
@@ -73,7 +73,7 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   }
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="overflow-hidden">
       {menuSections.flatMap(section => (
         <SidebarMenuSection
           key={section.title}

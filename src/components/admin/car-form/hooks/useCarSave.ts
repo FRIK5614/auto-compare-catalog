@@ -4,6 +4,7 @@ import { Car } from '@/types/car';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { saveCar, updateCar, deleteCar } from '@/services/api';
+import { useNavigate } from 'react-router-dom';
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
@@ -11,6 +12,7 @@ export const useCarSave = () => {
   const saveInProgressRef = useRef(false);
   const deleteInProgressRef = useRef(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Save or update car
   const handleSaveCar = async (car: Car, isNew: boolean = true) => {
@@ -44,6 +46,14 @@ export const useCarSave = () => {
       });
       
       console.log(`✅ Successfully ${isNew ? 'saved' : 'updated'} car:`, savedCar.id);
+      
+      // Navigate to car list after successful save of new car
+      if (isNew) {
+        setTimeout(() => {
+          navigate('/admin/cars');
+        }, 1000);
+      }
+      
       return { success: true, car: savedCar };
     } catch (error) {
       console.error("Error saving car:", error);
@@ -60,7 +70,7 @@ export const useCarSave = () => {
       // Add a small delay before allowing another save to prevent rapid double clicks
       setTimeout(() => {
         saveInProgressRef.current = false;
-      }, 300);
+      }, 500);
     }
   };
   
@@ -87,6 +97,12 @@ export const useCarSave = () => {
       });
       
       console.log("✅ Successfully deleted car:", carId);
+      
+      // Navigate to car list after successful deletion
+      setTimeout(() => {
+        navigate('/admin/cars');
+      }, 1000);
+      
       return { success: true };
     } catch (error) {
       console.error("Error deleting car:", error);
@@ -103,7 +119,7 @@ export const useCarSave = () => {
       // Add a small delay before allowing another delete
       setTimeout(() => {
         deleteInProgressRef.current = false;
-      }, 300);
+      }, 500);
     }
   };
   
