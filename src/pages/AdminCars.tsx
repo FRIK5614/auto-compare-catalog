@@ -54,9 +54,9 @@ const AdminCars = () => {
     });
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     try {
-      const success = importCarsData(importData);
+      const success = await importCarsData(importData);
       if (success) {
         setImportDialogOpen(false);
         setImportData("");
@@ -75,9 +75,9 @@ const AdminCars = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (carToDelete) {
-      deleteCar(carToDelete.id);
+      await deleteCar(carToDelete.id);
       setCarToDelete(null);
       setIsDeleteDialogOpen(false);
     }

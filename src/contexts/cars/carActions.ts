@@ -167,12 +167,14 @@ export const importCarsData = async (
       onSuccess(parsedData);
       
       try {
-        supabase.from('vehicles').delete().neq('id', 'placeholder').then(async () => {
-          for (const car of parsedData) {
-            const vehicle = formatVehicleForSupabase(car);
-            await supabase.from('vehicles').insert(vehicle);
-          }
-        });
+        const { error } = await supabase.from('vehicles').delete().neq('id', 'placeholder');
+        if (error) throw error;
+        
+        for (const car of parsedData) {
+          const vehicle = formatVehicleForSupabase(car);
+          const { error } = await supabase.from('vehicles').insert(vehicle);
+          if (error) console.error("Error inserting vehicle:", error);
+        }
       } catch (err) {
         console.error("Failed to save imported data to Supabase:", err);
       }

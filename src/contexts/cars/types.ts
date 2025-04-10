@@ -11,20 +11,20 @@ export interface CarsContextType {
   error: string | null;
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
-  addToFavorites: (carId: string) => void;
-  removeFromFavorites: (carId: string) => void;
+  addToFavorites: (carId: string) => Promise<void>;
+  removeFromFavorites: (carId: string) => Promise<void>;
   addToCompare: (carId: string) => void;
   removeFromCompare: (carId: string) => void;
   clearCompare: () => void;
   getCarById: (id: string) => Car | undefined;
   reloadCars: () => Promise<void>;
   viewCar: (carId: string) => void;
-  deleteCar: (carId: string) => void;
-  updateCar: (car: Car) => void;
-  addCar: (car: Car) => void;
-  processOrder: (orderId: string, status: Order['status']) => void;
+  deleteCar: (carId: string) => Promise<void>;
+  updateCar: (car: Car) => Promise<void>;
+  addCar: (car: Car) => Promise<void>;
+  processOrder: (orderId: string, status: Order['status']) => Promise<void>;
   getOrders: () => Order[];
   exportCarsData: () => string;
-  importCarsData: (data: string) => boolean;
+  importCarsData: (data: string) => Promise<boolean>;
   uploadCarImage: (file: File) => Promise<string>;
 }

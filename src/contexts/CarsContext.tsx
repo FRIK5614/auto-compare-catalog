@@ -106,8 +106,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Handle adding to favorites
-  const handleAddToFavorites = (carId: string) => {
-    const result = addToFavorites(
+  const handleAddToFavorites = async (carId: string) => {
+    const result = await addToFavorites(
       carId, 
       favorites, 
       (newFavorites) => setFavorites(newFavorites),
@@ -120,8 +120,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Handle removing from favorites
-  const handleRemoveFromFavorites = (carId: string) => {
-    const result = removeFromFavorites(
+  const handleRemoveFromFavorites = async (carId: string) => {
+    const result = await removeFromFavorites(
       carId, 
       favorites, 
       (newFavorites) => setFavorites(newFavorites),
@@ -179,8 +179,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Handle deleting a car
-  const handleDeleteCar = (carId: string) => {
-    const result = deleteCarAction(
+  const handleDeleteCar = async (carId: string) => {
+    const result = await deleteCarAction(
       carId, 
       cars, 
       (updatedCars) => setCars(updatedCars),
@@ -193,8 +193,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Handle updating a car
-  const handleUpdateCar = (updatedCar: Car) => {
-    const result = updateCarAction(
+  const handleUpdateCar = async (updatedCar: Car) => {
+    const result = await updateCarAction(
       updatedCar, 
       cars, 
       (updatedCars) => setCars(updatedCars),
@@ -207,8 +207,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Handle adding a car
-  const handleAddCar = (newCar: Car) => {
-    const result = addCarAction(
+  const handleAddCar = async (newCar: Car) => {
+    const result = await addCarAction(
       newCar, 
       cars, 
       (updatedCars) => setCars(updatedCars),
@@ -246,8 +246,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Import cars data
-  const handleImportCarsData = (data: string): boolean => {
-    const success = importCarsDataAction(
+  const handleImportCarsData = async (data: string) => {
+    return await importCarsDataAction(
       data,
       (parsedData) => {
         setCars(parsedData);
@@ -259,8 +259,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       },
       (message) => toast({ variant: "destructive", title: "Ошибка импорта", description: message })
     );
-    
-    return success;
   };
 
   // Upload car image
