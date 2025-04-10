@@ -22,7 +22,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent side="bottom" className="h-[100vh] sm:max-w-full p-0">
+        <SheetContent side="bottom" className="h-[90vh] sm:max-w-full p-0">
           <div className="flex flex-col h-full">
             <SheetHeader className="px-4 py-3 border-b">
               <div className="flex items-center justify-between">
@@ -30,7 +30,6 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
                   <Filter className="mr-2 h-5 w-5 text-primary" />
                   Фильтры
                 </SheetTitle>
-                {/* Removed the duplicate close button, SheetContent has its own close button */}
               </div>
             </SheetHeader>
             
@@ -76,7 +75,6 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
               <Filter className="mr-2 h-5 w-5 text-primary" />
               Фильтры
             </DialogTitle>
-            {/* Removed the duplicate close button, DialogContent has its own close button */}
           </div>
         </DialogHeader>
         

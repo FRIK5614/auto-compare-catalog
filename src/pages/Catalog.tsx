@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -109,7 +108,6 @@ const Catalog = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<string>("default");
-  const [isChangingSortOption, setIsChangingSortOption] = useState(false);
   const isMobile = useIsMobile();
 
   const CARS_PER_PAGE = 12;
@@ -146,38 +144,28 @@ const Catalog = () => {
     }
     
     setFilter(newFilter);
-  }, [searchParams, setFilter]);
+  }, []);
 
   useEffect(() => {
-    // Prevent this effect during the initial render or when sorting is changing
-    if (!isChangingSortOption) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("page", currentPage.toString());
-      newParams.set("sort", sortOption);
-      setSearchParams(newParams);
-    }
-  }, [currentPage, sortOption, isChangingSortOption]);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("page", currentPage.toString());
+    newParams.set("sort", sortOption);
+    setSearchParams(newParams, { replace: true });
+  }, [currentPage, sortOption]);
 
   const startIndex = (currentPage - 1) * CARS_PER_PAGE;
   const currentPageCars = filteredCars.slice(startIndex, startIndex + CARS_PER_PAGE);
 
   const handleSortChange = (value: string) => {
-    setIsChangingSortOption(true);
     setSortOption(value);
     setFilter({
       ...filter,
       sortBy: mapSortOptionToFilter(value)
     });
-    setCurrentPage(1);
     
-    // Update URL params
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("page", "1");
-    newParams.set("sort", value);
-    setSearchParams(newParams);
-    
-    // Reset the flag after state updates
-    setTimeout(() => setIsChangingSortOption(false), 50);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   };
 
   const handlePageChange = (page: number) => {
