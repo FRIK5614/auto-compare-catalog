@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -139,12 +138,14 @@ const AdminCars = () => {
           onEdit={(id) => navigate(`/admin/cars/edit/${id}`)}
           onDelete={(id) => {
             const car = cars.find(c => c.id === id);
-            if (car) openDeleteDialog(car);
+            if (car) {
+              setCarToDelete(car);
+              setIsDeleteDialogOpen(true);
+            }
           }}
           onView={(id) => navigate(`/car/${id}`)}
         />
 
-        {/* Delete Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -160,7 +161,6 @@ const AdminCars = () => {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Import Dialog */}
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

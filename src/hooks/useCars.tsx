@@ -181,10 +181,15 @@ export const useCars = () => {
       result = result.filter(car => car.country && advancedFilter.countries?.includes(car.country));
     }
     
-    if (advancedFilter.transmissionType && advancedFilter.transmissionType.length > 0) {
-      result = result.filter(car => 
-        advancedFilter.transmissionType?.includes(car.transmission.type)
-      );
+    if (advancedFilter.transmissionType) {
+      if (Array.isArray(advancedFilter.transmissionType)) {
+        result = result.filter(car => 
+          advancedFilter.transmissionType && 
+          (advancedFilter.transmissionType as string[]).includes(car.transmission.type)
+        );
+      } else {
+        result = result.filter(car => car.transmission.type === advancedFilter.transmissionType);
+      }
     }
     
     if (advancedFilter.discount === true) {

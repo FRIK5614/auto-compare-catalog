@@ -96,7 +96,7 @@ export interface CarFilter {
   minYear?: number;       // Min year range
   maxYear?: number;       // Max year range
   fuelType?: string;      // Engine fuel type
-  transmissionType?: string[]; // Transmission type
+  transmissionType?: string | string[]; // Transmission type - can be string or string[]
   country?: string;       // Single country filter
   onlyNew?: boolean;      // New cars only flag
   search?: string;        // Search term

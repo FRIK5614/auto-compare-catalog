@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +41,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const [yearRange, setYearRange] = useState<[number, number]>([1990, new Date().getFullYear()]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
-  // Получаем уникальные значения для выпадающих списков
   const brands = getUniqueValues("brand");
   const bodyTypes = getUniqueValues("bodyType");
   const fuelTypes = getUniqueValues("engine").map(e => e?.fuelType).filter(Boolean) as string[];
@@ -50,7 +48,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const countries = getUniqueValues("country");
   
   useEffect(() => {
-    // Инициализируем диапазоны цен и годов
     const { min: minPrice, max: maxPrice } = getPriceRange();
     const { min: minYear, max: maxYear } = getYearRange();
     
@@ -62,7 +59,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       filter.maxYear || maxYear
     ]);
     
-    // Считаем активные фильтры
     const active = [];
     if (filter.search) active.push("search");
     if (filter.brand) active.push("brand");
@@ -74,14 +70,12 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     if (filter.country) active.push("country");
     if (filter.onlyNew) active.push("onlyNew");
     setActiveFilters(active);
-    
   }, [filter, getPriceRange, getYearRange]);
   
   const handlePriceChange = (min: string, max: string) => {
     const minVal = parseInt(min);
     const maxVal = parseInt(max);
     
-    // Валидируем и сразу обновляем фильтр
     if (!isNaN(minVal) && !isNaN(maxVal) && minVal <= maxVal) {
       setFilter({
         ...filter,
@@ -94,7 +88,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const handleYearChange = (value: [number, number]) => {
     setYearRange(value);
     
-    // Сразу обновляем фильтры с диапазоном лет
     setFilter({
       ...filter,
       minYear: value[0],
@@ -221,7 +214,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         onChange={(e) => {
                           const newValue = e.target.value;
                           setMinPrice(newValue);
-                          // Применяем изменение цены при изменении ввода
                           handlePriceChange(newValue, maxPrice);
                         }}
                         className="bg-auto-gray-50"
@@ -239,7 +231,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         onChange={(e) => {
                           const newValue = e.target.value;
                           setMaxPrice(newValue);
-                          // Применяем изменение цены при изменении ввода
                           handlePriceChange(minPrice, newValue);
                         }}
                         className="bg-auto-gray-50"
@@ -370,7 +361,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               </AccordionTrigger>
               <AccordionContent>
                 <Select
-                  value={filter.transmissionType || ""}
+                  value={filter.transmissionType as string || ""}
                   onValueChange={(value) => {
                     if (value === "all") {
                       const newFilter = { ...filter };
