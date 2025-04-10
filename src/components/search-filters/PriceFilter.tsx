@@ -31,11 +31,9 @@ export const PriceFilter = ({ filter, setFilter }: PriceFilterProps) => {
     setMinPrice(value);
     
     if (!isNaN(minVal)) {
-      const maxVal = filter.maxPrice || parseInt(maxPrice);
       setFilter({
         ...filter,
-        minPrice: minVal,
-        maxPrice: maxVal > minVal ? maxVal : undefined
+        minPrice: minVal
       });
     }
   };
@@ -45,10 +43,8 @@ export const PriceFilter = ({ filter, setFilter }: PriceFilterProps) => {
     setMaxPrice(value);
     
     if (!isNaN(maxVal)) {
-      const minVal = filter.minPrice || parseInt(minPrice);
       setFilter({
         ...filter,
-        minPrice: minVal < maxVal ? minVal : undefined,
         maxPrice: maxVal
       });
     }
