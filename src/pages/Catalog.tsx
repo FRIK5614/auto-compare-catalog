@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
 import { 
   SlidersHorizontal, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Filter
 } from "lucide-react";
 import {
   Select,
@@ -31,6 +32,7 @@ import {
 import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { Car } from "@/types/car";
 import LoadingState from "@/components/LoadingState";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Sort options
 type SortOption = {
@@ -107,6 +109,7 @@ const Catalog = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<string>("default");
+  const isMobile = useIsMobile();
 
   const CARS_PER_PAGE = 12;
   const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
@@ -286,14 +289,16 @@ const Catalog = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
-                <Button 
-                  variant="outline" 
-                  className="flex items-center" 
-                  onClick={openFilterModal}
-                >
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Фильтры
-                </Button>
+                {isMobile && (
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center" 
+                    onClick={openFilterModal}
+                  >
+                    <Filter className="mr-2 h-4 w-4" />
+                    Фильтры
+                  </Button>
+                )}
                 
                 <Select value={sortOption} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-[200px]">
@@ -311,13 +316,13 @@ const Catalog = () => {
             </div>
             
             <div className="flex flex-col md:flex-row">
-              <div className="hidden md:block md:w-1/4 lg:w-1/5">
+              <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5`}>
                 <div className="sticky top-4">
                   <SearchFilters filter={filter} setFilter={setFilter} />
                 </div>
               </div>
               
-              <div className="w-full md:w-3/4 lg:w-4/5 md:pl-6">
+              <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-4/5'} ${isMobile ? '' : 'md:pl-6'}`}>
                 {loading ? (
                   <LoadingState count={CARS_PER_PAGE} type="card" />
                 ) : currentPageCars.length === 0 ? (

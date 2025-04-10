@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,16 +12,18 @@ import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
 import { CarsProvider } from "@/contexts/CarsContext";
-import { ChevronDown, Car, CarFront, Settings, UserRound } from "lucide-react";
+import { ChevronDown, Car, CarFront, Settings, UserRound, Filter } from "lucide-react";
 import LoadingState from "@/components/LoadingState";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const IndexContent = () => {
   const { cars, filteredCars, setFilter, filter, loading, error, reloadCars } = useCars();
   const [searchParams] = useSearchParams();
   const [visibleCars, setVisibleCars] = useState(12);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const consultFormRef = React.useRef<HTMLDivElement>(null);
+  const consultFormRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const newFilter: any = { ...filter };
@@ -207,11 +210,24 @@ const IndexContent = () => {
           <h2 className="text-3xl font-bold mb-8 text-auto-gray-900">Каталог автомобилей</h2>
           
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/4 lg:w-1/5">
+            <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5`}>
               <SearchFilters filter={filter} setFilter={setFilter} />
             </div>
             
-            <div className="md:w-3/4 lg:w-4/5">
+            <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-4/5'} ${isMobile ? '' : 'md:pl-6'}`}>
+              {isMobile && (
+                <div className="mb-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={openFilterModal} 
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Filter className="mr-2 h-5 w-5" />
+                    Открыть фильтры
+                  </Button>
+                </div>
+              )}
+              
               {loading ? (
                 <LoadingState count={visibleCars} type="card" />
               ) : filteredCars.length === 0 ? (

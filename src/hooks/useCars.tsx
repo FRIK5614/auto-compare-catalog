@@ -86,16 +86,16 @@ export const useCars = () => {
   const getPriceRange = () => {
     const prices = cars.map(car => car.price.base);
     return {
-      min: Math.min(...prices),
-      max: Math.max(...prices)
+      min: Math.min(...prices) || 0,
+      max: Math.max(...prices) || 10000000
     };
   };
   
   const getYearRange = () => {
     const years = cars.map(car => car.year);
     return {
-      min: Math.min(...years),
-      max: Math.max(...years)
+      min: Math.min(...years) || 1990,
+      max: Math.max(...years) || new Date().getFullYear()
     };
   };
   
