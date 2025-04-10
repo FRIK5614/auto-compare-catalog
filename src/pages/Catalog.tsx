@@ -113,13 +113,13 @@ const Catalog = () => {
             </div>
             
             <div className="flex flex-col md:flex-row">
-              <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/4 pr-4`}>
+              <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/3 lg:w-1/4 pr-4`}>
                 <div className="sticky top-4">
                   <SearchFilters filter={filter} setFilter={setFilter} />
                 </div>
               </div>
               
-              <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-3/4'} ${isMobile ? '' : 'md:pl-6'}`}>
+              <div className={`w-full ${isMobile ? '' : 'md:w-2/3 lg:w-3/4'} ${isMobile ? '' : 'md:pl-6'}`}>
                 {loading ? (
                   <div className="flex justify-center items-center min-h-[400px]">
                     <CarLoadingAnimation />
