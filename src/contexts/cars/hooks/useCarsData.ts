@@ -13,6 +13,8 @@ export const useCarsData = () => {
   const { toast } = useToast();
   const dataInitialized = useRef(false);
   const reloadInProgress = useRef(false);
+  const lastReloadTime = useRef(0);
+  const RELOAD_COOLDOWN = 2000; // 2 seconds cooldown between reloads
 
   // Инициализируем данные
   useEffect(() => {
@@ -23,6 +25,8 @@ export const useCarsData = () => {
       try {
         setLoading(true);
         setError(null);
+        
+        console.log("🔄 Initializing cars data - FIRST LOAD");
         
         // Загружаем автомобили
         const carsData = await loadCars();
@@ -37,14 +41,10 @@ export const useCarsData = () => {
         setFavorites(favoritesData);
         
         setLoading(false);
+        lastReloadTime.current = Date.now();
         
-        // Уведомляем пользователя о количестве загруженных автомобилей
-        if (carsData.length > 0) {
-          toast({
-            title: "Данные загружены",
-            description: `Успешно загружено ${carsData.length} автомобилей из базы данных`
-          });
-        } else {
+        // Silent notification for initial load
+        if (carsData.length === 0) {
           toast({
             variant: "destructive",
             title: "База данных пуста",
@@ -67,26 +67,34 @@ export const useCarsData = () => {
     initializeData();
   }, [toast]);
 
-  // Функция для перезагрузки автомобилей
+  // Функция для перезагрузки автомобилей с защитой от спама
   const reloadCars = async () => {
+    // Проверка на cooldown период
+    const now = Date.now();
+    const timeSinceLastReload = now - lastReloadTime.current;
+    
+    if (timeSinceLastReload < RELOAD_COOLDOWN) {
+      console.log(`⏱️ Reload requested too soon (${timeSinceLastReload}ms since last reload)`);
+      return;
+    }
+    
     // Предотвращаем параллельные вызовы reloadCars
     if (reloadInProgress.current) {
+      console.log("🔄 Reload already in progress, skipping");
       toast({
-        title: "Загрузка данных",
+        title: "Обновление данных",
         description: "Обновление данных уже выполняется, пожалуйста подождите"
       });
       return;
     }
     
     reloadInProgress.current = true;
+    lastReloadTime.current = now;
     
     try {
       setLoading(true);
       setError(null);
-      toast({
-        title: "Загрузка данных",
-        description: "Обновление данных из базы данных..."
-      });
+      console.log("🔄 Starting cars data reload");
       
       const data = await loadCars();
       setCars(data);
@@ -105,6 +113,7 @@ export const useCarsData = () => {
       }
       
       setLoading(false);
+      console.log("✅ Cars data reload complete");
     } catch (err) {
       console.error("Failed to reload cars:", err);
       const errorMessage = err instanceof Error ? err.message : "Не удалось перезагрузить данные";
@@ -116,7 +125,10 @@ export const useCarsData = () => {
         description: errorMessage
       });
     } finally {
-      reloadInProgress.current = false;
+      // Добавляем небольшую задержку перед сбросом флага, чтобы избежать проблем с быстрыми множественными нажатиями
+      setTimeout(() => {
+        reloadInProgress.current = false;
+      }, 300);
     }
   };
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import LoadingState from '@/components/LoadingState';
@@ -15,6 +15,7 @@ const CarFormContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isNewCar = id === "new";
   const navigate = useNavigate();
+  const saveOperationInProgress = useRef(false);
   
   // Get car data
   const {
@@ -51,7 +52,8 @@ const CarFormContainer: React.FC = () => {
 
   // Initialize images when car is loaded
   useEffect(() => {
-    if (car && car.images) {
+    if (car && car.images && car.id) {
+      console.log("Initializing images for car:", car.id);
       initializeImagesFromCar(car);
     }
   }, [car?.id]);
@@ -99,22 +101,30 @@ const CarFormContainer: React.FC = () => {
 
   // Save car 
   const handleSave = async (updatedCar: Car, imageFile?: File) => {
-    if (!car) return;
+    if (!car || saveOperationInProgress.current) return;
     
+    saveOperationInProgress.current = true;
     setFormLoading(true);
     
     try {
+      console.log("Handling save operation for car:", updatedCar.id);
+      
       // Ensure images array is properly attached to the car
       updatedCar.images = images;
       
       // Call the save function with correct parameters
-      await saveCar(updatedCar, isNewCar);
+      const result = await saveCar(updatedCar, isNewCar);
       
-      if (isNewCar) {
+      if (result.success && isNewCar) {
+        console.log("Navigating back to cars list after successful save");
         navigate(`/admin/cars`);
       }
     } finally {
       setFormLoading(false);
+      // Short delay to prevent accidental double submission
+      setTimeout(() => {
+        saveOperationInProgress.current = false;
+      }, 300);
     }
   };
 

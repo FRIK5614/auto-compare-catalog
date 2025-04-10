@@ -21,10 +21,13 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
   const [formErrors, setFormErrors] = useState<Record<string, any>>({});
   const [formLoading, setFormLoading] = useState(false);
   const initialDataLoadedRef = useRef(false);
+  const dataLoadAttemptedRef = useRef(false);
 
   // Load car data
   useEffect(() => {
-    if (loading) return;
+    if (loading || dataLoadAttemptedRef.current) return;
+    
+    dataLoadAttemptedRef.current = true;
     
     if (!isNewCar && id) {
       console.log("Looking for car with ID:", id);
@@ -44,8 +47,8 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
         });
         navigate("/admin/cars");
       }
-    } else {
-      // Initialize new car
+    } else if (!car) {
+      // Initialize new car only if we don't have one already
       const newCar: Car = {
         id: uuidv4(),
         brand: "",
@@ -95,12 +98,13 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
       
       setCar(newCar);
     }
-  }, [id, isNewCar, getCarById, navigate, toast, cars, loading]);
+  }, [id, isNewCar, getCarById, navigate, toast, cars, loading, car]);
 
   // Reload cars data only once on initial mount
   useEffect(() => {
     if (!initialDataLoadedRef.current && !loading) {
       initialDataLoadedRef.current = true;
+      console.log("🚀 Loading cars data - INITIAL LOAD");
       reloadCars();
     }
   }, [reloadCars, loading]);
