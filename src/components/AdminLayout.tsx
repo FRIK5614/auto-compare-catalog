@@ -87,9 +87,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           onLogout={handleLogout}
         />
 
-        <SidebarInset className="bg-background flex-1 p-0 md:p-6 mt-[60px] md:mt-0">
-          <div className="container mx-auto">
-            {/* Удалена дублирующая кнопка SidebarTrigger */}
+        <SidebarInset className="bg-background flex-1 p-0 md:p-2 mt-[60px] md:mt-0">
+          <div className="w-full">
             {children || <Outlet />}
           </div>
         </SidebarInset>
