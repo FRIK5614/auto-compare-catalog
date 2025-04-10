@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Car } from "@/types/car";
-import { transformVehicleToCar } from "@/services/api";
+import { transformVehicleToCar, transformCarToVehicle } from "@/services/api";
 import { loadFavoritesFromLocalStorage } from "@/contexts/cars/utils";
 import { DatabaseProvider } from "../DatabaseProvider";
 
