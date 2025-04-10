@@ -24,13 +24,12 @@ const CarCard = ({ car, className }: CarCardProps) => {
   const isFavoriteCard = typeof isFavorite === 'function' ? isFavorite(car.id) : false;
   const isInCompareCard = typeof isInCompare === 'function' ? isInCompare(car.id) : false;
   
-  // Улучшенная проверка для предотвращения кликов на карточке
+  // Улучшенная и более строгая проверка для предотвращения кликов на карточке
   const handleCardClick = (e: React.MouseEvent) => {
     // Проверяем, происходит ли клик из элемента с атрибутом или классом, указывающим на интерактивный элемент
     const target = e.target as HTMLElement;
-    const currentTarget = e.currentTarget;
     
-    // Ищем элементы с атрибутом data-no-card-click или классом select-dropdown
+    // Ищем любые элементы, которые должны блокировать клик по карточке
     const isInteractiveElement = 
       target.closest('[data-no-card-click="true"]') || 
       target.closest('.select-dropdown') ||
@@ -38,7 +37,9 @@ const CarCard = ({ car, className }: CarCardProps) => {
       target.closest('[role="option"]') ||
       target.closest('[data-radix-select-trigger]') ||
       target.closest('[data-radix-select-content]') ||
-      target.closest('[data-radix-select-item]');
+      target.closest('[data-radix-select-item]') ||
+      target.closest('[data-state="open"]') ||
+      target.closest('[data-radix-popper-content-wrapper]');
 
     if (isInteractiveElement) {
       console.log('Предотвращение перехода по карточке, клик на интерактивном элементе');
