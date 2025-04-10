@@ -20,11 +20,6 @@ interface CarCardProps {
 const CarCard = ({ car, className }: CarCardProps) => {
   const { toggleFavorite, toggleCompare, isFavorite, isInCompare } = useCars();
   
-  // Safe check for isFavorite and isInCompare functions
-  const isFavoriteCard = typeof isFavorite === 'function' ? isFavorite(car.id) : false;
-  const isInCompareCard = typeof isInCompare === 'function' ? isInCompare(car.id) : false;
-  
-  // Улучшенная и более строгая проверка для предотвращения кликов на карточке
   const handleCardClick = (e: React.MouseEvent) => {
     // Проверяем элементы по всей цепочке для атрибута no-card-click
     const path = e.nativeEvent.composedPath();
@@ -76,8 +71,8 @@ const CarCard = ({ car, className }: CarCardProps) => {
           car={car}
           toggleFavorite={toggleFavorite}
           toggleCompare={toggleCompare}
-          isFavorite={isFavoriteCard}
-          isInCompare={isInCompareCard}
+          isFavorite={isFavorite ? isFavorite(car.id) : false}
+          isInCompare={isInCompare ? isInCompare(car.id) : false}
         />
       </CardFooter>
     </Card>

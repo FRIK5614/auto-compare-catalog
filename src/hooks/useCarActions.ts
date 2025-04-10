@@ -18,7 +18,7 @@ export const useCarActions = () => {
 
   // Utility functions for working with favorites and comparison
   const toggleFavorite = (carId: string) => {
-    if (favorites.includes(carId)) {
+    if (Array.isArray(favorites) && favorites.includes(carId)) {
       removeFromFavorites(carId);
     } else {
       addToFavorites(carId);
@@ -26,7 +26,7 @@ export const useCarActions = () => {
   };
 
   const toggleCompare = (carId: string) => {
-    if (compareCars.includes(carId)) {
+    if (Array.isArray(compareCars) && compareCars.includes(carId)) {
       removeFromCompare(carId);
     } else {
       addToCompare(carId);

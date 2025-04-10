@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode, useRef } from "react";
+import { createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { CarsContextType } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
 import { useFilters } from "./hooks/useFilters";
@@ -7,6 +7,7 @@ import { useFavorites } from "./hooks/useFavorites";
 import { useCompare } from "./hooks/useCompare";
 import { useCarsCRUD } from "./hooks/useCarsCRUD";
 import { useOrders } from "./hooks/useOrders";
+import { loadFavoritesFromLocalStorage, loadCompareFromLocalStorage } from "./utils";
 
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
@@ -62,18 +63,35 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     getOrders
   } = useOrders();
 
-  // Синхронизация состояния между хуками (только первый раз)
-  if (!isInitialized.current) {
-    if (initialFavorites.length > 0 && favorites.length === 0) {
-      setFavorites(initialFavorites);
+  // Load initial favorites and compare from localStorage if empty
+  useEffect(() => {
+    if (!isInitialized.current) {
+      // Sync favorites
+      if (initialFavorites.length > 0 && favorites.length === 0) {
+        setFavorites(initialFavorites);
+      } else if (favorites.length === 0) {
+        const localFavorites = loadFavoritesFromLocalStorage();
+        if (localFavorites.length > 0) {
+          setFavorites(localFavorites);
+        }
+      }
+      
+      // Sync compare
+      if (compareCars.length === 0) {
+        const localCompare = loadCompareFromLocalStorage();
+        if (localCompare.length > 0) {
+          setCompareCars(localCompare);
+        }
+      }
+      
+      // Sync orders
+      if (initialOrders.length > 0 && orders.length === 0) {
+        setOrders(initialOrders);
+      }
+      
+      isInitialized.current = true;
     }
-    
-    if (initialOrders.length > 0 && orders.length === 0) {
-      setOrders(initialOrders);
-    }
-    
-    isInitialized.current = true;
-  }
+  }, [initialFavorites, favorites, compareCars, initialOrders, orders, setFavorites, setCompareCars, setOrders]);
 
   return (
     <CarsContext.Provider

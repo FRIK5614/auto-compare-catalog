@@ -59,7 +59,12 @@ const CarPriceAndActions = ({
             "text-auto-gray-700 hover:text-auto-red-500",
             isFavorite && "text-red-500 hover:text-red-700 border-red-500 hover:bg-red-50"
           )}
-          onClick={() => toggleFavorite(car.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(car.id);
+          }}
+          data-no-card-click="true"
         >
           <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
         </Button>
@@ -71,7 +76,12 @@ const CarPriceAndActions = ({
             "text-auto-gray-700 hover:text-auto-blue-600",
             isInCompare && "text-auto-blue-600 hover:text-auto-blue-700 border-auto-blue-600 hover:bg-auto-blue-50"
           )}
-          onClick={() => toggleCompare(car.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCompare(car.id);
+          }}
+          data-no-card-click="true"
         >
           <BarChart2 className="h-5 w-5" />
         </Button>

@@ -2,10 +2,11 @@
 import { useCars } from "@/hooks/useCars";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Trash2, Car, RefreshCw } from "lucide-react";
+import { Heart, Trash2, BarChart2, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
+import { formatPrice } from "@/utils/formatters";
 
 const FavoritesPanel = () => {
   const { 
@@ -26,7 +27,7 @@ const FavoritesPanel = () => {
     return <ErrorState message={error} onRetry={reloadCars} />;
   }
 
-  if (favoriteCars.length === 0) {
+  if (!favoriteCars || favoriteCars.length === 0) {
     return (
       <div className="p-6 text-center">
         <Heart className="h-12 w-12 text-auto-gray-300 mx-auto mb-4" />
@@ -35,7 +36,7 @@ const FavoritesPanel = () => {
           Добавляйте автомобили в избранное, чтобы вернуться к ним позже
         </p>
         <Button asChild className="bg-auto-blue-600 hover:bg-auto-blue-700">
-          <Link to="/">Перейти в каталог</Link>
+          <Link to="/catalog">Перейти в каталог</Link>
         </Button>
       </div>
     );
@@ -66,7 +67,7 @@ const FavoritesPanel = () => {
                 <Link to={`/car/${car.id}`} className="block sm:w-40 h-40">
                   <img 
                     src={car.images[0].url} 
-                    alt={car.images[0].alt} 
+                    alt={car.brand + ' ' + car.model} 
                     className="w-full h-full object-cover"
                   />
                 </Link>
@@ -126,11 +127,7 @@ const FavoritesPanel = () => {
                   <div className="mt-auto pt-4 flex justify-between items-center">
                     <div>
                       <span className="text-xl font-bold text-auto-blue-700">
-                        {new Intl.NumberFormat("ru-RU", {
-                          style: "currency",
-                          currency: "RUB",
-                          maximumFractionDigits: 0,
-                        }).format(car.price.base)}
+                        {formatPrice(car.price.base)}
                       </span>
                     </div>
                     
@@ -145,7 +142,7 @@ const FavoritesPanel = () => {
                         }`}
                         onClick={() => toggleCompare(car.id)}
                       >
-                        <Car className="h-4 w-4 mr-1" />
+                        <BarChart2 className="h-4 w-4 mr-1" />
                         {isInCompare(car.id) ? "В сравнении" : "Сравнить"}
                       </Button>
                       
