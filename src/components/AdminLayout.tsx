@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '@/contexts/AdminContext';
@@ -20,7 +19,11 @@ import { useCars } from '@/hooks/useCars';
 import { useChat } from '@/contexts/ChatContext';
 import { useToast } from '@/hooks/use-toast';
 
-const AdminLayout = () => {
+type AdminLayoutProps = {
+  children?: React.ReactNode;
+};
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { isAdmin, logout } = useAdmin();
   const { orders } = useCars();
   const { chatState } = useChat();
@@ -31,7 +34,6 @@ const AdminLayout = () => {
   const { toast } = useToast();
   const location = useLocation();
 
-  // Count new orders for the badge
   useEffect(() => {
     if (orders && orders.length > 0) {
       const count = orders.filter(order => order.status === 'new').length;
@@ -39,12 +41,10 @@ const AdminLayout = () => {
     }
   }, [orders]);
 
-  // Count unread messages for the badge
   useEffect(() => {
     const totalUnread = chatState.sessions.reduce((total, session) => total + session.unreadCount, 0);
     setNewMessagesCount(totalUnread);
     
-    // Show notification for new messages
     if (totalUnread > 0 && location.pathname !== '/admin/chat') {
       toast({
         title: "Новые сообщения",
@@ -60,7 +60,6 @@ const AdminLayout = () => {
     }
   }, [isAdmin, navigate]);
 
-  // Redirect to login if not admin - early return
   if (!isAdmin) {
     return <Navigate to="/admin/login" />;
   }
@@ -68,10 +67,9 @@ const AdminLayout = () => {
   const handleMenuItemClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault();
     navigate(path);
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    setIsMobileMenuOpen(false);
   };
 
-  // Check if the current path matches the menu item
   const isActive = (path: string) => {
     return location.pathname === path || 
            (path !== '/admin' && location.pathname.startsWith(path));
@@ -80,7 +78,6 @@ const AdminLayout = () => {
   return (
     <SidebarProvider>
       <div className="flex w-full min-h-screen">
-        {/* Mobile header */}
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background border-b p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Админ панель</h2>
           <Button 
@@ -92,7 +89,6 @@ const AdminLayout = () => {
           </Button>
         </div>
 
-        {/* Mobile sidebar (conditionally rendered) */}
         {isMobileMenuOpen && (
           <div 
             className="md:hidden fixed inset-0 bg-black/50 z-40"
@@ -221,7 +217,6 @@ const AdminLayout = () => {
           </div>
         )}
 
-        {/* Desktop sidebar */}
         <Sidebar className="hidden md:flex">
           <SidebarHeader className="flex items-center justify-between p-4">
             <h2 className="text-lg font-semibold">Панель администратора</h2>
@@ -359,7 +354,7 @@ const AdminLayout = () => {
         <SidebarInset className="bg-background flex-1 p-0 md:p-6 mt-[60px] md:mt-0">
           <div className="container mx-auto">
             <SidebarTrigger className="mb-4 hidden md:flex" />
-            <Outlet />
+            {children || <Outlet />}
           </div>
         </SidebarInset>
       </div>
