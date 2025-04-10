@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SearchFilters from "@/components/search-filters";
 import { Button } from "@/components/ui/button";
-import { HeadphonesIcon, Filter } from "lucide-react";
+import { HeadphonesIcon, Filter, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -24,24 +24,30 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <SheetContent side="bottom" className="h-screen w-full max-w-full p-0">
           <div className="flex flex-col h-full">
-            <SheetHeader className="px-4 py-3 border-b">
+            <SheetHeader className="px-4 py-4 border-b"> {/* Увеличил отступы py-4 */}
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-xl font-bold flex items-center">
                   <Filter className="mr-2 h-5 w-5 text-primary" />
                   Фильтры
                 </SheetTitle>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={onClose}
+                  className="text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </Button>
               </div>
             </SheetHeader>
             
-            <div className="flex-1 overflow-auto">
-              <div className="p-4">
-                <SearchFilters 
-                  filter={filter} 
-                  setFilter={setFilter} 
-                  closeModal={onClose} 
-                  isInModal={true} 
-                />
-              </div>
+            <div className="flex-1 overflow-auto px-4 pt-2"> {/* Добавил отступы */}
+              <SearchFilters 
+                filter={filter} 
+                setFilter={setFilter} 
+                closeModal={onClose} 
+                isInModal={true} 
+              />
             </div>
             
             {scrollToContactForm && (
@@ -108,3 +114,4 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
 };
 
 export default SearchFiltersModal;
+
