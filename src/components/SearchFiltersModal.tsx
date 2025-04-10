@@ -24,7 +24,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <SheetContent side="bottom" className="h-screen w-full max-w-full p-0">
           <div className="flex flex-col h-full">
-            <SheetHeader className="px-4 py-5 border-b sticky top-0 bg-white z-10"> {/* Увеличил отступы py-5 */}
+            <SheetHeader className="px-4 py-5 border-b sticky top-0 bg-white z-10">
               <div className="flex items-center justify-between">
                 <SheetTitle className="text-xl font-bold flex items-center">
                   <Filter className="mr-2 h-5 w-5 text-primary" />
@@ -54,7 +54,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
               </div>
             </SheetHeader>
             
-            <div className="flex-1 overflow-auto px-4 pt-4"> {/* Увеличил отступ сверху pt-4 */}
+            <div className="flex-1 overflow-auto px-4 pt-4">
               <SearchFilters 
                 filter={filter} 
                 setFilter={setFilter} 
@@ -100,27 +100,37 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] p-0">
-        <DialogHeader className="px-4 py-4 border-b sticky top-0 bg-white z-10"> {/* Увеличил отступы py-4 */}
+        <DialogHeader className="px-4 py-4 border-b sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center">
               <Filter className="mr-2 h-5 w-5 text-primary" />
               Фильтры
             </DialogTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                const newFilter = {};
-                setFilter(newFilter);
-              }}
-              className="h-8 text-auto-gray-700 text-xs"
-            >
-              Сбросить
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const newFilter = {};
+                  setFilter(newFilter);
+                }}
+                className="h-8 text-auto-gray-700 text-xs"
+              >
+                Сбросить
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onClose}
+                className="text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
         
-        <div className="p-4 max-h-[calc(80vh-130px)] overflow-auto">
+        <div className="p-4 max-h-[calc(80vh-190px)] overflow-auto">
           <SearchFilters 
             filter={filter} 
             setFilter={setFilter} 
@@ -130,13 +140,13 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
         </div>
         
         <div className="p-4 border-t sticky bottom-0 bg-white">
-          <div className="flex space-x-3">
+          <div className="flex flex-col space-y-3 items-center">
             <Button 
               onClick={() => {
                 onClose();
               }}
               variant="blue"
-              className="flex-1"
+              className="w-full max-w-xs"
             >
               Применить
             </Button>
@@ -148,7 +158,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
                   setTimeout(() => scrollToContactForm(), 300);
                 }}
                 variant="outline"
-                className="flex-1"
+                className="w-full max-w-xs"
               >
                 <HeadphonesIcon className="mr-2 h-5 w-5" />
                 Подобрать через специалиста

@@ -69,18 +69,20 @@ export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: Sear
 
       {!isInModal && (
         <div className="p-4 sticky bottom-0 bg-white border-t border-auto-gray-200">
-          <Button 
-            variant="blue" 
-            size="default" 
-            onClick={applyFilters}
-            disabled={loading}
-            className="w-full flex items-center justify-center"
-          >
-            {loading ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : null}
-            Применить
-          </Button>
+          <div className="flex flex-col space-y-3 items-center">
+            <Button 
+              variant="blue" 
+              size="default" 
+              onClick={applyFilters}
+              disabled={loading}
+              className="w-full max-w-xs flex items-center justify-center"
+            >
+              {loading ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Применить
+            </Button>
+          </div>
         </div>
       )}
     </div>
