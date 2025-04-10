@@ -41,7 +41,7 @@ export const SearchFilters = ({
   };
 
   return (
-    <div className="w-full rounded-lg bg-white/[0.34]">
+    <div className="w-full rounded-lg bg-white/[0.34] relative z-20">
       <div className="mb-4">
         <SearchInput filter={filter} setFilter={setFilter} />
       </div>
@@ -58,7 +58,7 @@ export const SearchFilters = ({
       </Accordion>
 
       {!isInModal && (
-        <div className="p-4 sticky bottom-0 bg-white border-t border-auto-gray-200">
+        <div className="p-4 sticky bottom-0 bg-white border-t border-auto-gray-200 z-20">
           <div className="flex flex-col space-y-3 items-center">
             <Button 
               variant="blue" 

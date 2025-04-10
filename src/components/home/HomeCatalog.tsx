@@ -56,7 +56,9 @@ const HomeCatalog = ({
         
         <div className="flex flex-col md:flex-row">
           <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/3 lg:w-1/4 pr-4`}>
-            <SearchFilters filter={filter} setFilter={setFilter} />
+            <div className="sticky top-20">
+              <SearchFilters filter={filter} setFilter={setFilter} />
+            </div>
           </div>
           
           <div className={`w-full ${isMobile ? '' : 'md:w-2/3 lg:w-3/4'} ${isMobile ? '' : 'md:pl-6'}`}>
@@ -90,7 +92,7 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="w-full sm:w-auto relative z-[3000]">
+                  <div className="w-full sm:w-auto relative z-30">
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>

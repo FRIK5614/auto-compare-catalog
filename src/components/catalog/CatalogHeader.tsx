@@ -44,7 +44,9 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
           </Button>
         )}
         
-        <SortOptions sortOption={sortOption} onSortChange={onSortChange} />
+        <div className="z-30">
+          <SortOptions sortOption={sortOption} onSortChange={onSortChange} />
+        </div>
       </div>
     </div>
   );

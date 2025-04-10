@@ -101,7 +101,7 @@ const Catalog = () => {
       <main className="flex-grow">
         <section className="py-6 md:py-10 bg-auto-gray-50">
           <div className="container mx-auto px-4">
-            <div className="relative z-[3000]">
+            <div className="relative z-30">
               <CatalogHeader 
                 count={filteredCars.length}
                 loading={loading}
@@ -114,7 +114,7 @@ const Catalog = () => {
             
             <div className="flex flex-col md:flex-row">
               <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/3 lg:w-1/4 pr-4`}>
-                <div className="sticky top-4">
+                <div className="sticky top-20">
                   <SearchFilters filter={filter} setFilter={setFilter} />
                 </div>
               </div>

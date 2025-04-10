@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import SearchFilters from "@/components/search-filters";
@@ -6,11 +7,13 @@ import { HeadphonesIcon, Filter, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+
 interface SearchFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
   scrollToContactForm?: () => void;
 }
+
 const SearchFiltersModal = ({
   isOpen,
   onClose,
@@ -24,8 +27,9 @@ const SearchFiltersModal = ({
 
   // На мобильных устройствах используем Sheet (нижний выдвижной экран)
   if (isMobile) {
-    return <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
-        <SheetContent side="bottom" className="h-screen w-full max-w-full p-0">
+    return (
+      <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
+        <SheetContent side="bottom" className="h-screen w-full max-w-full p-0 z-[60]">
           <div className="flex flex-col h-full">
             <SheetHeader className="px-4 py-5 border-b sticky top-0 bg-white z-10">
               <div className="flex items-center justify-between">
@@ -70,12 +74,14 @@ const SearchFiltersModal = ({
             </div>
           </div>
         </SheetContent>
-      </Sheet>;
+      </Sheet>
+    );
   }
 
   // На десктопе используем обычный Dialog с новой компоновкой и большим размером
-  return <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="sm:max-w-[800px] p-0 h-[90vh] flex flex-col">
+  return (
+    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
+      <DialogContent className="sm:max-w-[800px] p-0 h-[90vh] flex flex-col z-[60]">
         {/* Заголовок фильтра с крестиком */}
         <div className="px-6 py-4 border-b bg-white sticky top-0 z-10 flex items-center justify-between">
           <div className="flex items-center">
@@ -101,7 +107,7 @@ const SearchFiltersModal = ({
         </div>
         
         {/* Кнопки внизу (вертикально) */}
-        <div className="p-4 border-t fixed bottom-0 left-0 right-0 bg-white z-50">
+        <div className="p-4 border-t sticky bottom-0 left-0 right-0 bg-white z-10">
           <div className="flex flex-col space-y-3 mx-auto w-full max-w-xs">
             <Button onClick={() => {
             onClose();
@@ -119,6 +125,8 @@ const SearchFiltersModal = ({
           </div>
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
 export default SearchFiltersModal;

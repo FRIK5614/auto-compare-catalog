@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ const Header = () => {
   ];
   
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-30">
+    <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">AutoDeal</Link>
         
@@ -68,7 +69,7 @@ const MobileMenu = ({
   return (
     <SheetContent 
       side="right" 
-      className="w-[80%] sm:w-[350px] bg-gradient-to-br from-white to-blue-50 p-0"
+      className="w-[80%] sm:w-[350px] bg-gradient-to-br from-white to-blue-50 p-0 z-50"
     >
       <div className="flex flex-col h-full">
         <div className="p-6 border-b">
