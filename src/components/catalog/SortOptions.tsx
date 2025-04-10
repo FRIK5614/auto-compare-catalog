@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -8,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Car } from "@/types/car";
+import { ChevronDown } from "lucide-react";
 
 export type SortOption = {
   label: string;
@@ -83,76 +83,106 @@ interface SortOptionsProps {
 }
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   
-  // Функция для предотвращения всплытия всех событий
-  const blockAllEvents = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleOptionSelect = (value: string) => {
+    onSortChange(value);
+    setOpen(false);
+  };
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    e.preventDefault();
-    return false;
+    setOpen(!open);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      window.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [open]);
 
   return (
     <div 
-      className="relative z-[3001] w-full md:w-[240px]"
-      onClick={blockAllEvents}
-      onMouseDown={blockAllEvents}
-      onTouchStart={blockAllEvents}
-      onTouchEnd={blockAllEvents}
+      ref={containerRef}
+      className="relative w-full md:w-[240px]"
       data-no-card-click="true"
+      style={{ zIndex: 9999 }}
     >
-      {/* Фоновая маска для закрытия выпадающего списка */}
-      {isOpen && (
+      <button
+        onClick={handleToggle}
+        className="flex h-10 w-full items-center justify-between rounded-md border border-auto-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        data-no-card-click="true"
+        style={{ position: 'relative', zIndex: 9999 }}
+      >
+        <span className="truncate">
+          {sortOptions.find(opt => opt.value === sortOption)?.label || "Сортировка"}
+        </span>
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      </button>
+
+      {open && (
         <div 
-          className="fixed inset-0 bg-black/10 z-[3000]" 
-          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 bg-black/10" 
+          style={{ zIndex: 9998 }}
+          onClick={() => setOpen(false)}
           data-no-card-click="true"
         />
       )}
-      
-      <Select 
-        value={sortOption} 
-        onValueChange={(value) => {
-          onSortChange(value);
-          setIsOpen(false);
-        }}
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <SelectTrigger 
-          className="w-full bg-white relative z-[3001] border-auto-gray-300"
-          onClick={blockAllEvents}
-          onMouseDown={blockAllEvents}
-          onTouchStart={blockAllEvents}
-          onTouchEnd={blockAllEvents}
+
+      {open && (
+        <div 
+          className="absolute z-[9999] mt-1 w-full rounded-md border border-gray-200 bg-white p-1 shadow-lg"
           data-no-card-click="true"
         >
-          <SelectValue placeholder="Сортировка" />
-        </SelectTrigger>
-        
-        <SelectContent 
-          position="popper" 
-          className="z-[3001] bg-white shadow-lg"
-          data-no-card-click="true"
-        >
-          {sortOptions.map(option => (
-            <SelectItem 
-              key={option.value} 
-              value={option.value}
-              onClick={blockAllEvents}
-              onMouseDown={blockAllEvents}
-              onTouchStart={blockAllEvents}
-              onTouchEnd={blockAllEvents}
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              className={`flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-gray-100 ${
+                sortOption === option.value ? "bg-gray-100 font-medium" : ""
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleOptionSelect(option.value);
+              }}
               data-no-card-click="true"
             >
               {option.label}
-            </SelectItem>
+            </button>
           ))}
-        </SelectContent>
-      </Select>
+        </div>
+      )}
     </div>
   );
 };
