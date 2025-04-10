@@ -106,8 +106,8 @@ const CarFormContainer: React.FC = () => {
       // Ensure images array is properly attached to the car
       updatedCar.images = images;
       
-      // Call the save function
-      await saveCar(updatedCar, isNewCar, imageFile);
+      // Call the save function with correct parameters
+      await saveCar(updatedCar, isNewCar);
     } finally {
       setFormLoading(false);
     }

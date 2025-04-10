@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { useTmcAvtoCatalog, Car } from '@/hooks/useTmcAvtoCatalog';
@@ -11,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Download, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { createCarFromImportData } from '@/components/admin/car-form/utils/carUrlFetcher';
 
 const DEFAULT_URLS = {
   china: 'https://catalog.tmcavto.ru/china',
@@ -39,7 +39,6 @@ const AdminTmcAvtoCatalog = () => {
   const { addCar } = useCars();
   const { toast } = useToast();
   
-  // Handle predefined source selection
   const handleSourceChange = (source: string) => {
     switch(source) {
       case 'china':
@@ -57,7 +56,6 @@ const AdminTmcAvtoCatalog = () => {
     }
   };
   
-  // Handle URL fetch with limit
   const handleFetch = async () => {
     const urlWithLimit = catalogUrl.includes('?') 
       ? `${catalogUrl}&limit=${importLimit}` 
@@ -70,7 +68,6 @@ const AdminTmcAvtoCatalog = () => {
     }
   };
   
-  // Toggle car selection
   const toggleCarSelection = (car: Car) => {
     setSelectedCars(prev => ({
       ...prev,
@@ -78,12 +75,10 @@ const AdminTmcAvtoCatalog = () => {
     }));
   };
   
-  // Get selected cars count
   const getSelectedCount = () => {
     return Object.values(selectedCars).filter(selected => selected).length;
   };
   
-  // Select all cars
   const selectAllCars = () => {
     const newSelected: Record<string, boolean> = {};
     catalogCars.forEach(car => {
@@ -92,12 +87,10 @@ const AdminTmcAvtoCatalog = () => {
     setSelectedCars(newSelected);
   };
   
-  // Deselect all cars
   const deselectAllCars = () => {
     setSelectedCars({});
   };
   
-  // Import selected cars
   const importSelectedCars = async () => {
     const selectedCarIds = Object.entries(selectedCars)
       .filter(([_, selected]) => selected)
@@ -114,32 +107,18 @@ const AdminTmcAvtoCatalog = () => {
     
     setIsImporting(true);
     try {
-      // Filter catalog cars to get only selected ones
       const carsToImport = catalogCars.filter(car => selectedCarIds.includes(car.id));
       
-      // Convert them to the format expected by the Cars context
       for (const car of carsToImport) {
-        const formattedCar = {
-          id: uuidv4(), // Generate a new unique ID
+        const formattedCar = createCarFromImportData({
           brand: car.brand,
           model: car.model,
           year: car.year,
-          price: {
-            base: car.price
-          },
-          country: car.country || '',
-          image_url: car.imageUrl,
-          images: [
-            {
-              id: uuidv4(),
-              url: car.imageUrl,
-              alt: `${car.brand} ${car.model}`
-            }
-          ],
-          isNew: true,
-          viewCount: 0,
-          description: `Импортировано из каталога TMC Авто: ${car.detailUrl}`
-        };
+          price: car.price,
+          country: car.country,
+          imageUrl: car.imageUrl,
+          url: car.detailUrl,
+        });
         
         await addCar(formattedCar);
       }
@@ -149,7 +128,6 @@ const AdminTmcAvtoCatalog = () => {
         description: `Успешно импортировано ${carsToImport.length} автомобилей`,
       });
       
-      // Reset selections after import
       setSelectedCars({});
     } catch (error) {
       console.error('Error importing cars:', error);
@@ -163,7 +141,6 @@ const AdminTmcAvtoCatalog = () => {
     }
   };
   
-  // Import all cars from all sources
   const handleFullImport = async () => {
     setIsImporting(true);
     try {
