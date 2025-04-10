@@ -100,10 +100,10 @@ export const useCars = () => {
   };
   
   // Function to apply sorting
-  const applySorting = (cars: Car[], sortBy?: string): Car[] => {
-    if (!cars || cars.length === 0) return [];
+  const applySorting = (carsToSort: Car[], sortBy?: string): Car[] => {
+    if (!carsToSort || carsToSort.length === 0) return [];
     
-    const carsCopy = [...cars];
+    const carsCopy = [...carsToSort];
     
     switch (sortBy) {
       case "priceAsc":

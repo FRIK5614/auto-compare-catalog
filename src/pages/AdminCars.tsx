@@ -1,9 +1,17 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminLayout from "@/components/AdminLayout";
+import { useCars } from "@/hooks/useCars";
+import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
-import { Database, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,92 +21,220 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAdmin } from "@/contexts/AdminContext";
-import { toast } from "sonner";
-import AdminCarsList from "@/components/AdminCarsList";
+import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminCars = () => {
-  const admin = useAdmin();
-  const [carToDelete, setCarToDelete] = useState<string | null>(null);
+  const { cars, deleteCar, exportCarsData, importCarsData } = useCars();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [carToDelete, setCarToDelete] = useState<Car | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importData, setImportData] = useState("");
   const navigate = useNavigate();
-  
-  const handleEditCar = (carId: string) => {
-    navigate(`/admin/cars/edit/${carId}`);
+  const { toast } = useToast();
+
+  const filteredCars = cars.filter(
+    (car) =>
+      car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      car.model.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    const data = exportCarsData();
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cars-export.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Экспорт выполнен",
+      description: `Экспортировано ${cars.length} автомобилей`,
+    });
   };
-  
-  const handleDeleteCar = (carId: string) => {
-    setCarToDelete(carId);
-  };
-  
-  const confirmDelete = async () => {
-    if (!carToDelete) return;
-    
+
+  const handleImport = () => {
     try {
-      await admin.deleteCar(carToDelete);
-      toast.success("Автомобиль успешно удален");
+      const success = importCarsData(importData);
+      if (success) {
+        setImportDialogOpen(false);
+        setImportData("");
+      }
     } catch (error) {
-      toast.error("Ошибка при удалении автомобиля");
-      console.error(error);
-    } finally {
-      setCarToDelete(null);
+      toast({
+        variant: "destructive",
+        title: "Ошибка импорта",
+        description: "Неверный формат данных",
+      });
     }
   };
-  
-  const handleViewCar = (carId: string) => {
-    navigate(`/car/${carId}`);
-  };
-  
-  const handleSynchronize = () => {
-    toast.info("Синхронизация данных запущена");
-    // Implement data synchronization logic
-  };
-  
-  const handleAddCar = () => {
-    navigate("/admin/cars/create");
-  };
-  
+
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1">Управление автомобилями</h1>
-          <p className="text-gray-500">Просмотр и редактирование автомобилей в каталоге</p>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Управление автомобилями</h1>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setImportDialogOpen(true)}
+              className="flex items-center"
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Импорт
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="flex items-center"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              Экспорт
+            </Button>
+            <Button
+              onClick={() => navigate("/admin/cars/new")}
+              className="flex items-center"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Добавить автомобиль
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
-          <Button variant="outline" onClick={handleSynchronize} className="flex items-center">
-            <Database className="mr-2 h-4 w-4" />
-            Синхронизировать
-          </Button>
-          
-          <Button onClick={handleAddCar} className="flex items-center ml-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            Добавить автомобиль
-          </Button>
+
+        <div className="mb-4">
+          <Input
+            placeholder="Поиск по марке или модели..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-md"
+          />
         </div>
-        
-        <AdminCarsList
-          cars={admin.cars || []}
-          onEdit={handleEditCar}
-          onDelete={handleDeleteCar}
-          onView={handleViewCar}
-          loading={admin.loading || false}
-        />
-        
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Марка</TableHead>
+                <TableHead>Модель</TableHead>
+                <TableHead>Год</TableHead>
+                <TableHead>Цена</TableHead>
+                <TableHead>Статус</TableHead>
+                <TableHead>Просмотры</TableHead>
+                <TableHead className="text-right">Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCars.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-4">
+                    Автомобили не найдены
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredCars.map((car) => (
+                  <TableRow key={car.id}>
+                    <TableCell className="font-medium">{car.brand}</TableCell>
+                    <TableCell>{car.model}</TableCell>
+                    <TableCell>{car.year}</TableCell>
+                    <TableCell>
+                      {new Intl.NumberFormat("ru-RU", {
+                        style: "currency",
+                        currency: "RUB",
+                        maximumFractionDigits: 0,
+                      }).format(car.price.base)}
+                    </TableCell>
+                    <TableCell>
+                      {car.isNew ? (
+                        <Badge className="bg-green-500">Новый</Badge>
+                      ) : (
+                        <Badge variant="outline">Б/У</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{car.viewCount || 0}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => navigate(`/admin/cars/edit/${car.id}`)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500"
+                          onClick={() => setCarToDelete(car)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
         <AlertDialog open={!!carToDelete} onOpenChange={(open) => !open && setCarToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
               <AlertDialogDescription>
-                Это действие нельзя отменить. Автомобиль будет безвозвратно удален из системы.
+                Вы собираетесь удалить автомобиль{" "}
+                {carToDelete?.brand} {carToDelete?.model} ({carToDelete?.year}).
+                Это действие нельзя отменить.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete}>
+              <AlertDialogAction
+                className="bg-red-500 hover:bg-red-600"
+                onClick={() => {
+                  if (carToDelete) {
+                    deleteCar(carToDelete.id);
+                    setCarToDelete(null);
+                  }
+                }}
+              >
                 Удалить
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Импорт данных</AlertDialogTitle>
+              <AlertDialogDescription>
+                Вставьте JSON данные для импорта автомобилей. Существующие данные
+                будут заменены.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="my-4">
+              <textarea
+                className="w-full h-64 p-2 border rounded-md"
+                value={importData}
+                onChange={(e) => setImportData(e.target.value)}
+                placeholder='[{"id": "1", "brand": "BMW", ...}]'
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={handleImport}>
+                Импортировать
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

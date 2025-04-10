@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -37,7 +37,8 @@ interface SearchFiltersProps {
 
 const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: SearchFiltersProps) => {
   const { getUniqueValues, getPriceRange, getYearRange } = useCars();
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [yearRange, setYearRange] = useState<[number, number]>([1990, new Date().getFullYear()]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
@@ -53,10 +54,8 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     const { min: minPrice, max: maxPrice } = getPriceRange();
     const { min: minYear, max: maxYear } = getYearRange();
     
-    setPriceRange([
-      filter.minPrice || minPrice,
-      filter.maxPrice || maxPrice
-    ]);
+    setMinPrice(filter.minPrice?.toString() || minPrice.toString());
+    setMaxPrice(filter.maxPrice?.toString() || maxPrice.toString());
     
     setYearRange([
       filter.minYear || minYear,
@@ -78,19 +77,18 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     
   }, [filter, getPriceRange, getYearRange]);
   
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange([value[0], value[1]]);
+  const handlePriceChange = () => {
+    const min = parseInt(minPrice);
+    const max = parseInt(maxPrice);
     
-    // Debounce price updates to prevent too many re-renders
-    const timer = setTimeout(() => {
+    // Validate and update the filter
+    if (!isNaN(min) && !isNaN(max) && min <= max) {
       setFilter({
         ...filter,
-        minPrice: value[0],
-        maxPrice: value[1]
+        minPrice: min,
+        maxPrice: max
       });
-    }, 300);
-    
-    return () => clearTimeout(timer);
+    }
   };
   
   const handleYearChange = (value: number[]) => {
@@ -113,14 +111,29 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       search: "",
       sortBy: "popularity",
     });
+    setMinPrice("");
+    setMaxPrice("");
   };
   
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string) => {
+    if (!price) return "";
+    
+    const numPrice = typeof price === 'string' ? parseInt(price) : price;
+    
+    if (isNaN(numPrice)) return "";
+    
     return new Intl.NumberFormat("ru-RU", {
       style: "currency",
       currency: "RUB",
       maximumFractionDigits: 0
-    }).format(price);
+    }).format(numPrice);
+  };
+  
+  const applyFilters = () => {
+    handlePriceChange();
+    if (closeModal) {
+      closeModal();
+    }
   };
   
   return (
@@ -169,7 +182,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               <AccordionContent>
                 <Select
                   value={filter.brand || ""}
-                  onValueChange={(value) => setFilter({ ...filter, brand: value || undefined })}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      const newFilter = { ...filter };
+                      delete newFilter.brand;
+                      setFilter(newFilter);
+                    } else {
+                      setFilter({ ...filter, brand: value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Все марки" />
@@ -192,31 +213,43 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-6">
-                  <div>
-                    <Slider
-                      value={[priceRange[0], priceRange[1]]}
-                      min={getPriceRange().min}
-                      max={getPriceRange().max}
-                      step={10000}
-                      onValueChange={handlePriceChange}
-                      className="mt-6"
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <Label htmlFor="minPrice" className="text-sm text-auto-gray-600">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="minPrice" className="text-sm text-auto-gray-600 mb-1 block">
                         От
                       </Label>
-                      <div className="font-medium">{formatPrice(priceRange[0])}</div>
+                      <Input
+                        id="minPrice"
+                        type="number"
+                        placeholder="0"
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        className="bg-auto-gray-50"
+                      />
                     </div>
-                    <div className="flex-1 text-right">
-                      <Label htmlFor="maxPrice" className="text-sm text-auto-gray-600">
+                    <div>
+                      <Label htmlFor="maxPrice" className="text-sm text-auto-gray-600 mb-1 block">
                         До
                       </Label>
-                      <div className="font-medium">{formatPrice(priceRange[1])}</div>
+                      <Input
+                        id="maxPrice"
+                        type="number"
+                        placeholder="10000000"
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        className="bg-auto-gray-50"
+                      />
                     </div>
                   </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={handlePriceChange}
+                  >
+                    Применить цену
+                  </Button>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -228,7 +261,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               <AccordionContent>
                 <Select
                   value={filter.bodyType || ""}
-                  onValueChange={(value) => setFilter({ ...filter, bodyType: value || undefined })}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      const newFilter = { ...filter };
+                      delete newFilter.bodyType;
+                      setFilter(newFilter);
+                    } else {
+                      setFilter({ ...filter, bodyType: value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Все типы кузова" />
@@ -287,7 +328,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               <AccordionContent>
                 <Select
                   value={filter.fuelType || ""}
-                  onValueChange={(value) => setFilter({ ...filter, fuelType: value || undefined })}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      const newFilter = { ...filter };
+                      delete newFilter.fuelType;
+                      setFilter(newFilter);
+                    } else {
+                      setFilter({ ...filter, fuelType: value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Все типы топлива" />
@@ -311,7 +360,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               <AccordionContent>
                 <Select
                   value={filter.transmissionType || ""}
-                  onValueChange={(value) => setFilter({ ...filter, transmissionType: value || undefined })}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      const newFilter = { ...filter };
+                      delete newFilter.transmissionType;
+                      setFilter(newFilter);
+                    } else {
+                      setFilter({ ...filter, transmissionType: value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Все типы КПП" />
@@ -335,7 +392,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               <AccordionContent>
                 <Select
                   value={filter.country || ""}
-                  onValueChange={(value) => setFilter({ ...filter, country: value || undefined })}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      const newFilter = { ...filter };
+                      delete newFilter.country;
+                      setFilter(newFilter);
+                    } else {
+                      setFilter({ ...filter, country: value });
+                    }
+                  }}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Все страны" />
@@ -379,7 +444,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       
       {isInModal && closeModal && (
         <div className="p-4 border-t border-auto-gray-200">
-          <Button className="w-full" onClick={closeModal}>
+          <Button className="w-full" onClick={applyFilters}>
             Применить фильтры
           </Button>
         </div>

@@ -47,30 +47,21 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
               </div>
             </div>
             
-            <div className="p-4 border-t mt-auto">
-              <div className="flex flex-col sm:flex-row gap-3">
+            {scrollToContactForm && (
+              <div className="p-4 border-t mt-auto">
                 <Button 
-                  onClick={onClose} 
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => scrollToContactForm(), 300);
+                  }}
+                  variant="outline"
                   className="w-full"
                 >
-                  Применить фильтры
+                  <HeadphonesIcon className="mr-2 h-5 w-5" />
+                  Подобрать через специалиста
                 </Button>
-                
-                {scrollToContactForm && (
-                  <Button 
-                    onClick={() => {
-                      onClose();
-                      setTimeout(() => scrollToContactForm(), 300);
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <HeadphonesIcon className="mr-2 h-5 w-5" />
-                    Подобрать через специалиста
-                  </Button>
-                )}
               </div>
-            </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -107,30 +98,21 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
           />
         </div>
         
-        <div className="p-4 border-t">
-          <div className="flex flex-row gap-3">
+        {scrollToContactForm && (
+          <div className="p-4 border-t">
             <Button 
-              onClick={onClose} 
-              className="flex-1"
+              onClick={() => {
+                onClose();
+                setTimeout(() => scrollToContactForm(), 300);
+              }}
+              variant="outline"
+              className="w-full"
             >
-              Применить фильтры
+              <HeadphonesIcon className="mr-2 h-5 w-5" />
+              Подобрать через специалиста
             </Button>
-            
-            {scrollToContactForm && (
-              <Button 
-                onClick={() => {
-                  onClose();
-                  setTimeout(() => scrollToContactForm(), 300);
-                }}
-                variant="outline"
-                className="flex-1"
-              >
-                <HeadphonesIcon className="mr-2 h-5 w-5" />
-                Подобрать через специалиста
-              </Button>
-            )}
           </div>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );
