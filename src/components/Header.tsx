@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/contexts/AdminContext";
-import { Menu, Home, Fire, ArrowRightLeft, Heart, User } from "lucide-react";
+import { Menu, Home, Flame, ArrowRightLeft, Heart, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ const Header = () => {
   
   const menuItems = [
     { icon: Home, text: "Главная", path: "/" },
-    { icon: Fire, text: "Горячие предложения", path: "/hot-offers" },
+    { icon: Flame, text: "Горячие предложения", path: "/hot-offers" }, // Changed Fire to Flame
     { icon: ArrowRightLeft, text: "Сравнение", path: "/compare" },
     { icon: Heart, text: "Избранное", path: "/favorites" },
     ...(isAdmin ? [{ icon: User, text: "Админ панель", path: "/admin" }] : []),
