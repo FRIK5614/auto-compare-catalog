@@ -1,18 +1,10 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
 import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +14,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
+import { FileUp, FileDown, Plus } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import AdminCarsList from "@/components/AdminCarsList";
 
@@ -148,22 +138,20 @@ const AdminCars = () => {
           onView={(id) => navigate(`/car/${id}`)}
         />
 
-        {isDeleteDialogOpen && (
-          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
+              <AlertDialogDescription>
+                Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
