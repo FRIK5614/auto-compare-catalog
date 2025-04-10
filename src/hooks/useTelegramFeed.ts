@@ -87,9 +87,12 @@ export const useTelegramFeed = ({
     }
   };
   
-  const loadMorePosts = () => {
-    if (hasMore && !loading) {
-      fetchTelegramPosts(offset + postsPerPage);
+  const loadMorePosts = (newOffset?: number) => {
+    const nextOffset = typeof newOffset === 'number' ? newOffset : offset + postsPerPage;
+    
+    // Если загружаем с начала или есть еще посты для загрузки
+    if (nextOffset === 0 || (hasMore && !loading)) {
+      fetchTelegramPosts(nextOffset);
     }
   };
   
@@ -101,7 +104,7 @@ export const useTelegramFeed = ({
     if (initialLoad) {
       fetchTelegramPosts(0);
     }
-  }, [channelName]); // Refresh when channel changes
+  }, [channelName]); // Обновлять при изменении канала
   
   return {
     posts,

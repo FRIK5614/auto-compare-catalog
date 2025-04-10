@@ -17,9 +17,9 @@ const TelegramHeader = ({
   telegramUrl 
 }: TelegramHeaderProps) => {
   return (
-    <div className="mb-8 text-center sticky top-0 bg-white py-4 shadow-md z-10">
+    <div className="mb-8 text-center sticky top-0 z-10 bg-white py-6 shadow-md">
       <h1 className="text-3xl font-bold mb-4">{title}</h1>
-      <p className="text-gray-600 mb-4">{description}</p>
+      <p className="text-gray-600 mb-6">{description}</p>
       <Button 
         variant="blue" 
         size="lg" 

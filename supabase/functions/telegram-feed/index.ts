@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Hardcoded token - in production you would use a secret
+// Используем токен из базы, но не отправляем сообщения в канал
 const TELEGRAM_BOT_TOKEN = "7829427763:AAEbz_SNa835tCr0u4tJ2wcDx68MuIsbftM";
 
 Deno.serve(async (req) => {
@@ -39,8 +39,9 @@ Deno.serve(async (req) => {
     
     const chatId = chatData.result.id;
     
-    // Get channel posts using getChatHistory method
-    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?chat_id=${chatId}&limit=100`);
+    // Получаем сообщения из канала через getChatHistory
+    // Использум getUpdates для получения последних сообщений
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?limit=100`);
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -51,149 +52,81 @@ Deno.serve(async (req) => {
     const data = await response.json();
     console.log('Telegram API response:', JSON.stringify(data).slice(0, 200) + '...');
 
-    // Process the messages, focusing on channel posts
-    let allPosts = [];
+    // Получаем сообщения из канала
+    const messages = [];
     
-    if (data.ok && data.result) {
-      // Extract channel posts
-      allPosts = data.result
-        .filter(update => 
-          update.channel_post || 
-          (update.message && update.message.chat && 
-           update.message.chat.username === channelName)
-        )
-        .map(update => {
-          const post = update.channel_post || update.message;
-          
-          // Get the photo URL if available
-          let photoUrl = null;
-          if (post.photo && post.photo.length > 0) {
-            // Get the largest photo file_id
-            const largestPhoto = post.photo.reduce((max, photo) => 
-              photo.file_size > max.file_size ? photo : max, post.photo[0]);
-            
-            // First get the file path from the API
-            return fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${largestPhoto.file_id}`)
-              .then(res => res.json())
-              .then(fileData => {
-                if (fileData.ok && fileData.result && fileData.result.file_path) {
-                  return {
-                    id: post.message_id,
-                    date: post.date,
-                    text: post.text || post.caption || '',
-                    photo_url: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`
-                  };
-                }
-                return {
-                  id: post.message_id,
-                  date: post.date,
-                  text: post.text || post.caption || '',
-                  photo_url: null
-                };
-              });
-          }
-          
-          return Promise.resolve({
-            id: post.message_id,
-            date: post.date,
-            text: post.text || post.caption || '',
-            photo_url: null
-          });
-        });
-        
-      // Wait for all photo URL promises to resolve
-      allPosts = await Promise.all(allPosts);
+    // Попробуем использовать более подходящий метод - getHistory если доступно
+    try {
+      // Используем getHistory если доступно, иначе пользуемся getUpdates
+      const historyResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatHistory?chat_id=${chatId}&limit=${limit + offset}`);
+      
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        if (historyData.ok && historyData.result) {
+          // Используем данные из getChatHistory
+          messages.push(...historyData.result);
+        }
+      }
+    } catch (historyError) {
+      console.error('Could not use getChatHistory, falling back to getUpdates:', historyError);
     }
     
-    // If still no posts or fewer than 12, add sample data to ensure we have content
-    if (allPosts.length < 12) {
-      console.log(`Only found ${allPosts.length} posts, adding sample data to reach at least 12`);
-      
-      const samplePosts = [
-        {
-          id: 101,
-          date: Math.floor(Date.now() / 1000) - 86400,
-          text: "🔥 Новый Geely Coolray 1.5T вариант комплектации Luxury. В наличии! 2025 год выпуска. Цена: 2 790 000 ₽. Звоните!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1-wMQGw9_D7dGHZpXHWs9oeAJwXM5Iwuz&export=view"
-        },
-        {
-          id: 102,
-          date: Math.floor(Date.now() / 1000) - 172800,
-          text: "🚘 Chery Tiggo 7 Pro 1.5T CVT. Комплектация Premium. 2024 год. Цена: 2 550 000 ₽. Возможна покупка в кредит!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1a-T88SBHqKQPPTJbOzKyZLM5Cw5g-W6c&export=view"
-        },
-        {
-          id: 103,
-          date: Math.floor(Date.now() / 1000) - 259200,
-          text: "⚡ Exeed TXL 2.0T 4WD версия President. 2024 год. Цена: 3 990 000 ₽. Особые условия при покупке в этом месяце!",
-          photo_url: "https://drive.usercontent.google.com/download?id=10M8kGMQUJPOQBIEiTvBrmYU1Y3NCytK1&export=view"
-        },
-        {
-          id: 104,
-          date: Math.floor(Date.now() / 1000) - 345600,
-          text: "🎯 Haval Jolion 1.5T DCT. Максимальная комплектация. 2024 год. Цена: 2 250 000 ₽. Отличное предложение!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1-wMQGw9_D7dGHZpXHWs9oeAJwXM5Iwuz&export=view"
-        },
-        {
-          id: 105,
-          date: Math.floor(Date.now() / 1000) - 432000,
-          text: "✨ Geely Atlas Pro 1.5T 4WD. Комплектация Flagship. 2024 год. Цена: 2 890 000 ₽. Доступен тест-драйв!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1a-T88SBHqKQPPTJbOzKyZLM5Cw5g-W6c&export=view"
-        },
-        {
-          id: 106,
-          date: Math.floor(Date.now() / 1000) - 518400,
-          text: "🚗 Chery Tiggo 8 Pro 2.0T DCT. Люксовая комплектация. 2024 год. Цена: 3 250 000 ₽. Звоните для уточнения деталей!",
-          photo_url: "https://drive.usercontent.google.com/download?id=10M8kGMQUJPOQBIEiTvBrmYU1Y3NCytK1&export=view"
-        },
-        {
-          id: 107,
-          date: Math.floor(Date.now() / 1000) - 604800,
-          text: "⚙️ Exeed VX 2.0T 4WD. Премиальная версия. 2024 год. Цена: 4 490 000 ₽. Выгодные условия кредитования!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1-wMQGw9_D7dGHZpXHWs9oeAJwXM5Iwuz&export=view"
-        },
-        {
-          id: 108,
-          date: Math.floor(Date.now() / 1000) - 691200,
-          text: "🌟 JAC S7 1.5T CVT. Полная комплектация. 2024 год. Цена: 2 190 000 ₽. Специальное предложение этого месяца!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1a-T88SBHqKQPPTJbOzKyZLM5Cw5g-W6c&export=view"
-        },
-        {
-          id: 109,
-          date: Math.floor(Date.now() / 1000) - 777600,
-          text: "💎 Changan CS75 Plus 2.0T AT. Комплектация Luxury. 2024 год. Цена: 2 650 000 ₽. Отличное состояние!",
-          photo_url: "https://drive.usercontent.google.com/download?id=10M8kGMQUJPOQBIEiTvBrmYU1Y3NCytK1&export=view"
-        },
-        {
-          id: 110,
-          date: Math.floor(Date.now() / 1000) - 864000,
-          text: "🔮 TANK 300 2.0T 4WD. Внедорожник премиум-класса. 2024 год. Цена: 4 290 000 ₽. Ограниченное предложение!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1-wMQGw9_D7dGHZpXHWs9oeAJwXM5Iwuz&export=view"
-        },
-        {
-          id: 111,
-          date: Math.floor(Date.now() / 1000) - 950400,
-          text: "🛠️ Haval H6 2.0T DCT. Полноприводная версия. 2024 год. Цена: 2 790 000 ₽. Звоните для бронирования!",
-          photo_url: "https://drive.usercontent.google.com/download?id=1a-T88SBHqKQPPTJbOzKyZLM5Cw5g-W6c&export=view"
-        },
-        {
-          id: 112,
-          date: Math.floor(Date.now() / 1000) - 1036800,
-          text: "📱 Geely Monjaro 2.0T 4WD. Максимальная комплектация. 2024 год. Цена: 3 890 000 ₽. Современные технологии и комфорт!",
-          photo_url: "https://drive.usercontent.google.com/download?id=10M8kGMQUJPOQBIEiTvBrmYU1Y3NCytK1&export=view"
+    // Если getChatHistory не получилось, используем getUpdates
+    if (messages.length === 0) {
+      if (data.ok && data.result) {
+        const channelUpdates = data.result.filter(update => 
+          update.channel_post && 
+          update.channel_post.chat && 
+          update.channel_post.chat.id === chatId
+        );
+        
+        for (const update of channelUpdates) {
+          messages.push(update.channel_post);
         }
-      ];
-      
-      // Add only as many sample posts as needed to reach at least 12 total
-      const neededSampleCount = Math.max(0, 12 - allPosts.length);
-      const sampleToAdd = samplePosts.slice(0, neededSampleCount);
-      
-      if (sampleToAdd.length > 0) {
-        allPosts = [...allPosts, ...sampleToAdd];
       }
     }
-
-    // Apply pagination
+    
+    console.log(`Found ${messages.length} messages from channel`);
+    
+    // Если не получаем сообщений из API, то возвращаем пустой список вместо тестовых данных
+    const allPosts = [];
+    
+    // Обрабатываем сообщения только если они существуют
+    if (messages.length > 0) {
+      for (const post of messages) {
+        // Получаем URL фото, если оно есть
+        let photoUrl = null;
+        if (post.photo && post.photo.length > 0) {
+          // Получаем самое большое фото
+          const largestPhoto = post.photo.reduce((max, photo) => 
+            photo.file_size > max.file_size ? photo : max, post.photo[0]);
+          
+          try {
+            // Получаем путь к файлу из API
+            const fileResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${largestPhoto.file_id}`);
+            const fileData = await fileResponse.json();
+            
+            if (fileData.ok && fileData.result && fileData.result.file_path) {
+              photoUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
+            }
+          } catch (fileError) {
+            console.error('Error getting photo URL:', fileError);
+          }
+        }
+        
+        allPosts.push({
+          id: post.message_id,
+          date: post.date,
+          text: post.text || post.caption || '',
+          photo_url: photoUrl
+        });
+      }
+    }
+    
+    // Сортируем сообщения от новых к старым
+    allPosts.sort((a, b) => b.date - a.date);
+    
+    // Применяем пагинацию
     const paginatedPosts = allPosts.slice(offset, offset + limit);
     const totalPosts = allPosts.length;
 
@@ -210,7 +143,12 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in telegram-feed function:', error.message);
     
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      posts: [],
+      total: 0,
+      hasMore: false
+    }), {
       status: 500,
       headers: { 
         ...corsHeaders,

@@ -27,7 +27,7 @@ const HotOffers = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-0">
         <TelegramHeader 
           title="Горячие предложения"
           description="Следите за обновлениями в нашей Telegram группе!"
@@ -35,18 +35,18 @@ const HotOffers = () => {
           telegramUrl="https://t.me/VoeAVTO"
         />
         
-        <div className="grid gap-6">
+        <div className="grid gap-6 pt-4">
           {/* Posts Grid Component */}
           <PostsGrid 
             posts={posts}
             loading={loading}
             error={error}
             offset={offset}
-            onRetry={() => loadMorePosts()}
+            onRetry={() => loadMorePosts(0)} // Сбрасываем и загружаем сначала
           />
           
           {/* Pagination controls */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex justify-center pb-8">
             <LoadMoreButton
               loading={loading}
               hasMore={hasMore}
