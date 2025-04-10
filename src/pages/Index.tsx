@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -14,12 +15,55 @@ import { CarsProvider } from "@/contexts/CarsContext";
 import { ChevronDown, Car, CarFront, Settings, UserRound, Filter } from "lucide-react";
 import LoadingState from "@/components/LoadingState";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Mapping для сортировок между UI и фильтром
+const mapSortOptionToFilter = (sortOption: string): "popularity" | "priceAsc" | "priceDesc" | "yearDesc" | "yearAsc" | "nameAsc" | "nameDesc" => {
+  switch (sortOption) {
+    case "price_asc": return "priceAsc";
+    case "price_desc": return "priceDesc";
+    case "year_desc": return "yearDesc";
+    case "year_asc": return "yearAsc";
+    case "name_asc": return "nameAsc";
+    case "name_desc": return "nameDesc";
+    default: return "popularity";
+  }
+};
+
+const mapSortOptionFromFilter = (filterSort?: string): string => {
+  switch (filterSort) {
+    case "priceAsc": return "price_asc";
+    case "priceDesc": return "price_desc";
+    case "yearDesc": return "year_desc";
+    case "yearAsc": return "year_asc"; 
+    case "nameAsc": return "name_asc";
+    case "nameDesc": return "name_desc";
+    default: return "default";
+  }
+};
+
+const sortOptions = [
+  { label: "По умолчанию", value: "default" },
+  { label: "По цене (возрастание)", value: "price_asc" },
+  { label: "По цене (убывание)", value: "price_desc" },
+  { label: "По году (новые)", value: "year_desc" },
+  { label: "По году (старые)", value: "year_asc" },
+  { label: "По названию (А-Я)", value: "name_asc" },
+  { label: "По названию (Я-А)", value: "name_desc" }
+];
 
 const IndexContent = () => {
-  const { cars, filteredCars, setFilter, filter, loading, error, reloadCars } = useCars();
+  const { cars, filteredCars, setFilter, filter, loading, error, reloadCars, applySorting } = useCars();
   const [searchParams] = useSearchParams();
   const [visibleCars, setVisibleCars] = useState(12);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<string>(mapSortOptionFromFilter(filter.sortBy));
   const consultFormRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -64,6 +108,14 @@ const IndexContent = () => {
 
   const scrollToConsultForm = () => {
     consultFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOption(value);
+    setFilter({
+      ...filter,
+      sortBy: mapSortOptionToFilter(value)
+    });
   };
 
   return (
@@ -244,10 +296,18 @@ const IndexContent = () => {
                       Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                     </p>
                     <div className="flex items-center">
-                      <span className="text-sm text-auto-gray-600 mr-2">Сортировать:</span>
-                      <Button variant="outline" size="sm" className="flex items-center">
-                        По умолчанию <ChevronDown className="ml-2 h-4 w-4" />
-                      </Button>
+                      <Select value={sortOption} onValueChange={handleSortChange}>
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Сортировка" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sortOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
