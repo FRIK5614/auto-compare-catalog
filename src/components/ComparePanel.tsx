@@ -3,9 +3,17 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
 import { X, BarChart2, RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const ComparePanel = () => {
-  const { comparisonCars, removeFromCompare, clearCompare, loading, error, reloadCars } = useCars();
+  const { 
+    comparisonCars, 
+    removeFromCompare, 
+    clearCompare, 
+    loading, 
+    error, 
+    reloadCars 
+  } = useCars();
   
   if (loading || error || comparisonCars.length === 0) {
     return null;
@@ -45,8 +53,9 @@ const ComparePanel = () => {
               size="sm" 
               onClick={reloadCars}
               className="text-auto-gray-700 md:flex hidden items-center"
+              disabled={loading}
             >
-              <RefreshCw className="h-4 w-4 mr-1" />
+              <RefreshCw className={cn("h-4 w-4 mr-1", loading && "animate-spin")} />
               Обновить
             </Button>
             
