@@ -18,6 +18,10 @@ const SelectTrigger = React.forwardRef<
   // Enhanced event handling for the trigger
   const handleEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    e.preventDefault();
   };
 
   return (
@@ -33,6 +37,7 @@ const SelectTrigger = React.forwardRef<
       onTouchEnd={handleEvents}
       onTouchMove={handleEvents}
       onPointerDown={handleEvents}
+      data-no-card-click="true"
       {...props}
     >
       {children}
@@ -109,6 +114,7 @@ const SelectContent = React.forwardRef<
         onTouchEnd={blockAllEvents}
         onTouchMove={blockAllEvents}
         onPointerDown={blockAllEvents}
+        data-no-card-click="true"
         {...props}
       >
         <SelectScrollUpButton />
@@ -124,6 +130,7 @@ const SelectContent = React.forwardRef<
           onTouchEnd={blockAllEvents}
           onTouchMove={blockAllEvents}
           onPointerDown={blockAllEvents}
+          data-no-card-click="true"
         >
           {children}
         </SelectPrimitive.Viewport>
@@ -156,6 +163,7 @@ const SelectItem = React.forwardRef<
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
+    e.preventDefault();
   };
 
   return (
@@ -171,6 +179,7 @@ const SelectItem = React.forwardRef<
       onTouchEnd={blockAllEvents}
       onTouchMove={blockAllEvents}
       onPointerDown={blockAllEvents}
+      data-no-card-click="true"
       {...props}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">

@@ -85,12 +85,13 @@ interface SortOptionsProps {
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Function to stop event propagation
-  const stopPropagation = (e: React.SyntheticEvent) => {
+  // Enhanced aggressive event blocking
+  const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
+    e.preventDefault();
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -102,15 +103,17 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
     setIsOpen(false);
   };
 
+  // Add a className that we can use to identify this component in the CarCard
   return (
     <div 
-      className="relative z-[100] w-full md:w-[240px]"
-      onClick={stopPropagation}
-      onMouseDown={stopPropagation}
-      onTouchStart={stopPropagation}
-      onTouchEnd={stopPropagation}
-      onTouchMove={stopPropagation}
-      onPointerDown={stopPropagation}
+      className="relative z-[100] w-full md:w-[240px] select-dropdown"
+      onClick={blockAllEvents}
+      onMouseDown={blockAllEvents}
+      onTouchStart={blockAllEvents}
+      onTouchEnd={blockAllEvents}
+      onTouchMove={blockAllEvents}
+      onPointerDown={blockAllEvents}
+      data-no-card-click="true"
     >
       <Select 
         value={sortOption} 

@@ -24,23 +24,31 @@ const CarCard = ({ car, className }: CarCardProps) => {
   const isFavoriteCard = typeof isFavorite === 'function' ? isFavorite(car.id) : false;
   const isInCompareCard = typeof isInCompare === 'function' ? isInCompare(car.id) : false;
   
-  // Check if click is on the card but not on a child with specified classes
+  // Улучшенная проверка для предотвращения кликов на карточке
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on interactive elements or sort options
+    // Проверяем, происходит ли клик из элемента с атрибутом или классом, указывающим на интерактивный элемент
     const target = e.target as HTMLElement;
+    const currentTarget = e.currentTarget;
+    
+    // Ищем элементы с атрибутом data-no-card-click или классом select-dropdown
     const isInteractiveElement = 
+      target.closest('[data-no-card-click="true"]') || 
+      target.closest('.select-dropdown') ||
       target.closest('[role="combobox"]') || 
       target.closest('[role="option"]') ||
-      target.closest('.select-dropdown') ||
       target.closest('[data-radix-select-trigger]') ||
       target.closest('[data-radix-select-content]') ||
       target.closest('[data-radix-select-item]');
-    
+
     if (isInteractiveElement) {
-      // Don't process the card click
+      console.log('Предотвращение перехода по карточке, клик на интерактивном элементе');
       e.stopPropagation();
       e.preventDefault();
-      return;
+      // Прерываем всю цепочку событий
+      if (e.nativeEvent) {
+        e.nativeEvent.stopImmediatePropagation();
+      }
+      return false;
     }
   };
   
