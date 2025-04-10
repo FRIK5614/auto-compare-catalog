@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,13 +112,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     setFilter({
       search: "",
       sortBy: "popularity",
-    });
-  };
-  
-  const handleSortChange = (value: string) => {
-    setFilter({
-      ...filter,
-      sortBy: value as CarFilter["sortBy"]
     });
   };
   
@@ -385,35 +377,13 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
         </ScrollArea>
       </div>
       
-      {/* Moved sorting out of filters */}
-      <div className="p-4 border-t border-auto-gray-200">
-        <div className="mb-2">
-          <h3 className="font-medium">Сортировка</h3>
+      {isInModal && closeModal && (
+        <div className="p-4 border-t border-auto-gray-200">
+          <Button className="w-full" onClick={closeModal}>
+            Применить фильтры
+          </Button>
         </div>
-        <Select
-          value={filter.sortBy || "popularity"}
-          onValueChange={handleSortChange}
-        >
-          <SelectTrigger className="bg-white w-full">
-            <SelectValue placeholder="По популярности" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="popularity">По популярности</SelectItem>
-            <SelectItem value="priceAsc">По цене (сначала дешевле)</SelectItem>
-            <SelectItem value="priceDesc">По цене (сначала дороже)</SelectItem>
-            <SelectItem value="yearDesc">По году (сначала новее)</SelectItem>
-            <SelectItem value="yearAsc">По году (сначала старше)</SelectItem>
-          </SelectContent>
-        </Select>
-        
-        {isInModal && closeModal && (
-          <div className="mt-4">
-            <Button className="w-full" onClick={closeModal}>
-              Применить фильтры
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

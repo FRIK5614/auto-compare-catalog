@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import { Car } from "@/types/car";
 import CarCard from "@/components/CarCard";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -34,29 +32,6 @@ const FeaturedCars = ({
   const [visibleCount, setVisibleCount] = useState(4);
   const isMobile = useIsMobile();
   const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  // Update scroll buttons state when the carousel API changes
-  useEffect(() => {
-    if (!api) return;
-
-    const onSelect = () => {
-      setCanScrollPrev(api.canScrollPrev());
-      setCanScrollNext(api.canScrollNext());
-    };
-
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-
-    // Initial check
-    onSelect();
-
-    return () => {
-      api.off("select", onSelect);
-      api.off("reInit", onSelect);
-    };
-  }, [api]);
 
   // Determine how many cards to show based on viewport
   useEffect(() => {
@@ -96,28 +71,6 @@ const FeaturedCars = ({
             <h2 className="text-2xl md:text-3xl font-bold text-auto-gray-900">{title}</h2>
             {subtitle && <p className="text-auto-gray-600 mt-1">{subtitle}</p>}
           </div>
-          
-          {/* Navigation buttons moved next to the title */}
-          {!loading && !error && cars.length > 0 && (
-            <div className="flex items-center gap-2 mt-2 md:mt-0">
-              <Button
-                onClick={() => api?.scrollPrev()}
-                disabled={!canScrollPrev}
-                className="rounded-full h-10 w-10 p-0 bg-blue-600 hover:bg-blue-700 text-white border-none"
-                aria-label="Previous car"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                onClick={() => api?.scrollNext()}
-                disabled={!canScrollNext}
-                className="rounded-full h-10 w-10 p-0 bg-blue-600 hover:bg-blue-700 text-white border-none"
-                aria-label="Next car"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
         </div>
         
         {error && <ErrorState message={error} onRetry={onRetry} />}

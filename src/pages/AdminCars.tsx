@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Car } from "@/types/car";
 import { Database, Plus } from "lucide-react";
 import {
   AlertDialog,
@@ -14,14 +13,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 import AdminCarsList from "@/components/AdminCarsList";
 
 const AdminCars = () => {
-  const { cars, loading, deleteCar } = useAdmin();
+  const admin = useAdmin();
   const [carToDelete, setCarToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
   
@@ -37,7 +35,7 @@ const AdminCars = () => {
     if (!carToDelete) return;
     
     try {
-      await deleteCar(carToDelete);
+      await admin.deleteCar(carToDelete);
       toast.success("Автомобиль успешно удален");
     } catch (error) {
       toast.error("Ошибка при удалении автомобиля");
@@ -81,11 +79,11 @@ const AdminCars = () => {
         </div>
         
         <AdminCarsList
-          cars={cars}
+          cars={admin.cars || []}
           onEdit={handleEditCar}
           onDelete={handleDeleteCar}
           onView={handleViewCar}
-          loading={loading}
+          loading={admin.loading || false}
         />
         
         <AlertDialog open={!!carToDelete} onOpenChange={(open) => !open && setCarToDelete(null)}>

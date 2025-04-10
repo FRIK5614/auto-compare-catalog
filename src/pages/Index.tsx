@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -40,17 +39,18 @@ const IndexContent = () => {
       newFilter.brands = [brand];
     }
     
+    newFilter.limit = 24;
+    
     setFilter(newFilter);
   }, [searchParams, setFilter]);
 
   const loadMore = () => {
-    // Navigate to catalog page instead of showing more on home page
     const params = new URLSearchParams(searchParams);
     navigate(`/catalog?${params.toString()}`);
   };
 
-  const newCars = cars.filter(car => car.isNew);
-  const popularCars = cars.filter(car => car.isPopular);
+  const newCars = cars.filter(car => car.isNew).slice(0, 8);
+  const popularCars = cars.filter(car => car.isPopular).slice(0, 8);
 
   const openFilterModal = () => {
     setIsFilterModalOpen(true);
@@ -78,10 +78,10 @@ const IndexContent = () => {
               <p className="text-lg md:text-xl mb-8 text-blue-100">
                 Более 1000 моделей автомобилей с подробными характеристиками, ценами и возможностью сравнения
               </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-col sm:flex-row w-full space-y-4 sm:space-y-0 sm:space-x-4">
                 <Button 
                   size="lg" 
-                  className="bg-white text-auto-blue-800 hover:bg-blue-50"
+                  className="w-full bg-white text-auto-blue-800 hover:bg-blue-50"
                   onClick={() => navigate('/catalog')}
                 >
                   <Car className="mr-2 h-5 w-5" />
@@ -89,18 +89,18 @@ const IndexContent = () => {
                 </Button>
                 <Button 
                   size="lg" 
-                  className="bg-auto-blue-500 text-white hover:bg-auto-blue-600"
+                  className="w-full bg-auto-blue-500 text-white hover:bg-auto-blue-600"
                   onClick={openFilterModal}
                 >
                   <Settings className="mr-2 h-5 w-5" />
                   Подбор по параметрам
                 </Button>
               </div>
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4">
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="bg-transparent border-white text-white hover:bg-white hover:text-auto-blue-800 w-full sm:w-auto"
+                  className="w-full bg-transparent border-white text-white hover:bg-white hover:text-auto-blue-800"
                   onClick={scrollToConsultForm}
                 >
                   <UserRound className="mr-2 h-5 w-5" />

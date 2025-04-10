@@ -1,6 +1,7 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
-import { Car, Order } from "../types/car";
+import { Car, Order, CarFilter } from "../types/car";
+import { useEffect, useState } from "react";
 
 export const useCars = () => {
   const {
@@ -30,6 +31,16 @@ export const useCars = () => {
     importCarsData,
     uploadCarImage
   } = useGlobalCars();
+
+  // Optimize loading by applying limit
+  useEffect(() => {
+    if (filter && !filter.limit && window.location.pathname === '/') {
+      setFilter({
+        ...filter,
+        limit: 24 // Limit cars on homepage
+      });
+    }
+  }, [filter, setFilter]);
 
   const favoriteCars = cars.filter(car => favorites.includes(car.id));
   
@@ -88,9 +99,35 @@ export const useCars = () => {
     };
   };
   
+  // Function to apply sorting
+  const applySorting = (cars: Car[], sortBy?: string): Car[] => {
+    const carsCopy = [...cars];
+    
+    switch (sortBy) {
+      case "priceAsc":
+        return carsCopy.sort((a, b) => a.price.base - b.price.base);
+      case "priceDesc":
+        return carsCopy.sort((a, b) => b.price.base - a.price.base);
+      case "yearDesc":
+        return carsCopy.sort((a, b) => b.year - a.year);
+      case "yearAsc":
+        return carsCopy.sort((a, b) => a.year - b.year);
+      case "nameAsc":
+        return carsCopy.sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model));
+      case "nameDesc":
+        return carsCopy.sort((a, b) => (b.brand + b.model).localeCompare(a.brand + a.model));
+      case "popularity":
+      default:
+        return carsCopy.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+    }
+  };
+  
+  // Apply sorting to filtered cars
+  const sortedFilteredCars = applySorting(filteredCars, filter.sortBy);
+  
   return {
     cars,
-    filteredCars,
+    filteredCars: sortedFilteredCars,
     favoriteCars,
     comparisonCars,
     compareCarsIds: compareCars,

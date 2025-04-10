@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -9,9 +8,6 @@ import ComparePanel from "@/components/ComparePanel";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
 import { 
-  ChevronDown, 
-  ChevronLeft, 
-  ChevronRight, 
   SlidersHorizontal, 
   ArrowUpDown 
 } from "lucide-react";
@@ -86,16 +82,20 @@ const mapSortOptionFromFilter = (filterSort?: string): string => {
     case "priceDesc": return "price_desc";
     case "yearDesc": return "year_desc";
     case "yearAsc": return "year_asc";
+    case "nameAsc": return "name_asc";
+    case "nameDesc": return "name_desc";
     default: return "default";
   }
 };
 
-const mapSortOptionToFilter = (sortOption: string): string => {
+const mapSortOptionToFilter = (sortOption: string): "popularity" | "priceAsc" | "priceDesc" | "yearDesc" | "yearAsc" | "nameAsc" | "nameDesc" => {
   switch (sortOption) {
     case "price_asc": return "priceAsc";
     case "price_desc": return "priceDesc";
     case "year_desc": return "yearDesc";
     case "year_asc": return "yearAsc";
+    case "name_asc": return "nameAsc";
+    case "name_desc": return "nameDesc";
     default: return "popularity";
   }
 };
@@ -106,10 +106,9 @@ const Catalog = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<string>("default");
-  const [sortedCars, setSortedCars] = useState<Car[]>([]);
 
   const CARS_PER_PAGE = 12;
-  const totalPages = Math.ceil(sortedCars.length / CARS_PER_PAGE);
+  const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
 
   // Apply URL search params on load
   useEffect(() => {
@@ -145,19 +144,6 @@ const Catalog = () => {
     setFilter(newFilter);
   }, [searchParams, setFilter]);
 
-  // Apply sorting to cars
-  useEffect(() => {
-    if (loading) return;
-    
-    const selectedSortOption = sortOptions.find(option => option.value === sortOption);
-    if (selectedSortOption) {
-      const sorted = [...filteredCars].sort(selectedSortOption.sortFn);
-      setSortedCars(sorted);
-    } else {
-      setSortedCars(filteredCars);
-    }
-  }, [filteredCars, sortOption, loading]);
-
   // Update URL when page or sort changes
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
@@ -168,7 +154,7 @@ const Catalog = () => {
 
   // Pagination calculations
   const startIndex = (currentPage - 1) * CARS_PER_PAGE;
-  const currentPageCars = sortedCars.slice(startIndex, startIndex + CARS_PER_PAGE);
+  const currentPageCars = filteredCars.slice(startIndex, startIndex + CARS_PER_PAGE);
 
   const handleSortChange = (value: string) => {
     setSortOption(value);
