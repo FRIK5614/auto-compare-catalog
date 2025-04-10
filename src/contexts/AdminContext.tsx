@@ -1,11 +1,16 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Car } from '../types/car';
+import { useCars as useGlobalCars } from './CarsContext';
 
 type AdminContextType = {
   isAdmin: boolean;
   setAdmin: (isAdmin: boolean) => void;
   login: (password: string) => boolean;
   logout: () => void;
+  cars: Car[];
+  loading: boolean;
+  deleteCar: (carId: string) => Promise<void>;
 };
 
 const ADMIN_PASSWORD = "admin123"; // In a real app, use a more secure method
@@ -15,6 +20,7 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const globalCars = useGlobalCars();
 
   useEffect(() => {
     // Check localStorage for admin status on initial load
@@ -43,8 +49,21 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem(ADMIN_STORAGE_KEY);
   };
 
+  // Proxy methods from the global CarsContext for admin use
+  const deleteCar = async (carId: string) => {
+    return globalCars.deleteCar(carId);
+  };
+
   return (
-    <AdminContext.Provider value={{ isAdmin, setAdmin, login, logout }}>
+    <AdminContext.Provider value={{ 
+      isAdmin, 
+      setAdmin, 
+      login, 
+      logout,
+      cars: globalCars.cars,
+      loading: globalCars.loading,
+      deleteCar
+    }}>
       {children}
     </AdminContext.Provider>
   );

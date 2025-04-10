@@ -101,6 +101,7 @@ export interface CarFilter {
   onlyNew?: boolean;      // New cars only flag
   search?: string;        // Search term
   sortBy?: 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc'; // Sort option
+  limit?: number;         // Limit number of results
 }
 
 export interface Order {
