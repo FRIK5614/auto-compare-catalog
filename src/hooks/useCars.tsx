@@ -1,11 +1,12 @@
-
 import { useEffect } from "react";
 import { useCarDetails } from "./useCarDetails";
 import { useCarFiltering } from "./useCarFiltering";
 import { useCarActions } from "./useCarActions";
 import { useCarsState } from "./useCarsState";
+import { useCars as useGlobalCars } from "../contexts/CarsContext";
 
 export const useCars = () => {
+  const { compareCars, clearCompare, processOrder, getOrders, exportCarsData, importCarsData } = useGlobalCars();
   const carDetails = useCarDetails();
   const carFiltering = useCarFiltering();
   const carActions = useCarActions();
@@ -30,7 +31,7 @@ export const useCars = () => {
     filteredCars: carFiltering.filteredCars,
     favoriteCars: carsState.favoriteCars,
     comparisonCars: carsState.comparisonCars,
-    compareCarsIds: carActions.compareCarsIds,
+    compareCarsIds: compareCars,
     orders: carsState.orders,
     
     // Filtering
@@ -42,7 +43,7 @@ export const useCars = () => {
     toggleCompare: carActions.toggleCompare,
     isFavorite: carActions.isFavorite,
     isInCompare: carActions.isInCompare,
-    clearCompare: carActions.clearCompare,
+    clearCompare,
     
     // Car CRUD operations
     getCarById: carDetails.getCarById,
@@ -61,10 +62,10 @@ export const useCars = () => {
     applyAdvancedFilter: carFiltering.applyAdvancedFilter,
     
     // Other actions
-    processOrder: carActions.processOrder,
-    getOrders: carActions.getOrders,
-    exportCarsData: carActions.exportCarsData,
-    importCarsData: carActions.importCarsData,
+    processOrder,
+    getOrders,
+    exportCarsData,
+    importCarsData,
     uploadCarImage: carDetails.uploadCarImage,
     
     // Added for compatibility with components that require these functions
