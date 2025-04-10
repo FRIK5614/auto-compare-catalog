@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useCars } from '@/hooks/useCars';
 import { Button } from '@/components/ui/button';
@@ -151,11 +150,11 @@ const AdminCars = () => {
       if (uploadedImages.length > 0) {
         for (const file of uploadedImages) {
           try {
-            const result = await uploadCarImage(file);
-            if (result && result.url) {
+            const imageUrl = await uploadCarImage(file);
+            if (imageUrl) {
               carImagesList.push({
                 id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                url: result.url,
+                url: typeof imageUrl === 'string' ? imageUrl : imageUrl.url,
                 alt: `${editingCar.brand} ${editingCar.model}`
               });
             }
