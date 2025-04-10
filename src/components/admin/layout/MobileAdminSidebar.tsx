@@ -9,7 +9,6 @@ type MobileAdminSidebarProps = {
   isOpen: boolean;
   onClose: () => void;
   newOrdersCount: number;
-  newMessagesCount: number;
   onItemClick: (e: React.MouseEvent<HTMLAnchorElement>, path: string) => void;
   onLogout: () => void;
 };
@@ -18,7 +17,6 @@ export const MobileAdminSidebar: React.FC<MobileAdminSidebarProps> = ({
   isOpen,
   onClose,
   newOrdersCount,
-  newMessagesCount,
   onItemClick,
   onLogout
 }) => {
@@ -50,7 +48,6 @@ export const MobileAdminSidebar: React.FC<MobileAdminSidebarProps> = ({
         
         <AdminSidebarMenu
           newOrdersCount={newOrdersCount}
-          newMessagesCount={newMessagesCount}
           onItemClick={(e, path) => {
             onItemClick(e, path);
             onClose();

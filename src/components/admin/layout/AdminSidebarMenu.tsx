@@ -10,17 +10,15 @@ import {
 import { 
   CarFront, 
   LogOut, 
-  Cog, 
+  Settings, 
   ShoppingCart, 
-  BarChart3, 
-  FileArchive, 
-  Package,
-  MessageCircle
+  BarChart3,
+  FileArchive,
+  Package
 } from 'lucide-react';
 
 type AdminMenuProps = {
   newOrdersCount: number;
-  newMessagesCount: number;
   onItemClick: (e: React.MouseEvent<HTMLAnchorElement>, path: string) => void;
   onLogout: () => void;
   isMobile?: boolean;
@@ -28,7 +26,6 @@ type AdminMenuProps = {
 
 export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({ 
   newOrdersCount, 
-  newMessagesCount, 
   onItemClick, 
   onLogout,
   isMobile = false
@@ -41,92 +38,57 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
            (path !== '/admin' && location.pathname.startsWith(path));
   };
 
+  // Define menu sections with their items
+  const menuSections = [
+    {
+      title: "Управление",
+      items: [
+        { icon: BarChart3, title: "Главная", path: "/admin" },
+        { icon: CarFront, title: "Автомобили", path: "/admin/cars" },
+        { icon: ShoppingCart, title: "Заказы", path: "/admin/orders", badge: newOrdersCount },
+      ]
+    },
+    {
+      title: "Импорт/Экспорт",
+      items: [
+        { icon: FileArchive, title: "Импорт данных", path: "/admin/import" },
+        { icon: Package, title: "Каталог TMC Авто", path: "/admin/tmcavto-catalog" },
+      ]
+    },
+    {
+      title: "Система",
+      items: [
+        { icon: Settings, title: "Настройки", path: "/admin/settings" },
+      ]
+    }
+  ];
+
   if (isMobile) {
     return (
       <div className="space-y-6">
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Управление</h3>
-          <div className="space-y-1">
-            <Button 
-              variant={isActive('/admin') || isActive('/admin/dashboard') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin")}
-            >
-              <BarChart3 className="h-5 w-5 mr-2" />
-              <span>Главная</span>
-            </Button>
-            <Button 
-              variant={isActive('/admin/cars') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/cars")}
-            >
-              <CarFront className="h-5 w-5 mr-2" />
-              <span>Автомобили</span>
-            </Button>
-            <Button 
-              variant={isActive('/admin/orders') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/orders")}
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              <span>Заказы</span>
-              {newOrdersCount > 0 && (
-                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                  {newOrdersCount}
-                </span>
-              )}
-            </Button>
-            <Button 
-              variant={isActive('/admin/chat') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/chat")}
-            >
-              <MessageCircle className="h-5 w-5 mr-2" />
-              <span>Чат</span>
-              {newMessagesCount > 0 && (
-                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                  {newMessagesCount}
-                </span>
-              )}
-            </Button>
+        {menuSections.map((section, idx) => (
+          <div key={idx}>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <Button 
+                  key={item.path}
+                  variant={isActive(item.path) ? 'secondary' : 'ghost'} 
+                  className="w-full justify-start" 
+                  onClick={(e) => onItemClick(e as any, item.path)}
+                >
+                  <item.icon className="h-5 w-5 mr-2" />
+                  <span>{item.title}</span>
+                  {item.badge && item.badge > 0 && (
+                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                      {item.badge}
+                    </span>
+                  )}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
-        
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Импорт/Экспорт</h3>
-          <div className="space-y-1">
-            <Button 
-              variant={isActive('/admin/import') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/import")}
-            >
-              <FileArchive className="h-5 w-5 mr-2" />
-              <span>Импорт данных</span>
-            </Button>
-            <Button 
-              variant={isActive('/admin/tmcavto-catalog') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/tmcavto-catalog")}
-            >
-              <Package className="h-5 w-5 mr-2" />
-              <span>Каталог TMC Авто</span>
-            </Button>
-          </div>
-        </div>
-        
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">Система</h3>
-          <div className="space-y-1">
-            <Button 
-              variant={isActive('/admin/settings') ? 'secondary' : 'ghost'} 
-              className="w-full justify-start" 
-              onClick={(e) => onItemClick(e as any, "/admin/settings")}
-            >
-              <Cog className="h-5 w-5 mr-2" />
-              <span>Настройки</span>
-            </Button>
-          </div>
-        </div>
+        ))}
 
         <div className="mt-6">
           <Button 
@@ -144,60 +106,26 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton 
-          asChild 
-          className={isActive('/admin') || isActive('/admin/dashboard') ? 'bg-accent text-accent-foreground' : ''}
-        >
-          <a href="#" onClick={(e) => onItemClick(e, "/admin")}>
-            <BarChart3 className="h-5 w-5" />
-            <span>Главная</span>
-          </a>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-      <SidebarMenuItem>
-        <SidebarMenuButton 
-          asChild
-          className={isActive('/admin/cars') ? 'bg-accent text-accent-foreground' : ''}
-        >
-          <a href="#" onClick={(e) => onItemClick(e, "/admin/cars")}>
-            <CarFront className="h-5 w-5" />
-            <span>Автомобили</span>
-          </a>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-      <SidebarMenuItem>
-        <SidebarMenuButton 
-          asChild
-          className={isActive('/admin/orders') ? 'bg-accent text-accent-foreground' : ''}
-        >
-          <a href="#" onClick={(e) => onItemClick(e, "/admin/orders")}>
-            <ShoppingCart className="h-5 w-5" />
-            <span>Заказы</span>
-            {newOrdersCount > 0 && (
-              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                {newOrdersCount}
-              </span>
-            )}
-          </a>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-      <SidebarMenuItem>
-        <SidebarMenuButton 
-          asChild
-          className={isActive('/admin/chat') ? 'bg-accent text-accent-foreground' : ''}
-        >
-          <a href="#" onClick={(e) => onItemClick(e, "/admin/chat")}>
-            <MessageCircle className="h-5 w-5" />
-            <span>Чат</span>
-            {newMessagesCount > 0 && (
-              <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                {newMessagesCount}
-              </span>
-            )}
-          </a>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      {menuSections.flatMap(section => 
+        section.items.map(item => (
+          <SidebarMenuItem key={item.path}>
+            <SidebarMenuButton 
+              asChild 
+              className={isActive(item.path) ? 'bg-accent text-accent-foreground' : ''}
+            >
+              <a href="#" onClick={(e) => onItemClick(e, item.path)}>
+                <item.icon className="h-5 w-5" />
+                <span>{item.title}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                    {item.badge}
+                  </span>
+                )}
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))
+      )}
     </SidebarMenu>
   );
 };

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Menu } from 'lucide-react';
 import { useCars } from '@/hooks/useCars';
-import { useChat } from '@/contexts/ChatContext';
 import { useToast } from '@/hooks/use-toast';
 import { AdminSidebar } from './admin/layout/AdminSidebar';
 import { MobileAdminSidebar } from './admin/layout/MobileAdminSidebar';
@@ -18,9 +17,7 @@ type AdminLayoutProps = {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { isAdmin, logout } = useAdmin();
   const { orders } = useCars();
-  const { chatState } = useChat();
   const [newOrdersCount, setNewOrdersCount] = useState(0);
-  const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -32,19 +29,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       setNewOrdersCount(count);
     }
   }, [orders]);
-
-  useEffect(() => {
-    const totalUnread = chatState.sessions.reduce((total, session) => total + session.unreadCount, 0);
-    setNewMessagesCount(totalUnread);
-    
-    if (totalUnread > 0 && location.pathname !== '/admin/chat') {
-      toast({
-        title: "Новые сообщения",
-        description: `У вас ${totalUnread} непрочитанных сообщений`,
-        action: <Button variant="secondary" size="sm" onClick={() => navigate('/admin/chat')}>Перейти</Button>
-      });
-    }
-  }, [chatState.sessions, location.pathname, navigate, toast]);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -90,14 +74,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
           newOrdersCount={newOrdersCount}
-          newMessagesCount={newMessagesCount}
           onItemClick={handleMenuItemClick}
           onLogout={handleLogout}
         />
 
         <AdminSidebar 
           newOrdersCount={newOrdersCount}
-          newMessagesCount={newMessagesCount}
           onItemClick={handleMenuItemClick}
           onLogout={handleLogout}
         />

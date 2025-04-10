@@ -11,14 +11,12 @@ import { LogOut } from 'lucide-react';
 
 type AdminSidebarProps = {
   newOrdersCount: number;
-  newMessagesCount: number;
   onItemClick: (e: React.MouseEvent<HTMLAnchorElement>, path: string) => void;
   onLogout: () => void;
 };
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   newOrdersCount,
-  newMessagesCount,
   onItemClick,
   onLogout
 }) => {
@@ -30,8 +28,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       
       <AdminSidebarContent 
         newOrdersCount={newOrdersCount}
-        newMessagesCount={newMessagesCount}
         onItemClick={onItemClick}
+        onLogout={onLogout}
       />
       
       <SidebarFooter className="p-4">

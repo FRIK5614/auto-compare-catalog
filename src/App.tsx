@@ -21,7 +21,7 @@ import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminOrders from "./pages/AdminOrders";
 import AdminImport from "./pages/AdminImport";
-import AdminChat from "./pages/AdminChat";
+import AdminSettings from "./pages/AdminSettings";
 import AdminCars from "./pages/AdminCars";
 import AdminCarEdit from "./pages/AdminCarEdit";
 import { supabase } from "./integrations/supabase/client";
@@ -97,8 +97,7 @@ const AppContent = () => {
             <Route path="cars/new" element={<AdminCarEdit />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="import" element={<AdminImport />} />
-            <Route path="settings" element={<AdminDashboard />} />
-            <Route path="chat" element={<AdminChat />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
           
           {/* Redirect old route to admin panel */}
