@@ -27,6 +27,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     if (orders && orders.length > 0) {
       const count = orders.filter(order => order.status === 'new').length;
       setNewOrdersCount(count);
+      
+      // Добавим отладочную информацию о заказах
+      console.log('Loaded orders:', orders);
     }
   }, [orders]);
 
@@ -86,7 +89,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
         <SidebarInset className="bg-background flex-1 p-0 md:p-6 mt-[60px] md:mt-0">
           <div className="container mx-auto">
-            <SidebarTrigger className="mb-4 hidden md:flex" />
+            {/* Удалена дублирующая кнопка SidebarTrigger */}
             {children || <Outlet />}
           </div>
         </SidebarInset>
