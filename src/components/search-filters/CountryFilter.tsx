@@ -22,7 +22,7 @@ export interface CountryFilterProps {
 
 export const CountryFilter = ({ filter, setFilter }: CountryFilterProps) => {
   const { getUniqueValues } = useCars();
-  const countries = getUniqueValues("country");
+  const countries = getUniqueValues("country") as string[];
   
   return (
     <AccordionItem value="country" className="border-b border-auto-gray-200">

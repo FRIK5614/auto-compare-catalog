@@ -1,6 +1,6 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
-import { Car } from "../types/car";
+import { Car, CarFilter } from "../types/car";
 
 export const useCarFiltering = () => {
   const {
@@ -10,37 +10,30 @@ export const useCarFiltering = () => {
     setFilter
   } = useGlobalCars();
   
-  // Create a filter utils object from the useCarFilters hook
-  const {
-    getMostViewedCars,
-    getUniqueValues,
-    getPriceRange,
-    getYearRange,
-    applySorting,
-    applyAdvancedFilter
-  } = useCarFilters(cars);
+  // Create a filter utils object
+  const carFilters = useCarFilters(cars);
 
   // Apply sorting to filtered cars
-  const sortedFilteredCars = applySorting(filteredCars, filter.sortBy);
+  const sortedFilteredCars = carFilters.applySorting(filteredCars, filter.sortBy);
 
   return {
     cars,
     filteredCars: sortedFilteredCars,
     filter,
     setFilter,
-    // Export utilities
-    getMostViewedCars,
-    getUniqueValues,
-    getPriceRange,
-    getYearRange,
-    applySorting,
-    applyAdvancedFilter
+    // Export utilities from carFilters
+    getMostViewedCars: carFilters.getMostViewedCars,
+    getUniqueValues: carFilters.getUniqueValues,
+    getPriceRange: carFilters.getPriceRange,
+    getYearRange: carFilters.getYearRange,
+    applySorting: carFilters.applySorting,
+    applyAdvancedFilter: carFilters.applyAdvancedFilter
   };
 };
 
-// Re-export the useCarFilters hook here to avoid circular dependencies
+// Helper hook to avoid circular dependencies
 function useCarFilters(cars: Car[]) {
-  // Helper functions (kept from the original useCarFilters)
+  // Helper functions
   const getMostViewedCars = (limit = 4) => {
     return [...cars]
       .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))

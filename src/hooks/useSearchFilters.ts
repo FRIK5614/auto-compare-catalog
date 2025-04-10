@@ -27,8 +27,8 @@ export const useSearchFilters = () => {
   // Load all available options
   useEffect(() => {
     if (cars.length > 0 && !loading) {
-      setAvailableBrands(getUniqueValues("brand"));
-      setAvailableBodyTypes(getUniqueValues("bodyType"));
+      setAvailableBrands(getUniqueValues("brand") as string[]);
+      setAvailableBodyTypes(getUniqueValues("bodyType") as string[]);
       
       // Extract complex nested values
       const transmissions = getUniqueValues("transmission");
@@ -53,7 +53,7 @@ export const useSearchFilters = () => {
         .filter(Boolean) as string[];
       setAvailableFuelTypes(Array.from(new Set(fuelTypes)));
       
-      setAvailableCountries(getUniqueValues("country"));
+      setAvailableCountries(getUniqueValues("country") as string[]);
       
       setPriceRange(getPriceRange());
       setYearRange(getYearRange());

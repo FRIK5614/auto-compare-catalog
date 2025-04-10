@@ -22,7 +22,7 @@ export interface BrandFilterProps {
 
 export const BrandFilter = ({ filter, setFilter }: BrandFilterProps) => {
   const { getUniqueValues } = useCars();
-  const brands = getUniqueValues("brand");
+  const brands = getUniqueValues("brand") as string[];
   
   return (
     <AccordionItem value="brand" className="border-b border-auto-gray-200">

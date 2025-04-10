@@ -22,7 +22,7 @@ export interface BodyTypeFilterProps {
 
 export const BodyTypeFilter = ({ filter, setFilter }: BodyTypeFilterProps) => {
   const { getUniqueValues } = useCars();
-  const bodyTypes = getUniqueValues("bodyType");
+  const bodyTypes = getUniqueValues("bodyType") as string[];
   
   return (
     <AccordionItem value="bodyType" className="border-b border-auto-gray-200">
