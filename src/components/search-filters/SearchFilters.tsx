@@ -1,111 +1,66 @@
 
-import React, { useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Accordion } from "@/components/ui/accordion";
-import { useNavigate } from "react-router-dom";
-import { useCars } from "@/hooks/useCars";
-import { SearchInput } from "./SearchInput";
 import { BrandFilter } from "./BrandFilter";
 import { BodyTypeFilter } from "./BodyTypeFilter";
 import { PriceFilter } from "./PriceFilter";
 import { YearFilter } from "./YearFilter";
-import { FuelTypeFilter } from "./FuelTypeFilter";
 import { TransmissionFilter } from "./TransmissionFilter";
+import { FuelTypeFilter } from "./FuelTypeFilter";
 import { CountryFilter } from "./CountryFilter";
 import { ExtraFilter } from "./ExtraFilter";
-import { CarFilter } from "@/types/car";
+import { SearchInput } from "./SearchInput";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, X } from "lucide-react";
+import { useCars } from "@/hooks/useCars";
 
-interface SearchFiltersProps {
-  filter: CarFilter;
-  setFilter: (filter: CarFilter) => void;
-  closeModal?: () => void;
-  isInModal?: boolean;
-}
+const SearchFilters = () => {
+  const { filter, setFilter, reloadCars, loading } = useCars();
 
-const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: SearchFiltersProps) => {
-  const navigate = useNavigate();
-  const { getUniqueValues, getPriceRange, getYearRange } = useCars();
-
-  const resetFilters = useCallback(() => {
+  const resetFilters = () => {
     setFilter({});
-  }, [setFilter]);
-
-  const handleSearch = useCallback(() => {
-    navigate("/catalog");
-  }, [navigate]);
-
-  // Get unique values for filters
-  const brands = getUniqueValues('brand');
-  const bodyTypes = getUniqueValues('bodyType');
-  const fuelTypes = getUniqueValues('engine').map(e => e?.fuelType).filter(Boolean) as string[];
-  const transmissionTypes = getUniqueValues('transmission').map(t => t?.type).filter(Boolean) as string[];
-  const countries = getUniqueValues('country');
-  
-  // Get min/max price and year ranges
-  const priceRange = getPriceRange();
-  const yearRange = getYearRange();
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4">
-      <SearchInput filter={filter} setFilter={setFilter} />
-      
-      <Accordion type="multiple" defaultValue={['brand']} className="space-y-2">
-        <BrandFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <BodyTypeFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <PriceFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <YearFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <FuelTypeFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <TransmissionFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <CountryFilter 
-          filter={filter} 
-          setFilter={setFilter} 
-        />
-        
-        <ExtraFilter 
-          filter={filter}
-          setFilter={setFilter}
-        />
-      </Accordion>
-      
-      <div className="flex space-x-2">
-        <Button 
-          className="w-full" 
-          onClick={handleSearch}
-        >
-          Поиск
-        </Button>
-        <Button 
-          variant="outline" 
-          className="w-full" 
-          onClick={resetFilters}
-        >
-          Сбросить
-        </Button>
+    <div className="w-full bg-white rounded-lg shadow-sm border border-auto-gray-200">
+      <div className="p-4 border-b border-auto-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-auto-gray-900">Фильтры</h3>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={resetFilters}
+              className="h-8 text-auto-gray-700 text-xs flex items-center"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Сбросить
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={reloadCars}
+              disabled={loading}
+              className="h-8 text-auto-gray-700 text-xs flex items-center"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
+              Обновить
+            </Button>
+          </div>
+        </div>
+        <SearchInput filter={filter} setFilter={setFilter} />
       </div>
+
+      <Accordion type="multiple" defaultValue={["brand", "price"]} className="px-4 py-2">
+        <BrandFilter filter={filter} setFilter={setFilter} />
+        <BodyTypeFilter filter={filter} setFilter={setFilter} />
+        <PriceFilter filter={filter} setFilter={setFilter} />
+        <YearFilter filter={filter} setFilter={setFilter} />
+        <TransmissionFilter filter={filter} setFilter={setFilter} />
+        <FuelTypeFilter filter={filter} setFilter={setFilter} />
+        <CountryFilter filter={filter} setFilter={setFilter} />
+        <ExtraFilter filter={filter} setFilter={setFilter} />
+      </Accordion>
     </div>
   );
 };
