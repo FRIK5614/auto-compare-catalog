@@ -1,6 +1,6 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
-import { Car } from "../types/car";
+import { Car } from "@/types/car";
 import { useEffect, useRef } from "react";
 
 export const useCarDetails = () => {
@@ -17,14 +17,19 @@ export const useCarDetails = () => {
   
   // Используем ref, чтобы отслеживать первоначальную загрузку
   const initialLoadDone = useRef(false);
+  const initialLoadStarted = useRef(false);
 
   // Загружаем автомобили только при первом монтировании
   useEffect(() => {
-    if (!initialLoadDone.current) {
-      reloadCars();
+    if (!initialLoadDone.current && !initialLoadStarted.current && cars.length === 0) {
+      initialLoadStarted.current = true;
+      reloadCars().then(() => {
+        initialLoadDone.current = true;
+      });
+    } else if (cars.length > 0) {
       initialLoadDone.current = true;
     }
-  }, [reloadCars]);
+  }, [cars.length, reloadCars]);
 
   // Улучшенная версия getCarById с логированием для отладки
   const enhancedGetCarById = (id: string) => {

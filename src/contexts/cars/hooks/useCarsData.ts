@@ -12,6 +12,7 @@ export const useCarsData = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const dataInitialized = useRef(false);
+  const reloadInProgress = useRef(false);
 
   // Инициализируем данные
   useEffect(() => {
@@ -54,6 +55,11 @@ export const useCarsData = () => {
 
   // Функция для перезагрузки автомобилей
   const reloadCars = async () => {
+    // Предотвращаем параллельные вызовы reloadCars
+    if (reloadInProgress.current) return;
+    
+    reloadInProgress.current = true;
+    
     try {
       setLoading(true);
       const data = await loadCars();
@@ -73,6 +79,8 @@ export const useCarsData = () => {
         title: "Ошибка обновления",
         description: errorMessage
       });
+    } finally {
+      reloadInProgress.current = false;
     }
   };
 

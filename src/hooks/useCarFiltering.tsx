@@ -1,7 +1,7 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car, CarFilter } from "../types/car";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export const useCarFiltering = () => {
   const {
@@ -13,9 +13,19 @@ export const useCarFiltering = () => {
   
   // Создаем объект фильтров
   const carFilters = useCarFilters(cars);
+  const filteringComplete = useRef(false);
 
-  // Применяем сортировку к отфильтрованным автомобилям
-  const sortedFilteredCars = carFilters.applySorting(filteredCars, filter.sortBy);
+  // Применяем сортировку к отфильтрованным автомобилям только когда необходимо
+  const sortedFilteredCars = filteringComplete.current 
+    ? carFilters.applySorting(filteredCars, filter.sortBy)
+    : filteredCars;
+  
+  useEffect(() => {
+    filteringComplete.current = true;
+    return () => {
+      filteringComplete.current = false;
+    };
+  }, []);
 
   return {
     cars,

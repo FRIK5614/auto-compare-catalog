@@ -22,10 +22,12 @@ const HomeContent = () => {
   const consultFormRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const initialParamsApplied = useRef(false);
+  const loadTriggered = useRef(false);
 
   useEffect(() => {
-    if (!initialParamsApplied.current) {
+    if (!initialParamsApplied.current && !loadTriggered.current) {
       initialParamsApplied.current = true;
+      loadTriggered.current = true;
       
       const newFilter: any = { ...filter };
       

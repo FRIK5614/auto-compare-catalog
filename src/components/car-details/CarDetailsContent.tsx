@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
@@ -24,10 +24,12 @@ const CarDetailsContent: React.FC = () => {
   } = useCars();
   
   const car = getCarById(id || "");
+  const viewRegistered = useRef(false);
   
   useEffect(() => {
-    if (car) {
+    if (car && !viewRegistered.current) {
       viewCar(car.id);
+      viewRegistered.current = true;
     }
   }, [car, viewCar]);
   
