@@ -1,11 +1,8 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { useLocation } from 'react-router-dom';
 import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton 
+  SidebarMenu
 } from '@/components/ui/sidebar';
 import { 
   CarFront, 
@@ -14,9 +11,10 @@ import {
   ShoppingCart, 
   BarChart3,
   FileArchive,
-  Package,
-  Loader2
+  Package
 } from 'lucide-react';
+import { SidebarMenuSection, MenuItemType } from './SidebarMenuSection';
+import { MobileSidebarMenu } from './MobileSidebarMenu';
 
 type AdminMenuProps = {
   newOrdersCount: number;
@@ -32,7 +30,6 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   isMobile = false
 }) => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     return location.pathname === path || 
@@ -66,67 +63,26 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
 
   if (isMobile) {
     return (
-      <div className="space-y-6">
-        {menuSections.map((section, idx) => (
-          <div key={idx}>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <Button 
-                  key={item.path}
-                  variant={isActive(item.path) ? 'secondary' : 'ghost'} 
-                  className="w-full justify-start" 
-                  onClick={(e) => onItemClick(e as any, item.path)}
-                >
-                  <item.icon className="h-5 w-5 mr-2" />
-                  <span>{item.title}</span>
-                  {item.badge && item.badge > 0 && (
-                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                      {item.badge}
-                    </span>
-                  )}
-                </Button>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <div className="mt-6">
-          <Button 
-            variant="default" 
-            className="w-full" 
-            onClick={onLogout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Выйти
-          </Button>
-        </div>
-      </div>
+      <MobileSidebarMenu
+        menuSections={menuSections}
+        onItemClick={onItemClick}
+        onLogout={onLogout}
+        isActive={isActive}
+      />
     );
   }
 
   return (
     <SidebarMenu>
-      {menuSections.flatMap(section => 
-        section.items.map(item => (
-          <SidebarMenuItem key={item.path}>
-            <SidebarMenuButton 
-              asChild 
-              className={isActive(item.path) ? 'bg-accent text-accent-foreground' : ''}
-            >
-              <a href="#" onClick={(e) => onItemClick(e, item.path)}>
-                <item.icon className="h-5 w-5" />
-                <span>{item.title}</span>
-                {item.badge && item.badge > 0 && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                    {item.badge}
-                  </span>
-                )}
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))
-      )}
+      {menuSections.flatMap(section => (
+        <SidebarMenuSection
+          key={section.title}
+          title={section.title}
+          items={section.items}
+          onItemClick={onItemClick}
+          isActive={isActive}
+        />
+      ))}
     </SidebarMenu>
   );
 };

@@ -7,7 +7,7 @@ import CarFormTransmission from './CarFormTransmission';
 import CarForm from './CarForm';
 import CarFormContainer from './CarFormContainer';
 import CarUrlFetcher from './CarUrlFetcher';
-import { CarDeleteDialog } from './CarDeleteDialog';
+import CarDeleteDialog from './CarDeleteDialog';
 
 export {
   CarFormBasicInfo,
