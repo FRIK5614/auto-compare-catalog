@@ -1,6 +1,5 @@
-
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
-import { Car, CarFilter } from "../types/car";
+import { Car } from "../types/car";
 import { useEffect } from "react";
 import { useCarFilters } from "./useCarFilters";
 import { useCarActions } from "./useCarActions";
