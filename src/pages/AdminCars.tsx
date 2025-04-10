@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -22,6 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
