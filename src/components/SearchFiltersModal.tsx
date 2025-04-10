@@ -75,7 +75,7 @@ const SearchFiltersModal = ({
 
   // На десктопе используем обычный Dialog
   return <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] p-0">
+      <DialogContent className="sm:max-w-[600px] p-0 py-[100px]">
         <DialogHeader className="px-4 py-4 border-b sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold flex items-center">
