@@ -9,7 +9,9 @@ export const useCarsState = () => {
     error,
     favorites,
     compareCars,
-    orders
+    orders,
+    removeFromFavorites,
+    removeFromCompare
   } = useGlobalCars();
 
   // Derived data
@@ -24,6 +26,8 @@ export const useCarsState = () => {
     error,
     favoriteCars,
     comparisonCars,
-    orders
+    orders,
+    removeFromFavorites,
+    removeFromCompare
   };
 };

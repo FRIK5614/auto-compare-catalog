@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useCarDetails } from "./useCarDetails";
 import { useCarFiltering } from "./useCarFiltering";
@@ -65,5 +66,9 @@ export const useCars = () => {
     exportCarsData: carActions.exportCarsData,
     importCarsData: carActions.importCarsData,
     uploadCarImage: carDetails.uploadCarImage,
+    
+    // Added for compatibility with components that require these functions
+    removeFromFavorites: carsState.removeFromFavorites,
+    removeFromCompare: carsState.removeFromCompare
   };
 };
