@@ -22,6 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
@@ -136,7 +137,10 @@ const AdminCars = () => {
         <AdminCarsList 
           cars={filteredCars} 
           onEdit={(id) => navigate(`/admin/cars/edit/${id}`)}
-          onDelete={openDeleteDialog}
+          onDelete={(id) => {
+            const car = cars.find(c => c.id === id);
+            if (car) openDeleteDialog(car);
+          }}
           onView={(id) => navigate(`/car/${id}`)}
         />
 

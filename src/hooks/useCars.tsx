@@ -198,15 +198,15 @@ export const useCars = () => {
       result = result.filter(car => car.country && advancedFilter.countries?.includes(car.country));
     }
     
-    // КПП (добавляем новый фильтр)
-    if (advancedFilter.transmissionTypes && advancedFilter.transmissionTypes.length > 0) {
+    // КПП (исправляем ошибку с transmissionTypes -> transmissionType)
+    if (advancedFilter.transmissionType && advancedFilter.transmissionType.length > 0) {
       result = result.filter(car => 
-        advancedFilter.transmissionTypes?.includes(car.transmission.type)
+        advancedFilter.transmissionType?.includes(car.transmission.type)
       );
     }
     
-    // Наличие скидки (добавляем новый фильтр)
-    if (advancedFilter.hasDiscount === true) {
+    // Наличие скидки (добавляем проверку на discount > 0)
+    if (advancedFilter.discount === true) {
       result = result.filter(car => car.price.discount && car.price.discount > 0);
     }
     
