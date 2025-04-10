@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
+import { useToast } from "@/hooks/use-toast";
 import CarImageGallery from "./CarImageGallery";
 import CarBreadcrumbs from "./CarBreadcrumbs";
 import CarTitle from "./CarTitle";
@@ -13,6 +14,7 @@ import CarNavigation from "@/components/CarNavigation";
 const CarDetailsContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { 
     getCarById, 
     cars, 
@@ -20,7 +22,9 @@ const CarDetailsContent: React.FC = () => {
     toggleCompare, 
     isFavorite, 
     isInCompare, 
-    viewCar 
+    viewCar,
+    loading,
+    error
   } = useCars();
   
   const car = getCarById(id || "");
@@ -32,6 +36,34 @@ const CarDetailsContent: React.FC = () => {
       viewRegistered.current = true;
     }
   }, [car, viewCar]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Загрузка данных...</h2>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Ошибка загрузки данных</h2>
+          <p className="mb-6 text-auto-gray-600">
+            {error}
+          </p>
+          <Button asChild>
+            <Link to="/">Вернуться в каталог</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
   
   if (!car) {
     return (

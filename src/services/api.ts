@@ -20,13 +20,11 @@ export const fetchAllCars = async (): Promise<Car[]> => {
       throw error;
     }
     
-    console.log(`[API] Получено ${data?.length || 0} автомобилей из Supabase`); // Новая строка для вывода количества
+    console.log(`[API] Получено ${data?.length || 0} автомобилей из Supabase`);
     
     if (!data || data.length === 0) {
-      console.log('[API] В базе данных нет автомобилей, загружаем тестовые данные');
-      // Используем тестовые данные, если в базе пусто
-      const { carsData } = await import('../data/carsData');
-      return carsData;
+      console.log('[API] В базе данных нет автомобилей');
+      return [];
     }
     
     // Преобразуем данные из формата Supabase в формат Car
@@ -36,11 +34,7 @@ export const fetchAllCars = async (): Promise<Car[]> => {
     return cars;
   } catch (error) {
     console.error("Ошибка при получении данных об автомобилях:", error);
-    
-    // В случае ошибки пытаемся использовать локальные данные
-    console.log('[API] Используем локальные данные из-за ошибки');
-    const { carsData } = await import('../data/carsData');
-    return carsData;
+    throw new Error("Не удалось загрузить данные об автомобилях из базы данных");
   }
 };
 
@@ -77,23 +71,7 @@ export const fetchCarById = async (id: string): Promise<Car | null> => {
     return car;
   } catch (error) {
     console.error(`Ошибка при получении данных об автомобиле с ID ${id}:`, error);
-    
-    // В случае ошибки пытаемся использовать локальные данные
-    try {
-      console.log(`[API] Поиск автомобиля с ID ${id} в локальных данных`);
-      const { carsData } = await import('../data/carsData');
-      const car = carsData.find(car => car.id === id);
-      
-      if (!car) {
-        console.log(`[API] Автомобиль с ID ${id} не найден в локальных данных`);
-        return null;
-      }
-      
-      return car;
-    } catch (localError) {
-      console.error(`Ошибка при использовании локальных данных:`, localError);
-      throw new Error("Не удалось загрузить данные об автомобиле");
-    }
+    throw new Error("Не удалось загрузить данные об автомобиле из базы данных");
   }
 };
 
@@ -146,19 +124,8 @@ export const searchCars = async (searchParams: Record<string, any>): Promise<Car
     }
     
     if (!data || data.length === 0) {
-      console.log('[API] Нет результатов поиска в Supabase, используем локальные данные');
-      // Используем локальные данные, если в базе нет результатов
-      const { carsData } = await import('../data/carsData');
-      return carsData.filter(car => 
-        (!searchParams.brand || car.brand === searchParams.brand) &&
-        (!searchParams.model || car.model === searchParams.model) &&
-        (!searchParams.year || car.year === searchParams.year) &&
-        (!searchParams.minPrice || car.price.base >= searchParams.minPrice) &&
-        (!searchParams.maxPrice || car.price.base <= searchParams.maxPrice) &&
-        (!searchParams.bodyType || car.bodyType === searchParams.bodyType) &&
-        (searchParams.isNew === undefined || car.isNew === searchParams.isNew) &&
-        (!searchParams.country || car.country === searchParams.country)
-      );
+      console.log('[API] Нет результатов поиска в Supabase');
+      return [];
     }
     
     // Преобразуем данные из формата Supabase в формат Car
@@ -168,10 +135,7 @@ export const searchCars = async (searchParams: Record<string, any>): Promise<Car
     return cars;
   } catch (error) {
     console.error("Ошибка при поиске автомобилей:", error);
-    
-    // В случае ошибки используем локальные данные
-    const { carsData } = await import('../data/carsData');
-    return carsData;
+    throw new Error("Не удалось выполнить поиск автомобилей в базе данных");
   }
 };
 

@@ -62,12 +62,22 @@ export const useCarsData = () => {
     
     try {
       setLoading(true);
+      setError(null);
       const data = await loadCars();
       setCars(data);
-      toast({
-        title: "Данные обновлены",
-        description: "Каталог автомобилей успешно обновлен"
-      });
+      
+      if (data.length === 0) {
+        toast({
+          title: "Данные обновлены",
+          description: "База данных пуста. Добавьте автомобили через панель администратора."
+        });
+      } else {
+        toast({
+          title: "Данные обновлены",
+          description: `Загружено ${data.length} автомобилей из базы данных`
+        });
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error("Failed to reload cars:", err);

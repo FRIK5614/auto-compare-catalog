@@ -19,21 +19,24 @@ const CarFormContainer: React.FC = () => {
     updateCar, 
     addCar, 
     uploadCarImage, 
-    reloadCars 
+    reloadCars,
+    loading,
+    error
   } = useCars();
   
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [car, setCar] = useState<Car | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, any>>({});
   
-  // Перезагружаем данные автомобилей при каждом открытии формы
+  // Принудительная перезагрузка данных из базы при монтировании компонента
   useEffect(() => {
-    // Принудительная перезагрузка данных из базы
     reloadCars();
   }, [reloadCars]);
 
-  // Загружаем данные автомобиля после перезагрузки всех автомобилей
+  // Загружаем данные автомобиля после загрузки всех автомобилей
   useEffect(() => {
+    if (loading) return;
+    
     if (!isNewCar && id) {
       console.log("Looking for car with ID:", id);
       console.log("Available cars:", cars.length);
@@ -43,11 +46,12 @@ const CarFormContainer: React.FC = () => {
       
       if (carData) {
         setCar(carData);
-      } else {
+      } else if (cars.length > 0) {
+        // Показываем ошибку только если массив автомобилей не пустой
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: "Автомобиль не найден",
+          description: "Автомобиль не найден в базе данных",
         });
         navigate("/admin/cars");
       }
@@ -102,13 +106,13 @@ const CarFormContainer: React.FC = () => {
       
       setCar(newCar);
     }
-  }, [id, isNewCar, getCarById, navigate, toast, cars]);
+  }, [id, isNewCar, getCarById, navigate, toast, cars, loading]);
 
   // Save car with updated logic to ensure data is properly saved
   const handleSave = async (updatedCar: Car, imageUrl?: string) => {
     if (!car) return;
     
-    setLoading(true);
+    setFormLoading(true);
     
     try {
       // Handle image if provided
@@ -119,7 +123,7 @@ const CarFormContainer: React.FC = () => {
         } else {
           updatedCar.images = [
             {
-              id: updatedCar.id,
+              id: uuidv4(),
               url: imageUrl,
               alt: `${updatedCar.brand} ${updatedCar.model}`,
             }
@@ -149,15 +153,35 @@ const CarFormContainer: React.FC = () => {
       navigate("/admin/cars");
     } catch (error) {
       console.error("Error saving car:", error);
+      const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
       toast({
         variant: "destructive",
         title: "Ошибка сохранения",
-        description: "Не удалось сохранить автомобиль в базу данных",
+        description: errorMessage,
       });
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
+
+  if (loading) {
+    return <LoadingState count={3} />;
+  }
+  
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Ошибка загрузки данных</h2>
+        <p className="mb-6 text-auto-gray-600">{error}</p>
+        <button 
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" 
+          onClick={() => reloadCars()}
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
+  }
 
   if (!car) {
     return <LoadingState count={3} />;
@@ -167,7 +191,7 @@ const CarFormContainer: React.FC = () => {
     <CarForm 
       car={car}
       isNewCar={isNewCar}
-      loading={loading}
+      loading={formLoading}
       onSave={handleSave}
       formErrors={formErrors}
     />

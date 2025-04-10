@@ -12,7 +12,9 @@ export const useCarDetails = () => {
     deleteCar,
     updateCar,
     addCar,
-    uploadCarImage
+    uploadCarImage,
+    loading,
+    error
   } = useGlobalCars();
   
   // Используем ref, чтобы отслеживать первоначальную загрузку
@@ -21,7 +23,7 @@ export const useCarDetails = () => {
 
   // Загружаем автомобили только при первом монтировании
   useEffect(() => {
-    if (!initialLoadDone.current && !initialLoadStarted.current && cars.length === 0) {
+    if (!initialLoadDone.current && !initialLoadStarted.current && cars.length === 0 && !loading && !error) {
       initialLoadStarted.current = true;
       reloadCars().then(() => {
         initialLoadDone.current = true;
@@ -58,11 +60,14 @@ export const useCarDetails = () => {
           });
         
         console.log("============================================");
+      }).catch(err => {
+        console.error("Error loading cars:", err);
+        initialLoadDone.current = true;
       });
     } else if (cars.length > 0) {
       initialLoadDone.current = true;
     }
-  }, [cars.length, reloadCars]);
+  }, [cars.length, reloadCars, loading, error]);
 
   // Улучшенная версия getCarById с логированием для отладки
   const enhancedGetCarById = (id: string) => {
@@ -75,6 +80,8 @@ export const useCarDetails = () => {
 
   return {
     cars,
+    loading,
+    error,
     getCarById: enhancedGetCarById,
     viewCar,
     deleteCar,
