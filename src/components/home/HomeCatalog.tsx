@@ -42,6 +42,10 @@ const HomeCatalog = ({
 
   const loadMore = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
     navigate('/catalog');
   };
 
