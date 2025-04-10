@@ -5,7 +5,7 @@ import { Car } from "@/types/car";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, BarChart2, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, BarChart2, Info } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { cn } from "@/lib/utils";
 
@@ -29,18 +29,6 @@ const CarCard = ({ car, className }: CarCardProps) => {
   const currentImage = car.images[imageIndex];
   const touchStartX = useState<number | null>(null);
   
-  const goToNextImage = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
-    setImageIndex((prev) => (prev + 1) % car.images.length);
-  };
-  
-  const goToPrevImage = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
-    setImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
-  };
-
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX[1](e.touches[0].clientX);
   };
@@ -55,17 +43,15 @@ const CarCard = ({ car, className }: CarCardProps) => {
     if (Math.abs(diff) > 50) {
       if (diff > 0) {
         // Swipe left - next image
-        goToNextImage();
+        setImageIndex((prev) => (prev + 1) % car.images.length);
       } else {
         // Swipe right - previous image
-        goToPrevImage();
+        setImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
       }
     }
     
     touchStartX[1](null);
   };
-
-  const showImageControls = car.images.length > 1;
 
   return (
     <Card className={cn("overflow-hidden group h-full flex flex-col", className)}>
@@ -78,26 +64,6 @@ const CarCard = ({ car, className }: CarCardProps) => {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           />
-          
-          {showImageControls && (
-            <>
-              <button
-                onClick={goToPrevImage}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="h-4 w-4 text-gray-700" />
-              </button>
-              
-              <button
-                onClick={goToNextImage}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
-                aria-label="Next image"
-              >
-                <ChevronRight className="h-4 w-4 text-gray-700" />
-              </button>
-            </>
-          )}
         </Link>
         
         <div className="absolute top-3 left-3 flex flex-col gap-2">

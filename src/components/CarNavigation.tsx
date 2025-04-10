@@ -6,9 +6,9 @@ interface CarNavigationProps {
   className?: string;
 }
 
-// This component is now empty as per user request to remove navigation arrows
-const CarNavigation: React.FC<CarNavigationProps> = ({ currentCarId, className = '' }) => {
-  return null; // Return null to render nothing
+// This component returns null as per user request to remove navigation arrows
+const CarNavigation: React.FC<CarNavigationProps> = () => {
+  return null;
 };
 
 export default CarNavigation;

@@ -26,7 +26,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Slider } from "@/components/ui/slider";
 
 interface SearchFiltersProps {
   filter: CarFilter;
@@ -82,7 +81,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     const min = parseInt(minPrice);
     const max = parseInt(maxPrice);
     
-    // Validate and update the filter
+    // Validate and update the filter immediately
     if (!isNaN(min) && !isNaN(max) && min <= max) {
       setFilter({
         ...filter,
@@ -92,19 +91,15 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     }
   };
   
-  const handleYearChange = (value: number[]) => {
-    setYearRange([value[0], value[1]]);
+  const handleYearChange = (value: [number, number]) => {
+    setYearRange(value);
     
-    // Debounce year updates to prevent too many re-renders
-    const timer = setTimeout(() => {
-      setFilter({
-        ...filter,
-        minYear: value[0],
-        maxYear: value[1]
-      });
-    }, 300);
-    
-    return () => clearTimeout(timer);
+    // Update filters immediately with the year range
+    setFilter({
+      ...filter,
+      minYear: value[0],
+      maxYear: value[1]
+    });
   };
   
   const resetFilters = () => {
@@ -224,7 +219,18 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         type="number"
                         placeholder="0"
                         value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
+                        onChange={(e) => {
+                          setMinPrice(e.target.value);
+                          // Apply price change on input change
+                          const min = parseInt(e.target.value);
+                          const max = parseInt(maxPrice);
+                          if (!isNaN(min) && !isNaN(max) && min <= max) {
+                            setFilter({
+                              ...filter,
+                              minPrice: min
+                            });
+                          }
+                        }}
                         className="bg-auto-gray-50"
                       />
                     </div>
@@ -237,20 +243,22 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         type="number"
                         placeholder="10000000"
                         value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
+                        onChange={(e) => {
+                          setMaxPrice(e.target.value);
+                          // Apply price change on input change
+                          const min = parseInt(minPrice);
+                          const max = parseInt(e.target.value);
+                          if (!isNaN(min) && !isNaN(max) && min <= max) {
+                            setFilter({
+                              ...filter,
+                              maxPrice: max
+                            });
+                          }
+                        }}
                         className="bg-auto-gray-50"
                       />
                     </div>
                   </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={handlePriceChange}
-                  >
-                    Применить цену
-                  </Button>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -293,29 +301,44 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-6">
-                  <div>
-                    <Slider
-                      value={[yearRange[0], yearRange[1]]}
-                      min={getYearRange().min}
-                      max={getYearRange().max}
-                      step={1}
-                      onValueChange={handleYearChange}
-                      className="mt-6"
-                    />
-                  </div>
-                  
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
                       <Label htmlFor="minYear" className="text-sm text-auto-gray-600">
                         От
                       </Label>
-                      <div className="font-medium">{yearRange[0]}</div>
+                      <Input
+                        id="minYear"
+                        type="number"
+                        value={yearRange[0]}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          if (!isNaN(value)) {
+                            const newYearRange: [number, number] = [value, yearRange[1]];
+                            setYearRange(newYearRange);
+                            handleYearChange(newYearRange);
+                          }
+                        }}
+                        className="mt-1"
+                      />
                     </div>
-                    <div className="flex-1 text-right">
+                    <div className="flex-1 ml-4">
                       <Label htmlFor="maxYear" className="text-sm text-auto-gray-600">
                         До
                       </Label>
-                      <div className="font-medium">{yearRange[1]}</div>
+                      <Input
+                        id="maxYear"
+                        type="number"
+                        value={yearRange[1]}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          if (!isNaN(value)) {
+                            const newYearRange: [number, number] = [yearRange[0], value];
+                            setYearRange(newYearRange);
+                            handleYearChange(newYearRange);
+                          }
+                        }}
+                        className="mt-1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -445,7 +468,10 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       
       {isInModal && closeModal && (
         <div className="p-4 border-t border-auto-gray-200">
-          <Button className="w-full" onClick={applyFilters}>
+          <Button 
+            className="w-full bg-auto-blue-600 hover:bg-auto-blue-700"
+            onClick={applyFilters}
+          >
             Применить фильтры
           </Button>
         </div>

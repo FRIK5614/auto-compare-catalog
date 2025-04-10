@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -201,14 +202,13 @@ const AdminCars = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Отмена</AlertDialogCancel>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-red-500 hover:bg-red-600"
                 onClick={() => {
                   if (carToDelete) {
                     deleteCar(carToDelete.id);
                     setCarToDelete(null);
-                    setIsDeleteDialogOpen(false);
                   }
                 }}
               >
@@ -239,7 +239,7 @@ const AdminCars = () => {
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setImportDialogOpen(false)}>Отмена</AlertDialogCancel>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
               <AlertDialogAction onClick={handleImport}>
                 Импортировать
               </AlertDialogAction>
