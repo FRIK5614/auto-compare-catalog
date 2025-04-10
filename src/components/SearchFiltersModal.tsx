@@ -76,10 +76,10 @@ const SearchFiltersModal = ({
       </Sheet>;
   }
 
-  // На десктопе используем обычный Dialog с новой компоновкой
+  // На десктопе используем обычный Dialog с новой компоновкой и большим размером
   return <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] p-0 max-h-[80vh]">
-        {/* Заголовок фильтра с одним крестиком (вверху) */}
+      <DialogContent className="sm:max-w-[800px] p-0 h-[90vh] flex flex-col">
+        {/* Заголовок фильтра с крестиком */}
         <div className="px-6 py-4 border-b bg-white sticky top-0 z-10 flex items-center justify-between">
           <div className="flex items-center">
             <Filter className="mr-2 h-5 w-5 text-primary" />
@@ -97,17 +97,20 @@ const SearchFiltersModal = ({
             >
               Сбросить
             </Button>
+            <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-600">
+              <X className="h-6 w-6" />
+            </Button>
           </div>
         </div>
         
-        {/* Содержимое фильтра */}
-        <div className="p-4 max-h-[calc(80vh-190px)] overflow-auto">
+        {/* Содержимое фильтра - с overflow-auto, чтобы обеспечить прокрутку */}
+        <div className="flex-1 overflow-auto p-4">
           <SearchFilters filter={filter} setFilter={setFilter} closeModal={onClose} isInModal={true} />
         </div>
         
         {/* Кнопки внизу (вертикально) */}
-        <div className="p-4 border-t sticky bottom-0 bg-white z-10 flex flex-col items-center">
-          <div className="flex flex-col space-y-3 w-full max-w-xs">
+        <div className="p-4 border-t bg-white sticky bottom-0 mt-auto">
+          <div className="flex flex-col space-y-3 mx-auto w-full max-w-xs">
             <Button 
               onClick={() => {
                 onClose();
@@ -138,4 +141,3 @@ const SearchFiltersModal = ({
 };
 
 export default SearchFiltersModal;
-
