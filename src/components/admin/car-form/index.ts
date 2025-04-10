@@ -7,4 +7,4 @@ export { default as CarFormTransmission } from "./CarFormTransmission";
 export { default as CarDeleteDialog } from "./CarDeleteDialog";
 export { default as CarForm } from "./CarForm";
 export { default as CarFormContainer } from "./CarFormContainer";
-export * from "./FormFields";
+export * from "./form-fields";

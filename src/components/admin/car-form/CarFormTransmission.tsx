@@ -4,7 +4,7 @@ import { Car } from "@/types/car";
 import { 
   NumberFormField,
   SelectFormField
-} from "./FormFields";
+} from "./form-fields";
 
 interface CarFormTransmissionProps {
   car: Car;

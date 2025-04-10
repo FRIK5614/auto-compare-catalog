@@ -104,32 +104,27 @@ const CarFormContainer: React.FC = () => {
   }, [id, isNewCar, getCarById, navigate, toast, cars]);
 
   // Save car
-  const handleSave = async (updatedCar: Car, imageFile?: File) => {
+  const handleSave = async (updatedCar: Car, imageUrl?: string) => {
     if (!car) return;
     
     setLoading(true);
     
     try {
-      let imageUrl: string | undefined;
-      
-      // Upload image if selected
-      if (imageFile) {
-        imageUrl = await uploadCarImage(imageFile);
-        if (imageUrl) {
-          // Update car with new image
-          if (updatedCar.images && updatedCar.images.length > 0) {
-            updatedCar.images[0].url = imageUrl;
-          } else {
-            updatedCar.images = [
-              {
-                id: updatedCar.id,
-                url: imageUrl,
-                alt: `${updatedCar.brand} ${updatedCar.model}`,
-              }
-            ];
-          }
-          updatedCar.image_url = imageUrl;
+      // Handle image if provided
+      if (imageUrl) {
+        // Update car with new image
+        if (updatedCar.images && updatedCar.images.length > 0) {
+          updatedCar.images[0].url = imageUrl;
+        } else {
+          updatedCar.images = [
+            {
+              id: updatedCar.id,
+              url: imageUrl,
+              alt: `${updatedCar.brand} ${updatedCar.model}`,
+            }
+          ];
         }
+        updatedCar.image_url = imageUrl;
       }
       
       if (isNewCar) {
@@ -160,7 +155,7 @@ const CarFormContainer: React.FC = () => {
   };
 
   if (!car) {
-    return <LoadingState />;
+    return <LoadingState count={3} />;
   }
 
   return (

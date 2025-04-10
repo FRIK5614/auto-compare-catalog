@@ -57,7 +57,16 @@ const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) =
   // Submit form
   const onSubmit = async (data: CarFormValues) => {
     const updatedCar = mapFormValuesToCar(data, car);
-    await onSave(updatedCar, imageFile ? undefined : undefined);
+    
+    // If we have a new image file, we need to handle it
+    if (imageFile) {
+      // In a real app, we would upload the image here
+      // For now, we'll just use the data URL as a placeholder
+      const imageUrl = imagePreview;
+      await onSave(updatedCar, imageUrl || undefined);
+    } else {
+      await onSave(updatedCar);
+    }
   };
 
   return (

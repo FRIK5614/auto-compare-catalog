@@ -8,7 +8,7 @@ import {
   TextareaFormField,
   SelectFormField,
   BooleanRadioFormField
-} from "./FormFields";
+} from "./form-fields";
 
 interface CarFormBasicInfoProps {
   car: Car;
