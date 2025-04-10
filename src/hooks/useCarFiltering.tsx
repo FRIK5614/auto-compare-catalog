@@ -2,6 +2,7 @@
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car, CarFilter } from "../types/car";
 import { useRef, useEffect } from "react";
+import { sortOptions } from "@/components/catalog/SortOptions";
 
 export const useCarFiltering = () => {
   const {
@@ -85,34 +86,27 @@ function useCarFilters(cars: Car[]) {
     return { min, max };
   };
 
-  const applySorting = (cars: Car[], sortBy?: string) => {
-    if (!sortBy) return cars;
+  const applySorting = (carsToSort: Car[], sortBy?: string) => {
+    if (!carsToSort || !sortBy) return carsToSort;
     
-    return [...cars].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-asc':
-        case 'priceAsc':
-          return a.price.base - b.price.base;
-        case 'price-desc':
-        case 'priceDesc':
-          return b.price.base - a.price.base;
-        case 'year-asc':
-        case 'yearAsc':
-          return a.year - b.year;
-        case 'year-desc':
-        case 'yearDesc':
-          return b.year - a.year;
-        case 'popular':
-        case 'popularity':
-          return (b.viewCount || 0) - (a.viewCount || 0);
-        case 'nameAsc':
-          return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`);
-        case 'nameDesc':
-          return `${b.brand} ${b.model}`.localeCompare(`${a.brand} ${a.model}`);
-        default:
-          return 0;
-      }
-    });
+    const sortOption = sortOptions.find(option => option.value === sortBy);
+    if (sortOption) {
+      return [...carsToSort].sort(sortOption.sortFn);
+    }
+    
+    switch (sortBy) {
+      case 'priceAsc':
+        return [...carsToSort].sort((a, b) => a.price.base - b.price.base);
+      case 'priceDesc':
+        return [...carsToSort].sort((a, b) => b.price.base - a.price.base);
+      case 'yearAsc':
+        return [...carsToSort].sort((a, b) => a.year - b.year);
+      case 'yearDesc':
+        return [...carsToSort].sort((a, b) => b.year - a.year);
+      case 'popularity':
+      default:
+        return [...carsToSort].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+    }
   };
 
   const applyAdvancedFilter = (filterParams: any) => {

@@ -83,57 +83,20 @@ interface SortOptionsProps {
 }
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
-  // Create type-specific event handlers
-  const handleMouseEvent = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  const handleTouchEvent = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
   return (
-    <div 
-      onClick={handleMouseEvent}
-      onMouseDown={handleMouseEvent}
-      onMouseUp={handleMouseEvent}
-      onTouchStart={handleTouchEvent}
-      onTouchEnd={handleTouchEvent}
-      className="relative z-50"
-    >
+    <div className="relative z-[100]">
       <Select 
         value={sortOption} 
         onValueChange={onSortChange}
       >
-        <SelectTrigger 
-          className="w-[200px]"
-          onClick={handleMouseEvent}
-          onMouseDown={handleMouseEvent}
-          onTouchStart={handleTouchEvent}
-          onPointerDown={handleMouseEvent}
-        >
+        <SelectTrigger className="w-[200px] bg-white">
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
-        <SelectContent 
-          onMouseDown={handleMouseEvent}
-          onClick={handleMouseEvent}
-          onTouchStart={handleTouchEvent}
-          onTouchEnd={handleTouchEvent}
-          onPointerDown={handleMouseEvent}
-          position="popper"
-          className="z-50"
-        >
+        <SelectContent position="popper" className="z-[100]">
           {sortOptions.map(option => (
             <SelectItem 
               key={option.value} 
               value={option.value}
-              onMouseDown={handleMouseEvent}
-              onClick={handleMouseEvent}
-              onTouchStart={handleTouchEvent}
-              onTouchEnd={handleTouchEvent}
-              onPointerDown={handleMouseEvent}
             >
               {option.label}
             </SelectItem>

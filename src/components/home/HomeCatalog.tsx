@@ -44,26 +44,13 @@ const HomeCatalog = ({
     navigate('/catalog');
   };
 
-  // Create type-specific event handlers to prevent propagation
-  const handleMouseEvent = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    e.preventDefault();
-  };
-
-  const handleTouchEvent = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    e.preventDefault();
-  };
-
   return (
     <section className="py-12 bg-auto-gray-50">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-auto-gray-900">Каталог автомобилей</h2>
         
         <div className="flex flex-col md:flex-row">
-          <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5`}>
+          <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5 pr-4`}>
             <SearchFilters filter={filter} setFilter={setFilter} />
           </div>
           
@@ -97,14 +84,7 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div 
-                    className="w-full sm:w-auto relative z-50" 
-                    onClick={handleMouseEvent}
-                    onMouseDown={handleMouseEvent}
-                    onTouchStart={handleTouchEvent}
-                    onTouchEnd={handleTouchEvent}
-                    onTouchMove={handleTouchEvent}
-                  >
+                  <div className="w-full sm:w-auto relative z-[100]">
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>
