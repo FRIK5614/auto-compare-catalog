@@ -16,6 +16,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { CarDeleteDialog } from "@/components/admin/car-form";
 
 interface AdminCarsListProps {
   cars: Car[];
@@ -36,6 +37,8 @@ const AdminCarsList = ({
   const [filteredCars, setFilteredCars] = useState<Car[]>(cars);
   const [selectedCars, setSelectedCars] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [carToDelete, setCarToDelete] = useState<Car | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const carsPerPage = 12;
   
   // Filter cars when search query or cars array changes
@@ -78,6 +81,26 @@ const AdminCarsList = ({
     } else {
       setSelectedCars(prev => prev.filter(id => id !== carId));
     }
+  };
+
+  const handleDeleteClick = (car: Car) => {
+    setCarToDelete(car);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (carToDelete) {
+      onDelete(carToDelete.id);
+      setCarToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    // Implementation for bulk delete will be added later
+    console.log('Delete selected cars:', selectedCars);
+    // Clear selection after deletion
+    setSelectedCars([]);
   };
   
   const formatPrice = (price: number) => {
@@ -250,7 +273,12 @@ const AdminCarsList = ({
                         <Button variant="ghost" size="icon" onClick={() => onEdit(car.id)} title="Редактировать">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => onDelete(car.id)} title="Удалить">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDeleteClick(car)}
+                          title="Удалить"
+                        >
                           <Trash className="h-4 w-4" />
                         </Button>
                       </div>
@@ -296,12 +324,19 @@ const AdminCarsList = ({
             <Button variant="outline" size="sm" onClick={() => setSelectedCars([])}>
               Отменить выбор
             </Button>
-            <Button variant="destructive" size="sm">
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
               Удалить выбранные
             </Button>
           </div>
         </div>
       )}
+
+      <CarDeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        carName={carToDelete ? `${carToDelete.brand} ${carToDelete.model}` : undefined}
+      />
     </div>
   );
 };

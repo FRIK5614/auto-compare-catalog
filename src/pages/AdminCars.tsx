@@ -19,6 +19,7 @@ import { FileUp, FileDown, Plus } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
 import AdminCarsList from "@/components/AdminCarsList";
+import { CarDeleteDialog } from "@/components/admin/car-form";
 
 const AdminCars = () => {
   const { cars, deleteCar, exportCarsData, importCarsData } = useCars();
@@ -138,20 +139,12 @@ const AdminCars = () => {
           onView={(id) => navigate(`/car/${id}`)}
         />
 
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
-              <AlertDialogDescription>
-                Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <CarDeleteDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={confirmDelete}
+          carName={carToDelete ? `${carToDelete.brand} ${carToDelete.model}` : undefined}
+        />
 
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
