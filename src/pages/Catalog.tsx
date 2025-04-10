@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -93,7 +94,16 @@ const Catalog = () => {
     setIsFilterModalOpen(false);
   };
 
-  const handleSortContainerClick = (e: React.SyntheticEvent) => {
+  // Create type-specific event handlers
+  const handleMouseEvent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    e.preventDefault();
+  };
+
+  const handleTouchEvent = (e: React.TouchEvent) => {
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
@@ -110,11 +120,11 @@ const Catalog = () => {
           <div className="container mx-auto px-4">
             <div 
               className="relative z-50"
-              onClick={handleSortContainerClick}
-              onTouchStart={handleSortContainerClick}
-              onTouchEnd={handleSortContainerClick}
-              onTouchMove={handleSortContainerClick}
-              onMouseDown={handleSortContainerClick}
+              onClick={handleMouseEvent}
+              onMouseDown={handleMouseEvent}
+              onTouchStart={handleTouchEvent}
+              onTouchEnd={handleTouchEvent}
+              onTouchMove={handleTouchEvent}
             >
               <CatalogHeader 
                 count={filteredCars.length}

@@ -44,8 +44,14 @@ const HomeCatalog = ({
     navigate('/catalog');
   };
 
-  // Prevent event bubbling for the entire sort container
-  const handleSortContainerClick = (e: React.MouseEvent) => {
+  // Create type-specific event handlers to prevent propagation
+  const handleMouseEvent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    e.preventDefault();
+  };
+
+  const handleTouchEvent = (e: React.TouchEvent) => {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     e.preventDefault();
@@ -93,11 +99,11 @@ const HomeCatalog = ({
                   </p>
                   <div 
                     className="w-full sm:w-auto relative z-50" 
-                    onClick={handleSortContainerClick}
-                    onTouchStart={handleSortContainerClick}
-                    onTouchEnd={handleSortContainerClick}
-                    onTouchMove={handleSortContainerClick}
-                    onMouseDown={handleSortContainerClick}
+                    onClick={handleMouseEvent}
+                    onMouseDown={handleMouseEvent}
+                    onTouchStart={handleTouchEvent}
+                    onTouchEnd={handleTouchEvent}
+                    onTouchMove={handleTouchEvent}
                   >
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>

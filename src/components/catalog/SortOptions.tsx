@@ -83,24 +83,24 @@ interface SortOptionsProps {
 }
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
-  // Comprehensive event blocking for all possible events
-  const blockEvent = (e: React.SyntheticEvent) => {
+  // Create type-specific event handlers
+  const handleMouseEvent = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
-  // Handler for the select trigger click
-  const handleTriggerClick = (e: React.MouseEvent) => {
+  const handleTouchEvent = (e: React.TouchEvent) => {
     e.stopPropagation();
+    e.preventDefault();
   };
 
   return (
     <div 
-      onClick={blockEvent} 
-      onTouchStart={blockEvent}
-      onTouchEnd={blockEvent}
-      onMouseDown={blockEvent}
-      onMouseUp={blockEvent}
+      onClick={handleMouseEvent}
+      onMouseDown={handleMouseEvent}
+      onMouseUp={handleMouseEvent}
+      onTouchStart={handleTouchEvent}
+      onTouchEnd={handleTouchEvent}
       className="relative z-50"
     >
       <Select 
@@ -109,19 +109,19 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
       >
         <SelectTrigger 
           className="w-[200px]"
-          onClick={handleTriggerClick}
-          onMouseDown={blockEvent}
-          onTouchStart={blockEvent}
-          onPointerDown={blockEvent}
+          onClick={handleMouseEvent}
+          onMouseDown={handleMouseEvent}
+          onTouchStart={handleTouchEvent}
+          onPointerDown={handleMouseEvent}
         >
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
         <SelectContent 
-          onMouseDown={blockEvent}
-          onClick={blockEvent}
-          onTouchStart={blockEvent}
-          onTouchEnd={blockEvent}
-          onPointerDown={blockEvent}
+          onMouseDown={handleMouseEvent}
+          onClick={handleMouseEvent}
+          onTouchStart={handleTouchEvent}
+          onTouchEnd={handleTouchEvent}
+          onPointerDown={handleMouseEvent}
           position="popper"
           className="z-50"
         >
@@ -129,11 +129,11 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
             <SelectItem 
               key={option.value} 
               value={option.value}
-              onMouseDown={blockEvent}
-              onClick={blockEvent}
-              onTouchStart={blockEvent}
-              onTouchEnd={blockEvent}
-              onPointerDown={blockEvent}
+              onMouseDown={handleMouseEvent}
+              onClick={handleMouseEvent}
+              onTouchStart={handleTouchEvent}
+              onTouchEnd={handleTouchEvent}
+              onPointerDown={handleMouseEvent}
             >
               {option.label}
             </SelectItem>
