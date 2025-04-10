@@ -20,6 +20,8 @@ export const fetchAllCars = async (): Promise<Car[]> => {
       throw error;
     }
     
+    console.log(`[API] Получено ${data?.length || 0} автомобилей из Supabase`); // Новая строка для вывода количества
+    
     if (!data || data.length === 0) {
       console.log('[API] В базе данных нет автомобилей, загружаем тестовые данные');
       // Используем тестовые данные, если в базе пусто
