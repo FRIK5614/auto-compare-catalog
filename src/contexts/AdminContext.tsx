@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Car, Order } from '../types/car';
 import { useCars as useGlobalCars } from './CarsContext';
@@ -12,7 +13,7 @@ export type SiteConfig = {
   contactEmail: string;
   contactPhone: string;
   footerText: string;
-  catalog?: {
+  catalog: {
     itemsPerPage: number;
     defaultSorting: string;
     enableFiltering: boolean;
@@ -21,13 +22,13 @@ export type SiteConfig = {
     hotOffersCount: number;
     featuredCarsCount: number;
   };
-  telegram?: {
+  telegram: {
     botToken?: string;
     adminChatId?: string;
     notifyOnNewOrder: boolean;
     notifyOnMessage: boolean;
   };
-  seo?: {
+  seo: {
     metaTitle: string;
     metaDescription: string;
     ogImage?: string;
@@ -110,6 +111,7 @@ type AdminContextType = {
   deleteCar: (carId: string) => Promise<void>;
   siteConfig: SiteConfig;
   updateSiteConfig: (config: Partial<SiteConfig>) => void;
+  applyConfigToSite: () => void;
 };
 
 const ADMIN_PASSWORD = "admin123"; // In a real app, use a more secure method
@@ -134,7 +136,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (storedConfig) {
       try {
         const parsedConfig = JSON.parse(storedConfig);
-        setSiteConfig({...DEFAULT_CONFIG, ...parsedConfig});
+        const mergedConfig = {...DEFAULT_CONFIG, ...parsedConfig};
+        setSiteConfig(mergedConfig);
+        
+        // Apply configuration immediately on load
+        applyConfiguration(mergedConfig);
       } catch (error) {
         console.error("Failed to parse site configuration:", error);
         setSiteConfig(DEFAULT_CONFIG);
@@ -160,13 +166,58 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem(ADMIN_STORAGE_KEY);
   };
 
+  // Apply configuration to various parts of the site
+  const applyConfiguration = (config: SiteConfig) => {
+    // Update page title and meta description
+    if (config.seo) {
+      document.title = config.seo.metaTitle;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', config.seo.metaDescription);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'description';
+        meta.content = config.seo.metaDescription;
+        document.head.appendChild(meta);
+      }
+    }
+    
+    // Update favicon if provided
+    if (config.favicon) {
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        favicon.setAttribute('href', config.favicon);
+      } else {
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.href = config.favicon;
+        document.head.appendChild(link);
+      }
+    }
+    
+    // Apply primary and secondary colors if defined
+    if (config.appearance) {
+      const root = document.documentElement;
+      if (config.appearance.primaryColor) {
+        root.style.setProperty('--primary', config.appearance.primaryColor);
+      }
+      if (config.appearance.secondaryColor) {
+        root.style.setProperty('--secondary', config.appearance.secondaryColor);
+      }
+    }
+    
+    // Add other site-wide configuration application logic here
+    console.log('Applied site configuration:', config);
+  };
+
   const updateSiteConfig = (config: Partial<SiteConfig>) => {
     const newConfig = {...siteConfig, ...config};
     setSiteConfig(newConfig);
     
     try {
       localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(newConfig));
-      console.log("Site configuration saved", newConfig);
+      applyConfiguration(newConfig);
+      console.log("Site configuration saved and applied", newConfig);
     } catch (error) {
       console.error("Failed to save site configuration:", error);
       toast({
@@ -175,6 +226,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: "Не удалось сохранить настройки сайта"
       });
     }
+  };
+  
+  const applyConfigToSite = () => {
+    applyConfiguration(siteConfig);
+    toast({
+      title: "Настройки применены",
+      description: "Настройки сайта успешно применены"
+    });
   };
 
   const deleteCar = async (carId: string) => {
@@ -191,7 +250,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       loading: globalCars.loading,
       deleteCar,
       siteConfig,
-      updateSiteConfig
+      updateSiteConfig,
+      applyConfigToSite
     }}>
       {children}
     </AdminContext.Provider>

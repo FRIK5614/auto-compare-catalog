@@ -1,451 +1,944 @@
 
-import React, { useState, useEffect } from 'react';
-import { useCars } from '@/hooks/useCars';
-import { useAdmin } from '@/contexts/AdminContext';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter, 
-  DialogDescription 
+import React, { useState, useEffect } from "react";
+import AdminLayout from "@/components/AdminLayout";
+import { useCars } from "@/hooks/useCars";
+import { Order } from "@/types/car";
+import { useAdmin } from "@/contexts/AdminContext";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Order } from '@/types/car';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { CheckCircle, Clock, XCircle, AlertCircle, MessageSquare, Trash2, Phone, Mail, PenLine } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  AlertCircle, 
+  ClipboardList, 
+  Eye, 
+  FileEdit, 
+  Loader2, 
+  MessageSquare, 
+  Search, 
+  Trash2, 
+  UserCheck 
+} from "lucide-react";
 
-type TabValue = 'all' | 'new' | 'processing' | 'completed' | 'canceled';
+type OrderStatus = "new" | "processing" | "completed" | "cancelled";
 
-const OrderStatusBadge = ({ status }: { status: Order['status'] }) => {
-  switch (status) {
-    case 'new':
-      return <Badge className="bg-blue-500"><AlertCircle className="w-3 h-3 mr-1" /> Новый</Badge>;
-    case 'processing':
-      return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" /> В обработке</Badge>;
-    case 'completed':
-      return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Завершен</Badge>;
-    case 'canceled':
-      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Отменен</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
+// Extended Order type with comments
+interface ExtendedOrder extends Order {
+  comments?: string;
+  adminNotes?: string;
+}
+
+const statusColors: Record<OrderStatus, string> = {
+  new: "bg-blue-500",
+  processing: "bg-yellow-500",
+  completed: "bg-green-500",
+  cancelled: "bg-red-500",
 };
 
-const AdminOrders: React.FC = () => {
-  const { orders, getCarById, processOrder, loading } = useCars();
-  const { isAdmin } = useAdmin();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabValue>('all');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
-  const [orderComment, setOrderComment] = useState('');
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
-  const [orderComments, setOrderComments] = useState<Record<string, string>>({});
+const statusLabels: Record<OrderStatus, string> = {
+  new: "Новый",
+  processing: "В обработке",
+  completed: "Завершен",
+  cancelled: "Отменен",
+};
 
-  // Load order comments from localStorage on initial load
+const AdminOrders = () => {
+  const { cars, orders: initialOrders, processOrder, getCarById } = useCars();
+  const { siteConfig } = useAdmin();
+  const { toast } = useToast();
+  
+  // State
+  const [orders, setOrders] = useState<ExtendedOrder[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<ExtendedOrder | null>(null);
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [filter, setFilter] = useState<OrderStatus | "all">("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [adminNote, setAdminNote] = useState("");
+  const [sendNotification, setSendNotification] = useState(true);
+  
+  // Initialize orders from context
   useEffect(() => {
-    const savedComments = localStorage.getItem('tmcavto_order_comments');
-    if (savedComments) {
-      try {
-        setOrderComments(JSON.parse(savedComments));
-      } catch (error) {
-        console.error("Failed to parse order comments:", error);
+    if (initialOrders && initialOrders.length > 0) {
+      // Convert base orders to extended orders
+      const extendedOrders = initialOrders.map(order => ({
+        ...order,
+        comments: "",  // Default empty comment
+        adminNotes: "" // Default empty admin notes
+      }));
+      setOrders(extendedOrders);
+    } else {
+      // Load from local storage as fallback
+      const storedOrders = localStorage.getItem("tmcavto_admin_orders");
+      if (storedOrders) {
+        try {
+          setOrders(JSON.parse(storedOrders));
+        } catch (e) {
+          console.error("Failed to parse stored orders:", e);
+        }
       }
     }
-  }, []);
-
-  // Save order comments to localStorage whenever they change
+  }, [initialOrders]);
+  
+  // Save extended orders to local storage when they change
   useEffect(() => {
-    if (Object.keys(orderComments).length > 0) {
-      localStorage.setItem('tmcavto_order_comments', JSON.stringify(orderComments));
+    if (orders.length > 0) {
+      localStorage.setItem("tmcavto_admin_orders", JSON.stringify(orders));
     }
-  }, [orderComments]);
-
-  // Filter orders based on active tab
-  const filteredOrders = React.useMemo(() => {
-    if (!orders || orders.length === 0) return [];
-    
-    if (activeTab === 'all') {
-      return [...orders].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    }
-    
-    return orders
-      .filter(order => order.status === activeTab)
-      .sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-  }, [orders, activeTab]);
-
-  // Calculate order counts for tabs
-  const orderCounts = React.useMemo(() => {
-    if (!orders || orders.length === 0) {
-      return { all: 0, new: 0, processing: 0, completed: 0, canceled: 0 };
-    }
-    
-    return {
-      all: orders.length,
-      new: orders.filter(order => order.status === 'new').length,
-      processing: orders.filter(order => order.status === 'processing').length,
-      completed: orders.filter(order => order.status === 'completed').length,
-      canceled: orders.filter(order => order.status === 'canceled').length
-    };
   }, [orders]);
-
-  // Refresh orders data periodically to sync between different admin users
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      console.log("Checking for order updates");
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  React.useEffect(() => {
-    if (!isAdmin) {
-      navigate('/admin/login');
-    }
-  }, [isAdmin, navigate]);
-
-  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
-    processOrder(orderId, newStatus);
-    setIsOrderDialogOpen(false);
+  
+  // Filter and sort orders
+  const filteredOrders = orders
+    .filter(order => {
+      // Filter by status
+      if (filter !== "all" && order.status !== filter) {
+        return false;
+      }
+      
+      // Filter by search term
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          order.customer_name.toLowerCase().includes(searchLower) ||
+          order.customer_email.toLowerCase().includes(searchLower) ||
+          order.customer_phone.toLowerCase().includes(searchLower) ||
+          (order.comments && order.comments.toLowerCase().includes(searchLower)) ||
+          (order.adminNotes && order.adminNotes.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+  
+  // Count orders by status
+  const orderCounts = {
+    all: orders.length,
+    new: orders.filter(order => order.status === "new").length,
+    processing: orders.filter(order => order.status === "processing").length,
+    completed: orders.filter(order => order.status === "completed").length,
+    cancelled: orders.filter(order => order.status === "cancelled").length,
   };
-
-  const handleOrderClick = (order: Order) => {
+  
+  // Handle viewing an order
+  const handleViewOrder = (order: ExtendedOrder) => {
     setSelectedOrder(order);
-    // Load existing comment if available
-    setOrderComment(orderComments[order.id] || '');
     setIsOrderDialogOpen(true);
+    setIsEditMode(false);
+    
+    // If this is a new order, mark it as seen by changing to processing
+    if (order.status === "new") {
+      handleUpdateOrderStatus(order, "processing");
+    }
   };
-
-  const handleDeleteOrder = (order: Order) => {
-    setOrderToDelete(order);
+  
+  // Handle editing an order
+  const handleEditOrder = (order: ExtendedOrder) => {
+    setSelectedOrder({...order});
+    setIsOrderDialogOpen(true);
+    setIsEditMode(true);
+    setAdminNote(order.adminNotes || "");
+  };
+  
+  // Handle deleting an order
+  const handleDeleteOrder = (order: ExtendedOrder) => {
+    setSelectedOrder(order);
     setIsDeleteDialogOpen(true);
   };
-
+  
+  // Confirm order deletion
   const confirmDeleteOrder = () => {
-    if (orderToDelete) {
-      // In a real application, you would call an API to delete the order
-      // For now, let's just remove it from localStorage
-      const updatedOrders = orders.filter(o => o.id !== orderToDelete.id);
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
-      
-      // Remove comment if it exists
-      const updatedComments = {...orderComments};
-      delete updatedComments[orderToDelete.id];
-      setOrderComments(updatedComments);
-      
-      // Close dialog and reload page to show updated orders
-      setIsDeleteDialogOpen(false);
-      window.location.reload();
-    }
+    if (!selectedOrder) return;
+    
+    const updatedOrders = orders.filter(o => o.id !== selectedOrder.id);
+    setOrders(updatedOrders);
+    
+    toast({
+      title: "Заказ удален",
+      description: `Заказ от ${selectedOrder.customer_name} был удален`,
+    });
+    
+    setIsDeleteDialogOpen(false);
+    setSelectedOrder(null);
   };
-
-  const saveOrderComment = () => {
-    if (selectedOrder) {
-      const updatedComments = {
-        ...orderComments,
-        [selectedOrder.id]: orderComment
-      };
-      setOrderComments(updatedComments);
+  
+  // Save order changes
+  const saveOrderChanges = () => {
+    if (!selectedOrder) return;
+    
+    setProcessing(true);
+    
+    try {
+      const updatedOrders = orders.map(o => 
+        o.id === selectedOrder.id ? {...selectedOrder, adminNotes: adminNote} : o
+      );
+      
+      setOrders(updatedOrders);
+      
+      toast({
+        title: "Заказ обновлен",
+        description: "Изменения сохранены успешно",
+      });
+      
       setIsOrderDialogOpen(false);
+      setSelectedOrder(null);
+      setIsEditMode(false);
+    } catch (error) {
+      console.error("Error saving order changes:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось сохранить изменения",
+      });
+    } finally {
+      setProcessing(false);
     }
   };
-
-  if (!isAdmin) {
-    return null;
-  }
-
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Загрузка заказов...</h1>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Управление заказами</h1>
+  
+  // Update order status
+  const handleUpdateOrderStatus = async (order: ExtendedOrder, newStatus: OrderStatus) => {
+    setProcessing(true);
+    
+    try {
+      await processOrder(order.id, newStatus);
       
-      <div className="grid grid-cols-1 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Список заказов</CardTitle>
+      // Update local state
+      const updatedOrders = orders.map(o => 
+        o.id === order.id ? {...o, status: newStatus} : o
+      );
+      
+      setOrders(updatedOrders);
+      
+      // If we're updating the selected order in the dialog
+      if (selectedOrder && selectedOrder.id === order.id) {
+        setSelectedOrder({...selectedOrder, status: newStatus});
+      }
+      
+      // Send notification if enabled
+      if (sendNotification && 
+          siteConfig.telegram?.notifyOnNewOrder && 
+          siteConfig.telegram?.adminChatId) {
+        
+        try {
+          const carName = getCarById(order.car_id)?.brand + " " + getCarById(order.car_id)?.model;
+          const statusText = statusLabels[newStatus];
+          
+          // Here you would implement the actual notification logic
+          console.log(`Notification would be sent to ${siteConfig.telegram.adminChatId} about order status change to ${statusText} for ${carName}`);
+          
+          toast({
+            title: "Уведомление отправлено",
+            description: "Уведомление о изменении статуса заказа отправлено в Telegram",
+          });
+        } catch (notifyError) {
+          console.error("Failed to send notification:", notifyError);
+        }
+      }
+      
+      toast({
+        title: "Статус обновлен",
+        description: `Статус заказа изменен на "${statusLabels[newStatus]}"`,
+      });
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось обновить статус заказа",
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+  
+  // Create a new order manually
+  const createManualOrder = () => {
+    if (cars.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Нет автомобилей",
+        description: "Невозможно создать заказ без автомобилей в системе",
+      });
+      return;
+    }
+    
+    const newOrder: ExtendedOrder = {
+      id: uuidv4(),
+      car_id: cars[0].id,
+      customer_name: "",
+      customer_email: "",
+      customer_phone: "",
+      status: "new",
+      created_at: new Date().toISOString(),
+      comments: "",
+      adminNotes: "Заказ создан вручную администратором"
+    };
+    
+    setSelectedOrder(newOrder);
+    setIsOrderDialogOpen(true);
+    setIsEditMode(true);
+    setAdminNote(newOrder.adminNotes || "");
+  };
+  
+  return (
+    <AdminLayout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Управление заказами</h1>
+          <Button onClick={createManualOrder}>Создать заказ</Button>
+        </div>
+        
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle>Фильтр заказов</CardTitle>
+            <CardDescription>
+              {orders.length} {orders.length === 1 ? "заказ" : (orders.length >= 2 && orders.length <= 4) ? "заказа" : "заказов"} в системе
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)}>
-              <TabsList className="mb-4 w-full justify-start">
-                <TabsTrigger value="all" className="flex items-center">
-                  Все
-                  <Badge variant="outline" className="ml-2">{orderCounts.all}</Badge>
-                </TabsTrigger>
-                <TabsTrigger value="new" className="flex items-center">
-                  Новые
-                  {orderCounts.new > 0 && (
-                    <Badge className="ml-2 bg-blue-500">{orderCounts.new}</Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="processing" className="flex items-center">
-                  В обработке
-                  {orderCounts.processing > 0 && (
-                    <Badge variant="secondary" className="ml-2">{orderCounts.processing}</Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="completed" className="flex items-center">
-                  Завершенные
-                  {orderCounts.completed > 0 && (
-                    <Badge className="ml-2 bg-green-500">{orderCounts.completed}</Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="canceled" className="flex items-center">
-                  Отмененные
-                  {orderCounts.canceled > 0 && (
-                    <Badge variant="destructive" className="ml-2">{orderCounts.canceled}</Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab}>
-                {filteredOrders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Нет заказов для отображения</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Поиск</Label>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="Имя, email, телефон..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Дата</TableHead>
-                          <TableHead>Клиент</TableHead>
-                          <TableHead>Контакты</TableHead>
-                          <TableHead>Автомобиль</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Комментарий</TableHead>
-                          <TableHead>Действия</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredOrders.map((order) => {
-                          const car = getCarById(order.carId);
-                          const comment = orderComments[order.id];
-                          
-                          return (
-                            <TableRow key={order.id} className="cursor-pointer hover:bg-muted" onClick={() => handleOrderClick(order)}>
-                              <TableCell>
-                                {format(new Date(order.createdAt), 'dd MMM yyyy HH:mm', { locale: ru })}
-                              </TableCell>
-                              <TableCell>{order.customerName}</TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="flex items-center">
-                                    <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
-                                    {order.customerPhone}
-                                  </span>
-                                  <span className="flex items-center text-xs text-muted-foreground">
-                                    <Mail className="h-3 w-3 mr-1" />
-                                    {order.customerEmail}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {car ? `${car.brand} ${car.model}` : 'Автомобиль не найден'}
-                              </TableCell>
-                              <TableCell>
-                                <OrderStatusBadge status={order.status} />
-                              </TableCell>
-                              <TableCell>
-                                {comment ? (
-                                  <div className="flex items-center text-sm text-muted-foreground">
-                                    <MessageSquare className="h-3 w-3 mr-1" />
-                                    <span className="truncate max-w-[150px]">{comment}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">Нет комментария</span>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end space-x-1" onClick={(e) => e.stopPropagation()}>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOrderClick(order);
-                                    }}
-                                  >
-                                    <PenLine className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    className="text-red-500 hover:text-red-700 hover:bg-red-100"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteOrder(order);
-                                    }}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Статус</Label>
+                    <Select value={filter} onValueChange={(value) => setFilter(value as OrderStatus | "all")}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Все заказы" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Все заказы ({orderCounts.all})</SelectItem>
+                        <SelectItem value="new">Новые ({orderCounts.new})</SelectItem>
+                        <SelectItem value="processing">В обработке ({orderCounts.processing})</SelectItem>
+                        <SelectItem value="completed">Завершенные ({orderCounts.completed})</SelectItem>
+                        <SelectItem value="cancelled">Отмененные ({orderCounts.cancelled})</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                  
+                  <div>
+                    <Label>Сортировка</Label>
+                    <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "newest" | "oldest")}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Сначала новые</SelectItem>
+                        <SelectItem value="oldest">Сначала старые</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="notify" 
+                  checked={sendNotification} 
+                  onCheckedChange={(checked) => setSendNotification(checked as boolean)} 
+                />
+                <Label htmlFor="notify" className="text-sm cursor-pointer">
+                  Отправлять уведомления в Telegram при изменении статуса
+                </Label>
+              </div>
+            </div>
           </CardContent>
         </Card>
+        
+        <Tabs defaultValue="table" className="mb-6">
+          <TabsList>
+            <TabsTrigger value="table">Таблица</TabsTrigger>
+            <TabsTrigger value="cards">Карточки</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="table">
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Дата</TableHead>
+                      <TableHead>Клиент</TableHead>
+                      <TableHead>Автомобиль</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Заметки</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-10">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <ClipboardList className="h-8 w-8 mb-2" />
+                            <p>Нет заказов, соответствующих фильтрам</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredOrders.map((order) => {
+                        const car = getCarById(order.car_id);
+                        return (
+                          <TableRow key={order.id}>
+                            <TableCell>
+                              {format(new Date(order.created_at), "dd MMM yyyy, HH:mm", { locale: ru })}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium">{order.customer_name}</div>
+                              <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                            </TableCell>
+                            <TableCell>
+                              {car ? (
+                                <>
+                                  <div className="font-medium">{car.brand} {car.model}</div>
+                                  <div className="text-sm text-muted-foreground">{car.year} г.</div>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground">Автомобиль не найден</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${statusColors[order.status as OrderStatus]}`}>
+                                {statusLabels[order.status as OrderStatus]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {order.adminNotes ? (
+                                <div className="max-w-[200px] truncate" title={order.adminNotes}>
+                                  {order.adminNotes}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">Нет</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleViewOrder(order)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEditOrder(order)}
+                                >
+                                  <FileEdit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteOrder(order)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="cards">
+            {filteredOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <ClipboardList className="h-12 w-12 mb-4" />
+                <p className="text-xl">Нет заказов, соответствующих фильтрам</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredOrders.map((order) => {
+                  const car = getCarById(order.car_id);
+                  return (
+                    <Card key={order.id} className="overflow-hidden">
+                      <div className={`h-2 ${statusColors[order.status as OrderStatus]}`} />
+                      <CardHeader className="p-4">
+                        <div className="flex justify-between">
+                          <Badge className={`${statusColors[order.status as OrderStatus]}`}>
+                            {statusLabels[order.status as OrderStatus]}
+                          </Badge>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(order.created_at), "dd MMM yyyy, HH:mm", { locale: ru })}
+                          </div>
+                        </div>
+                        <CardTitle className="text-lg">{order.customer_name}</CardTitle>
+                        <CardDescription>
+                          <div>{order.customer_phone}</div>
+                          <div>{order.customer_email}</div>
+                        </CardDescription>
+                      </CardHeader>
+                      
+                      <CardContent className="p-4 pt-0">
+                        <div className="bg-muted/50 p-3 rounded-md mb-3">
+                          <div className="font-medium">{car ? `${car.brand} ${car.model}, ${car.year} г.` : "Автомобиль не найден"}</div>
+                          {car && car.price && (
+                            <div className="text-sm mt-1">{car.price.base.toLocaleString()} ₽</div>
+                          )}
+                        </div>
+                        
+                        {order.adminNotes && (
+                          <div className="text-sm">
+                            <div className="font-medium mb-1">Заметки:</div>
+                            <div className="text-muted-foreground">{order.adminNotes}</div>
+                          </div>
+                        )}
+                      </CardContent>
+                      
+                      <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Просмотр
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8"
+                          onClick={() => handleEditOrder(order)}
+                        >
+                          <FileEdit className="h-4 w-4 mr-1" />
+                          Ред.
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Order Detail Dialog */}
-      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Детали заказа</DialogTitle>
-            <DialogDescription>
-              {selectedOrder && (
-                <span>
-                  Заказ от {format(new Date(selectedOrder.createdAt), 'dd MMMM yyyy, HH:mm', { locale: ru })}
-                </span>
+      
+      {/* Order Dialog */}
+      {selectedOrder && (
+        <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                {isEditMode ? "Редактирование заказа" : "Просмотр заказа"}
+              </DialogTitle>
+              <DialogDescription>
+                {format(new Date(selectedOrder.created_at), "dd MMMM yyyy, HH:mm", { locale: ru })}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="details">
+              <TabsList className="mb-4">
+                <TabsTrigger value="details">Детали заказа</TabsTrigger>
+                <TabsTrigger value="customer">Клиент</TabsTrigger>
+                <TabsTrigger value="notes">Заметки</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="details">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Статус заказа</h3>
+                    <Badge className={`${statusColors[selectedOrder.status as OrderStatus]}`}>
+                      {statusLabels[selectedOrder.status as OrderStatus]}
+                    </Badge>
+                  </div>
+                  
+                  {isEditMode ? (
+                    <Select 
+                      value={selectedOrder.status} 
+                      onValueChange={(value) => setSelectedOrder({...selectedOrder, status: value as OrderStatus})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">Новый</SelectItem>
+                        <SelectItem value="processing">В обработке</SelectItem>
+                        <SelectItem value="completed">Завершен</SelectItem>
+                        <SelectItem value="cancelled">Отменен</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        disabled={selectedOrder.status === "processing" || processing} 
+                        onClick={() => handleUpdateOrderStatus(selectedOrder, "processing")}
+                        variant={selectedOrder.status === "processing" ? "outline" : "default"}
+                      >
+                        {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserCheck className="h-4 w-4 mr-2" />}
+                        В обработке
+                      </Button>
+                      <Button 
+                        disabled={selectedOrder.status === "completed" || processing} 
+                        onClick={() => handleUpdateOrderStatus(selectedOrder, "completed")}
+                        variant={selectedOrder.status === "completed" ? "outline" : "default"}
+                      >
+                        {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckIcon className="h-4 w-4 mr-2" />}
+                        Завершен
+                      </Button>
+                      <Button 
+                        disabled={selectedOrder.status === "new" || processing} 
+                        onClick={() => handleUpdateOrderStatus(selectedOrder, "new")}
+                        variant={selectedOrder.status === "new" ? "outline" : "default"}
+                      >
+                        {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <AlertCircle className="h-4 w-4 mr-2" />}
+                        Новый
+                      </Button>
+                      <Button 
+                        disabled={selectedOrder.status === "cancelled" || processing} 
+                        onClick={() => handleUpdateOrderStatus(selectedOrder, "cancelled")}
+                        variant={selectedOrder.status === "cancelled" ? "outline" : "destructive"}
+                      >
+                        {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XIcon className="h-4 w-4 mr-2" />}
+                        Отменен
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <div className="bg-muted/50 p-4 rounded-md">
+                    <h3 className="text-lg font-medium mb-2">Информация об автомобиле</h3>
+                    
+                    {isEditMode ? (
+                      <Select 
+                        value={selectedOrder.car_id} 
+                        onValueChange={(value) => setSelectedOrder({...selectedOrder, car_id: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите автомобиль" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cars.map(car => (
+                            <SelectItem key={car.id} value={car.id}>
+                              {car.brand} {car.model}, {car.year} г.
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <>
+                        {(() => {
+                          const car = getCarById(selectedOrder.car_id);
+                          if (!car) return <div className="text-muted-foreground">Автомобиль не найден</div>;
+                          
+                          return (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="md:col-span-1">
+                                {car.image_url ? (
+                                  <img 
+                                    src={car.image_url} 
+                                    alt={`${car.brand} ${car.model}`} 
+                                    className="w-full h-auto rounded-md object-cover aspect-[4/3]"
+                                  />
+                                ) : (
+                                  <div className="w-full bg-muted rounded-md aspect-[4/3] flex items-center justify-center">
+                                    <span className="text-muted-foreground">Нет изображения</span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="md:col-span-2">
+                                <h4 className="text-xl font-semibold">{car.brand} {car.model}</h4>
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <div>
+                                    <div className="text-sm text-muted-foreground">Год</div>
+                                    <div>{car.year}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm text-muted-foreground">Цена</div>
+                                    <div>{car.price.base.toLocaleString()} ₽</div>
+                                  </div>
+                                  {car.engine && (
+                                    <>
+                                      <div>
+                                        <div className="text-sm text-muted-foreground">Двигатель</div>
+                                        <div>{car.engine.type}, {car.engine.displacement} л</div>
+                                      </div>
+                                      <div>
+                                        <div className="text-sm text-muted-foreground">Трансмиссия</div>
+                                        <div>{car.transmission?.type}</div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="customer">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="customer_name">ФИО клиента</Label>
+                    <Input
+                      id="customer_name"
+                      value={selectedOrder.customer_name}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_name: e.target.value})}
+                      readOnly={!isEditMode}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="customer_phone">Телефон</Label>
+                    <Input
+                      id="customer_phone"
+                      value={selectedOrder.customer_phone}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_phone: e.target.value})}
+                      readOnly={!isEditMode}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="customer_email">Email</Label>
+                    <Input
+                      id="customer_email"
+                      value={selectedOrder.customer_email}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_email: e.target.value})}
+                      readOnly={!isEditMode}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="customer_comment">Комментарий клиента</Label>
+                    <Textarea
+                      id="customer_comment"
+                      value={selectedOrder.comments || ""}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, comments: e.target.value})}
+                      readOnly={!isEditMode}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="notes">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label htmlFor="admin_notes">Заметки администратора</Label>
+                      {!isEditMode && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setIsEditMode(true);
+                            setAdminNote(selectedOrder.adminNotes || "");
+                          }}
+                        >
+                          <FileEdit className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <Textarea
+                      id="admin_notes"
+                      value={isEditMode ? adminNote : (selectedOrder.adminNotes || "")}
+                      onChange={(e) => isEditMode && setAdminNote(e.target.value)}
+                      readOnly={!isEditMode}
+                      placeholder="Добавьте заметки и комментарии для внутреннего использования"
+                      rows={6}
+                    />
+                    
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <MessageSquare className="h-4 w-4 inline mr-1" />
+                      Заметки видны только администраторам и не отображаются клиентам
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              {isEditMode ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditMode(false);
+                      if (selectedOrder.id === uuidv4()) {
+                        setIsOrderDialogOpen(false);
+                      }
+                    }}
+                  >
+                    Отмена
+                  </Button>
+                  <Button 
+                    onClick={saveOrderChanges}
+                    disabled={processing}
+                  >
+                    {processing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Сохранение...
+                      </>
+                    ) : (
+                      "Сохранить"
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsOrderDialogOpen(false)}
+                  >
+                    Закрыть
+                  </Button>
+                  <Button 
+                    onClick={() => setIsEditMode(true)}
+                  >
+                    <FileEdit className="h-4 w-4 mr-2" />
+                    Редактировать
+                  </Button>
+                </>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Подтверждение удаления</DialogTitle>
+            <DialogDescription>
+              Вы уверены, что хотите удалить этот заказ? Это действие невозможно отменить.
             </DialogDescription>
           </DialogHeader>
           
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-muted-foreground">Клиент</Label>
-                  <div className="font-medium">{selectedOrder.customerName}</div>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Статус</Label>
-                  <div><OrderStatusBadge status={selectedOrder.status} /></div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-muted-foreground">Телефон</Label>
-                  <div className="font-medium">{selectedOrder.customerPhone}</div>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Email</Label>
-                  <div className="font-medium">{selectedOrder.customerEmail}</div>
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm text-muted-foreground">Автомобиль</Label>
-                <div className="font-medium">
-                  {(() => {
-                    const car = getCarById(selectedOrder.carId);
-                    return car 
-                      ? `${car.brand} ${car.model} (${car.year})`
-                      : 'Автомобиль не найден';
-                  })()}
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="comment">Комментарий к заказу</Label>
-                <Textarea
-                  id="comment"
-                  value={orderComment}
-                  onChange={(e) => setOrderComment(e.target.value)}
-                  placeholder="Добавьте комментарий к заказу..."
-                  className="mt-1"
-                />
-              </div>
+            <div className="bg-muted/50 p-3 rounded-md">
+              <p>
+                <span className="font-medium">Клиент:</span> {selectedOrder.customer_name}
+              </p>
+              <p>
+                <span className="font-medium">Телефон:</span> {selectedOrder.customer_phone}
+              </p>
+              <p>
+                <span className="font-medium">Дата заказа:</span> {format(new Date(selectedOrder.created_at), "dd.MM.yyyy HH:mm", { locale: ru })}
+              </p>
             </div>
           )}
           
-          <DialogFooter className="sm:justify-between">
-            <div className="flex gap-2">
-              {selectedOrder && selectedOrder.status === 'new' && (
-                <Button
-                  onClick={() => handleStatusChange(selectedOrder.id, 'processing')}
-                  variant="default"
-                >
-                  В обработку
-                </Button>
-              )}
-              
-              {selectedOrder && selectedOrder.status === 'processing' && (
-                <Button
-                  onClick={() => handleStatusChange(selectedOrder.id, 'completed')}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  Завершить
-                </Button>
-              )}
-              
-              {selectedOrder && (selectedOrder.status === 'new' || selectedOrder.status === 'processing') && (
-                <Button
-                  onClick={() => handleStatusChange(selectedOrder.id, 'canceled')}
-                  variant="destructive"
-                >
-                  Отменить
-                </Button>
-              )}
-            </div>
-            
-            <Button type="button" onClick={saveOrderComment}>
-              Сохранить комментарий
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Order Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Удаление заказа</DialogTitle>
-            <DialogDescription>
-              Вы уверены, что хотите удалить этот заказ? Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Отмена
             </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDeleteOrder}
-            >
-              Удалить заказ
+            <Button variant="destructive" onClick={confirmDeleteOrder}>
+              Удалить
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 };
+
+// SVG components for icons
+const CheckIcon = (props: any) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const XIcon = (props: any) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
 
 export default AdminOrders;

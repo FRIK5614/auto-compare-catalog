@@ -13,11 +13,23 @@ interface CarFormProps {
   car: Car;
   isNewCar: boolean;
   loading: boolean;
-  onSave: (car: Car, imageUrl?: string) => Promise<void>;
+  onSave: (car: Car, imageFile?: File) => Promise<void>;
   formErrors: Record<string, any>;
+  handleImageUrlChange?: (url: string) => void;
+  handleAddImage?: (url: string) => void;
+  handleRemoveImage?: (index: number) => void;
 }
 
-const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) => {
+const CarForm = ({ 
+  car, 
+  isNewCar, 
+  loading, 
+  onSave, 
+  formErrors,
+  handleImageUrlChange,
+  handleAddImage,
+  handleRemoveImage
+}: CarFormProps) => {
   const navigate = useNavigate();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -48,7 +60,13 @@ const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) =
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const preview = reader.result as string;
+        setImagePreview(preview);
+        
+        // If handleImageUrlChange is provided, update image URL in parent component
+        if (handleImageUrlChange) {
+          handleImageUrlChange(preview);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -57,16 +75,7 @@ const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) =
   // Submit form
   const onSubmit = async (data: CarFormValues) => {
     const updatedCar = mapFormValuesToCar(data, car);
-    
-    // If we have a new image file, we need to handle it
-    if (imageFile) {
-      // In a real app, we would upload the image here
-      // For now, we'll just use the data URL as a placeholder
-      const imageUrl = imagePreview;
-      await onSave(updatedCar, imageUrl || undefined);
-    } else {
-      await onSave(updatedCar);
-    }
+    await onSave(updatedCar, imageFile || undefined);
   };
 
   return (
@@ -104,7 +113,7 @@ const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) =
               <p className="font-medium">Пожалуйста, исправьте следующие ошибки:</p>
               <ul className="ml-4 list-disc">
                 {Object.entries(errors).map(([key, error]) => {
-                  if (key === 'engine' || key === 'transmission' || key === 'price') {
+                  if (key === 'engine' || key === 'transmission' || key === 'price' || key === 'dimensions' || key === 'performance') {
                     return null; // Пропускаем объекты, их ошибки отображаются отдельно
                   }
                   return (
@@ -121,8 +130,12 @@ const CarForm = ({ car, isNewCar, loading, onSave, formErrors }: CarFormProps) =
 
             {/* Изображение */}
             <CarFormImage
+              car={car}
               imagePreview={imagePreview}
               handleImageUpload={handleImageUpload}
+              handleImageUrlChange={handleImageUrlChange}
+              handleAddImage={handleAddImage}
+              handleRemoveImage={handleRemoveImage}
             />
 
             {/* Технические характеристики */}

@@ -14,7 +14,8 @@ import {
   ShoppingCart, 
   BarChart3,
   FileArchive,
-  Package
+  Package,
+  Loader2
 } from 'lucide-react';
 
 type AdminMenuProps = {
