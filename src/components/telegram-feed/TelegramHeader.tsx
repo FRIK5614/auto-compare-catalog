@@ -13,7 +13,7 @@ const TelegramHeader = ({
   buttonText,
   telegramUrl
 }: TelegramHeaderProps) => {
-  return <div className="mb-8 text-center sticky top-0 z-10 bg-white py-6 shadow-md">
+  return <div className="mb-8 text-center sticky top-0 z-10 bg-white shadow-md py-0">
       
       <p className="text-gray-600 mb-6">{description}</p>
       <Button variant="blue" size="lg" className="font-bold" onClick={() => window.open(telegramUrl, '_blank')}>
