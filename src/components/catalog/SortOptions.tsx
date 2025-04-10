@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -83,66 +84,48 @@ interface SortOptionsProps {
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add('select-dropdown-open');
-    } else {
-      document.body.classList.remove('select-dropdown-open');
-    }
-    
-    return () => {
-      document.body.classList.remove('select-dropdown-open');
-    };
-  }, [isOpen]);
-
-  const blockEvents = (e: React.SyntheticEvent) => {
+  
+  // Prevent dropdown from causing page interaction with card beneath it
+  const preventBubbling = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    if (e.nativeEvent) {
-      e.nativeEvent.stopImmediatePropagation();
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-  };
-
-  const handleSelectItem = (value: string) => {
-    onSortChange(value);
-    setIsOpen(false);
   };
 
   return (
     <div 
-      ref={containerRef}
-      className="relative z-[3000] w-full md:w-[240px] select-dropdown"
+      className="relative z-[3000] w-full md:w-[240px]"
+      onClick={preventBubbling}
+      onMouseDown={preventBubbling}
+      onTouchStart={preventBubbling}
+      onTouchEnd={preventBubbling}
       data-no-card-click="true"
     >
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/10 z-[2999]" 
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(false);
-          }}
+          onClick={() => setIsOpen(false)}
           data-no-card-click="true"
         />
       )}
       
       <Select 
         value={sortOption} 
-        onValueChange={handleSelectItem}
+        onValueChange={(value) => {
+          onSortChange(value);
+          setIsOpen(false);
+        }}
         open={isOpen}
-        onOpenChange={handleOpenChange}
+        onOpenChange={setIsOpen}
       >
-        <SelectTrigger className="w-full bg-white">
+        <SelectTrigger 
+          className="w-full bg-white relative z-[3001]"
+          data-no-card-click="true"
+        >
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
         <SelectContent 
           position="popper" 
-          className="z-[3000] bg-white"
-          onClick={blockEvents}
+          className="z-[3001] bg-white"
+          data-no-card-click="true"
         >
           {sortOptions.map(option => (
             <SelectItem 
