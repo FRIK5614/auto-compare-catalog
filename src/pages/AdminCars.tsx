@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useCars } from '@/hooks/useCars';
 import { Button } from '@/components/ui/button';
@@ -154,7 +155,7 @@ const AdminCars = () => {
             if (imageUrl) {
               carImagesList.push({
                 id: `img-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                url: typeof imageUrl === 'string' ? imageUrl : imageUrl.url,
+                url: typeof imageUrl === 'string' ? imageUrl : imageUrl.url || '',
                 alt: `${editingCar.brand} ${editingCar.model}`
               });
             }

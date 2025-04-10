@@ -183,7 +183,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                     <SelectValue placeholder="Все марки" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все марки</SelectItem>
+                    <SelectItem value="all">Все марки</SelectItem>
                     {brands.sort().map((brand) => (
                       <SelectItem key={brand} value={brand}>
                         {brand}
@@ -242,7 +242,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                     <SelectValue placeholder="Все типы кузова" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все типы кузова</SelectItem>
+                    <SelectItem value="all">Все типы кузова</SelectItem>
                     {bodyTypes.sort().map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -301,7 +301,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                     <SelectValue placeholder="Все типы топлива" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все типы топлива</SelectItem>
+                    <SelectItem value="all">Все типы топлива</SelectItem>
                     {Array.from(new Set(fuelTypes)).sort().map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -325,7 +325,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                     <SelectValue placeholder="Все типы КПП" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все типы КПП</SelectItem>
+                    <SelectItem value="all">Все типы КПП</SelectItem>
                     {Array.from(new Set(transmissionTypes)).sort().map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -349,7 +349,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                     <SelectValue placeholder="Все страны" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Все страны</SelectItem>
+                    <SelectItem value="all">Все страны</SelectItem>
                     {countries.sort().map((country) => (
                       <SelectItem key={country} value={country}>
                         {country}
