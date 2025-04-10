@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -82,14 +82,66 @@ interface SortOptionsProps {
   onSortChange: (value: string) => void;
 }
 
+// Long press duration in milliseconds
+const LONG_PRESS_DURATION = 300; 
+
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+  const touchStarted = useRef(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    touchStarted.current = true;
+    
+    pressTimer.current = setTimeout(() => {
+      // Long press detected
+      setIsOpen(true);
+      touchStarted.current = false;
+    }, LONG_PRESS_DURATION);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    touchStarted.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    // Cancel long press if finger moves too much
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+  };
+
+  const handleSelectItem = (value: string) => {
+    onSortChange(value);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="relative z-[100]">
+    <div 
+      className="relative z-[100] w-full md:w-[240px]" 
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+    >
       <Select 
         value={sortOption} 
-        onValueChange={onSortChange}
+        onValueChange={handleSelectItem}
+        open={isOpen}
+        onOpenChange={handleOpenChange}
       >
-        <SelectTrigger className="w-[200px] bg-white">
+        <SelectTrigger className="w-full bg-white">
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
         <SelectContent position="popper" className="z-[100]">

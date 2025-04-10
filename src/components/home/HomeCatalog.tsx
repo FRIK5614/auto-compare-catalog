@@ -50,11 +50,11 @@ const HomeCatalog = ({
         <h2 className="text-3xl font-bold mb-8 text-auto-gray-900">Каталог автомобилей</h2>
         
         <div className="flex flex-col md:flex-row">
-          <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5 pr-4`}>
+          <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/4 pr-4`}>
             <SearchFilters filter={filter} setFilter={setFilter} />
           </div>
           
-          <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-4/5'} ${isMobile ? '' : 'md:pl-6'}`}>
+          <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-3/4'} ${isMobile ? '' : 'md:pl-6'}`}>
             {isMobile && (
               <div className="mb-4">
                 <Button 

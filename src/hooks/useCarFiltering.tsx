@@ -26,7 +26,7 @@ export const useCarFiltering = () => {
     return () => {
       filteringComplete.current = false;
     };
-  }, []);
+  }, [filteredCars, filter.sortBy]);
 
   return {
     cars,
@@ -88,12 +88,14 @@ function useCarFilters(cars: Car[]) {
 
   const applySorting = (carsToSort: Car[], sortBy?: string) => {
     if (!carsToSort || !sortBy) return carsToSort;
-    
+
+    // First try to match with sortOptions from SortOptions.tsx
     const sortOption = sortOptions.find(option => option.value === sortBy);
     if (sortOption) {
       return [...carsToSort].sort(sortOption.sortFn);
     }
     
+    // Fallback to traditional filter strings
     switch (sortBy) {
       case 'priceAsc':
         return [...carsToSort].sort((a, b) => a.price.base - b.price.base);
@@ -103,6 +105,10 @@ function useCarFilters(cars: Car[]) {
         return [...carsToSort].sort((a, b) => a.year - b.year);
       case 'yearDesc':
         return [...carsToSort].sort((a, b) => b.year - a.year);
+      case 'nameAsc':
+        return [...carsToSort].sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model));
+      case 'nameDesc':
+        return [...carsToSort].sort((a, b) => (b.brand + b.model).localeCompare(a.brand + a.model));
       case 'popularity':
       default:
         return [...carsToSort].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));

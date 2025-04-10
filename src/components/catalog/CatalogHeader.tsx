@@ -32,7 +32,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
         )}
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
+      <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0 w-full sm:w-auto">
         {isMobile && (
           <Button 
             variant="blue" 
