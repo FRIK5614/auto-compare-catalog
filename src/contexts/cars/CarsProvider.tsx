@@ -50,7 +50,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     importCarsData,
     exportCarsData,
     getCarById
-  } = useCarsCRUD();
+  } = useCarsCRUD(cars); // Передаем текущие автомобили в хук
   
   const {
     orders,

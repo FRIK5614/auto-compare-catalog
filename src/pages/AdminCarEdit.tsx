@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -28,17 +27,27 @@ const AdminCarEdit = () => {
   const isNewCar = id === "new";
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getCarById, updateCar, addCar, uploadCarImage } = useCars();
+  const { cars, getCarById, updateCar, addCar, uploadCarImage, reloadCars } = useCars();
   
   const [loading, setLoading] = useState(false);
   const [car, setCar] = useState<Car | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // Перезагрузка данных автомобилей при монтировании компонента
+  useEffect(() => {
+    reloadCars();
+  }, [reloadCars]);
+
   // Загрузка данных авто при монтировании компонента
   useEffect(() => {
     if (!isNewCar && id) {
+      console.log("Looking for car with ID:", id);
+      console.log("Available cars:", cars.length);
+      
       const carData = getCarById(id);
+      console.log("Found car:", carData ? "Yes" : "No");
+      
       if (carData) {
         setCar(carData);
         if (carData.images && carData.images.length > 0) {
@@ -103,7 +112,7 @@ const AdminCarEdit = () => {
         image_url: "",
       });
     }
-  }, [id, isNewCar, getCarById, navigate, toast]);
+  }, [id, isNewCar, getCarById, navigate, toast, cars]);
 
   // Обработка изменений базовых полей
   const handleInputChange = (

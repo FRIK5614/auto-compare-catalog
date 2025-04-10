@@ -11,8 +11,8 @@ import {
   importCarsData as importCarsDataAction 
 } from "../carActions";
 
-export const useCarsCRUD = () => {
-  const [cars, setCars] = useState<Car[]>([]);
+export const useCarsCRUD = (initialCars: Car[] = []) => {
+  const [cars, setCars] = useState<Car[]>(initialCars);
   const { toast } = useToast();
 
   // View a car (increment view count)

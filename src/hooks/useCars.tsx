@@ -1,3 +1,4 @@
+
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car } from "../types/car";
 import { useEffect } from "react";
@@ -55,6 +56,15 @@ export const useCars = () => {
 
   // Сортировка отфильтрованных автомобилей
   const sortedFilteredCars = filterUtils.applySorting(filteredCars, filter.sortBy);
+  
+  // Улучшенная версия getCarById, добавляющая логирование для отладки
+  const enhancedGetCarById = (id: string) => {
+    console.log('Looking for car with ID:', id);
+    console.log('Available cars:', cars.length);
+    const car = cars.find(car => car.id === id);
+    console.log('Found car:', car ? 'Yes' : 'No');
+    return car;
+  };
 
   return {
     // Основные данные
@@ -77,7 +87,7 @@ export const useCars = () => {
     
     // Базовые действия из CarsContext
     clearCompare,
-    getCarById,
+    getCarById: enhancedGetCarById, // Используем улучшенную версию с логированием
     reloadCars,
     viewCar,
     deleteCar,
