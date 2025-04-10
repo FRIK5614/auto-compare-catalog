@@ -214,6 +214,9 @@ const AdminCars = () => {
         </AlertDialog>
 
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+          <AlertDialogTrigger asChild>
+            {/* If you need a trigger, otherwise omit this */}
+          </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Импорт данных</AlertDialogTitle>
