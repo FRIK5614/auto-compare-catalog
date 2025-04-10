@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorState from "@/components/ErrorState";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext } from "@/components/ui/pagination";
 
 interface TelegramPost {
   id: number;
@@ -16,20 +17,35 @@ interface TelegramPost {
   photo_url?: string;
 }
 
+interface TelegramResponse {
+  posts: TelegramPost[];
+  total: number;
+  hasMore: boolean;
+}
+
+const POSTS_PER_PAGE = 12;
+
 const HotOffers = () => {
   const [posts, setPosts] = useState<TelegramPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalPosts, setTotalPosts] = useState(0);
   
-  const fetchTelegramPosts = async () => {
+  const fetchTelegramPosts = async (newOffset = 0) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching Telegram posts...');
+      console.log(`Fetching Telegram posts with offset ${newOffset}...`);
       
       const { data, error } = await supabase.functions.invoke('telegram-feed', {
-        body: { channelName: 'VoeAVTO' }
+        body: { 
+          channelName: 'VoeAVTO',
+          limit: POSTS_PER_PAGE,
+          offset: newOffset
+        }
       });
       
       if (error) {
@@ -38,7 +54,24 @@ const HotOffers = () => {
       }
       
       console.log('Telegram posts received:', data);
-      setPosts(Array.isArray(data) ? data : []);
+      
+      if (data && typeof data === 'object') {
+        const response = data as TelegramResponse;
+        
+        if (newOffset === 0) {
+          // First page - replace existing posts
+          setPosts(response.posts || []);
+        } else {
+          // Subsequent pages - append to existing posts
+          setPosts(prev => [...prev, ...(response.posts || [])]);
+        }
+        
+        setTotalPosts(response.total || 0);
+        setHasMore(response.hasMore || false);
+        setOffset(newOffset);
+      } else {
+        throw new Error('Received invalid data format');
+      }
     } catch (err: any) {
       console.error('Error fetching Telegram posts:', err);
       setError('Не удалось загрузить ленту Telegram. Пожалуйста, попробуйте позже.');
@@ -47,8 +80,14 @@ const HotOffers = () => {
     }
   };
   
+  const loadMorePosts = () => {
+    if (hasMore && !loading) {
+      fetchTelegramPosts(offset + POSTS_PER_PAGE);
+    }
+  };
+  
   useEffect(() => {
-    fetchTelegramPosts();
+    fetchTelegramPosts(0);
   }, []);
   
   // Format the timestamp to a readable date
@@ -83,9 +122,9 @@ const HotOffers = () => {
         </div>
         
         <div className="grid gap-6">
-          {loading ? (
-            // Loading skeletons
-            Array.from({ length: 5 }).map((_, index) => (
+          {loading && offset === 0 ? (
+            // Loading skeletons for initial load
+            Array.from({ length: 6 }).map((_, index) => (
               <Card key={`skeleton-${index}`}>
                 <CardHeader>
                   <Skeleton className="h-5 w-40" />
@@ -102,7 +141,7 @@ const HotOffers = () => {
             // Error state
             <ErrorState 
               message={error}
-              onRetry={fetchTelegramPosts}
+              onRetry={() => fetchTelegramPosts(0)}
             />
           ) : posts.length === 0 ? (
             // Empty state
@@ -121,29 +160,55 @@ const HotOffers = () => {
             </Card>
           ) : (
             // Display posts
-            posts.map((post) => (
-              <Card key={post.id} className="overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="text-lg">Опубликовано {formatDate(post.date)}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Post text with line breaks preserved */}
-                  <div className="whitespace-pre-line">{post.text}</div>
-                  
-                  {/* Display photo if available */}
-                  {post.photo_url && (
-                    <div className="mt-4">
-                      <img 
-                        src={post.photo_url} 
-                        alt="Изображение из Telegram" 
-                        className="rounded-lg max-h-[500px] w-auto mx-auto"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.map((post) => (
+                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Опубликовано {formatDate(post.date)}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Post text with line breaks preserved */}
+                      <div className="whitespace-pre-line">{post.text}</div>
+                      
+                      {/* Display photo if available */}
+                      {post.photo_url && (
+                        <div className="mt-4">
+                          <img 
+                            src={post.photo_url} 
+                            alt="Изображение из Telegram" 
+                            className="rounded-lg max-h-[300px] w-auto mx-auto"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Pagination controls */}
+              <div className="mt-8 flex justify-center">
+                {loading && offset > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-10 w-32" />
+                    <MoreHorizontal className="text-gray-400" />
+                  </div>
+                ) : hasMore ? (
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={loadMorePosts}
+                    disabled={loading}
+                    className="w-full md:w-auto"
+                  >
+                    {loading ? "Загрузка..." : "Показать ещё"}
+                  </Button>
+                ) : posts.length > 0 ? (
+                  <p className="text-gray-500 py-2">Больше публикаций нет</p>
+                ) : null}
+              </div>
+            </>
           )}
         </div>
       </main>
