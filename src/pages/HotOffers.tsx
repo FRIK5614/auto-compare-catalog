@@ -1,12 +1,13 @@
-
 import React, { useEffect, useState } from "react";
-import { ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PostsGrid, LoadMoreButton } from "@/components/telegram-feed";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { 
+  PostsGrid, 
+  LoadMoreButton,
+  TelegramHeader 
+} from "@/components/telegram-feed";
 
 interface TelegramPost {
   id: number;
@@ -99,19 +100,12 @@ const HotOffers = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8 text-center sticky top-0 bg-white py-4 shadow-md z-10">
-          <h1 className="text-3xl font-bold mb-4">Горячие предложения</h1>
-          <p className="text-gray-600 mb-4">Следите за обновлениями в нашей Telegram группе!</p>
-          <Button 
-            variant="blue" 
-            size="lg" 
-            className="font-bold"
-            onClick={() => window.open('https://t.me/VoeAVTO', '_blank')}
-          >
-            <ExternalLink className="mr-2 h-5 w-5" />
-            Перейти в группу Telegram
-          </Button>
-        </div>
+        <TelegramHeader 
+          title="Горячие предложения"
+          description="Следите за обновлениями в нашей Telegram группе!"
+          buttonText="Перейти в группу Telegram"
+          telegramUrl="https://t.me/VoeAVTO"
+        />
         
         <div className="grid gap-6">
           {/* Posts Grid Component */}
