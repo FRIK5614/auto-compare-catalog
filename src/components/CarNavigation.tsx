@@ -6,7 +6,7 @@ interface CarNavigationProps {
   className?: string;
 }
 
-// This component returns null as navigation arrows have been removed
+// This component now returns null as navigation arrows have been removed in favor of swipe gestures
 const CarNavigation: React.FC<CarNavigationProps> = () => {
   return null;
 };

@@ -82,24 +82,32 @@ export const useCars = () => {
     return [...new Set(values)].filter(Boolean) as Car[T][];
   };
   
-  // Получаем минимальные и максимальные значения для числовых фильтров
+  // Улучшенная функция для получения min и max цен
   const getPriceRange = () => {
-    const prices = cars.map(car => car.price.base);
+    if (cars.length === 0) return { min: 0, max: 10000000 };
+    
+    const actualPrices = cars.map(car => 
+      car.price.discount ? car.price.base - car.price.discount : car.price.base
+    );
+    
     return {
-      min: Math.min(...prices) || 0,
-      max: Math.max(...prices) || 10000000
+      min: Math.min(...actualPrices),
+      max: Math.max(...actualPrices)
     };
   };
   
+  // Улучшенная функция для получения min и max годов
   const getYearRange = () => {
+    if (cars.length === 0) return { min: 1990, max: new Date().getFullYear() };
+    
     const years = cars.map(car => car.year);
     return {
-      min: Math.min(...years) || 1990,
-      max: Math.max(...years) || new Date().getFullYear()
+      min: Math.min(...years),
+      max: Math.max(...years)
     };
   };
   
-  // Функция для применения сортировки
+  // Улучшенная функция сортировки
   const applySorting = (carsToSort: Car[], sortBy?: string): Car[] => {
     if (!carsToSort || carsToSort.length === 0) return [];
     
@@ -130,6 +138,79 @@ export const useCars = () => {
       default:
         return carsCopy.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
     }
+  };
+  
+  // Новая функция для расширенного фильтра с дополнительными параметрами
+  const applyAdvancedFilter = (carsToFilter: Car[], advancedFilter: CarFilter) => {
+    if (!carsToFilter || carsToFilter.length === 0) return [];
+    
+    let result = [...carsToFilter];
+    
+    // Фильтр по брендам
+    if (advancedFilter.brands && advancedFilter.brands.length > 0) {
+      result = result.filter(car => advancedFilter.brands?.includes(car.brand));
+    }
+    
+    // Фильтр по моделям
+    if (advancedFilter.models && advancedFilter.models.length > 0) {
+      result = result.filter(car => advancedFilter.models?.includes(car.model));
+    }
+    
+    // Фильтр по годам
+    if (advancedFilter.years && advancedFilter.years.length > 0) {
+      result = result.filter(car => advancedFilter.years?.includes(car.year));
+    }
+    
+    // Диапазон цен, учитывая скидки
+    if (advancedFilter.priceRange) {
+      result = result.filter(car => {
+        const actualPrice = car.price.discount 
+          ? car.price.base - car.price.discount 
+          : car.price.base;
+          
+        return actualPrice >= (advancedFilter.priceRange?.min || 0) && 
+               actualPrice <= (advancedFilter.priceRange?.max || Infinity);
+      });
+    }
+    
+    // Тип кузова
+    if (advancedFilter.bodyTypes && advancedFilter.bodyTypes.length > 0) {
+      result = result.filter(car => advancedFilter.bodyTypes?.includes(car.bodyType));
+    }
+    
+    // Тип двигателя
+    if (advancedFilter.engineTypes && advancedFilter.engineTypes.length > 0) {
+      result = result.filter(car => advancedFilter.engineTypes?.includes(car.engine.type));
+    }
+    
+    // Тип привода
+    if (advancedFilter.drivetrains && advancedFilter.drivetrains.length > 0) {
+      result = result.filter(car => advancedFilter.drivetrains?.includes(car.drivetrain));
+    }
+    
+    // Новый/с пробегом
+    if (advancedFilter.isNew !== undefined) {
+      result = result.filter(car => car.isNew === advancedFilter.isNew);
+    }
+    
+    // Страна производитель
+    if (advancedFilter.countries && advancedFilter.countries.length > 0) {
+      result = result.filter(car => car.country && advancedFilter.countries?.includes(car.country));
+    }
+    
+    // КПП (добавляем новый фильтр)
+    if (advancedFilter.transmissionTypes && advancedFilter.transmissionTypes.length > 0) {
+      result = result.filter(car => 
+        advancedFilter.transmissionTypes?.includes(car.transmission.type)
+      );
+    }
+    
+    // Наличие скидки (добавляем новый фильтр)
+    if (advancedFilter.hasDiscount === true) {
+      result = result.filter(car => car.price.discount && car.price.discount > 0);
+    }
+    
+    return result;
   };
   
   // Применяем сортировку к отфильтрованным автомобилям
@@ -167,6 +248,7 @@ export const useCars = () => {
     importCarsData,
     uploadCarImage,
     applySorting,
+    applyAdvancedFilter,
     // Экспортируем эти функции для исправления ошибок сборки
     addToFavorites,
     removeFromFavorites,

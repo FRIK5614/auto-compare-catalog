@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -21,12 +22,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import AdminCarsList from "@/components/AdminCarsList";
 
 const AdminCars = () => {
   const { cars, deleteCar, exportCarsData, importCarsData } = useCars();
@@ -87,6 +88,7 @@ const AdminCars = () => {
     if (carToDelete) {
       deleteCar(carToDelete.id);
       setCarToDelete(null);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -131,72 +133,12 @@ const AdminCars = () => {
           />
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Марка</TableHead>
-                <TableHead>Модель</TableHead>
-                <TableHead>Год</TableHead>
-                <TableHead>Цена</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Просмотры</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCars.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
-                    Автомобили не найдены
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredCars.map((car) => (
-                  <TableRow key={car.id}>
-                    <TableCell className="font-medium">{car.brand}</TableCell>
-                    <TableCell>{car.model}</TableCell>
-                    <TableCell>{car.year}</TableCell>
-                    <TableCell>
-                      {new Intl.NumberFormat("ru-RU", {
-                        style: "currency",
-                        currency: "RUB",
-                        maximumFractionDigits: 0,
-                      }).format(car.price.base)}
-                    </TableCell>
-                    <TableCell>
-                      {car.isNew ? (
-                        <Badge className="bg-green-500">Новый</Badge>
-                      ) : (
-                        <Badge variant="outline">Б/У</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{car.viewCount || 0}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/admin/cars/edit/${car.id}`)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={() => openDeleteDialog(car)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <AdminCarsList 
+          cars={filteredCars} 
+          onEdit={(id) => navigate(`/admin/cars/edit/${id}`)}
+          onDelete={openDeleteDialog}
+          onView={(id) => navigate(`/car/${id}`)}
+        />
 
         {/* Delete Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, BarChart2, Info } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef, TouchEvent } from "react";
 
 interface CarCardProps {
   car: Car;
@@ -25,12 +26,47 @@ const formatPrice = (price: number) => {
 const CarCard = ({ car, className }: CarCardProps) => {
   const [imageIndex, setImageIndex] = useState(0);
   const { toggleFavorite, toggleCompare, isFavorite, isInCompare } = useCars();
+  const touchStartX = useRef<number | null>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   
   const currentImage = car.images[imageIndex];
   
+  // Handle swipe gestures
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (touchStartX.current === null) return;
+    
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchEndX - touchStartX.current;
+    
+    // If swipe distance is significant (more than 50px)
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        // Swipe right (previous image)
+        setImageIndex(prev => (prev === 0 ? car.images.length - 1 : prev - 1));
+      } else {
+        // Swipe left (next image)
+        setImageIndex(prev => (prev === car.images.length - 1 ? 0 : prev + 1));
+      }
+    }
+    
+    touchStartX.current = null;
+  };
+
+  // Add visual indicator for multiple images if there's more than one
+  const hasMultipleImages = car.images.length > 1;
+  
   return (
     <Card className={cn("overflow-hidden group h-full flex flex-col", className)}>
-      <div className="relative overflow-hidden h-48">
+      <div 
+        ref={imageRef}
+        className="relative overflow-hidden h-48"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <Link to={`/car/${car.id}`} className="block h-full w-full relative">
           <img
             src={currentImage.url}
@@ -53,6 +89,21 @@ const CarCard = ({ car, className }: CarCardProps) => {
           <Badge variant="outline" className="absolute top-3 right-3 bg-white text-red-600 border-red-600">
             Скидка {formatPrice(car.price.discount)}
           </Badge>
+        )}
+        
+        {/* Image indicator dots for multiple images */}
+        {hasMultipleImages && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+            {car.images.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  idx === imageIndex ? "bg-white" : "bg-white/50"
+                )}
+              />
+            ))}
+          </div>
         )}
       </div>
       
