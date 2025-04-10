@@ -13,6 +13,7 @@ const Header = () => {
         <nav>
           <ul className="flex space-x-4">
             <li><Link to="/" className="hover:text-blue-600">Главная</Link></li>
+            <li><Link to="/hot-offers" className="hover:text-blue-600">Горячие предложения</Link></li>
             <li><Link to="/compare" className="hover:text-blue-600">Сравнение</Link></li>
             <li><Link to="/favorites" className="hover:text-blue-600">Избранное</Link></li>
             {isAdmin && (
