@@ -100,7 +100,7 @@ const SearchFiltersModal = ({
           <SearchFilters filter={filter} setFilter={setFilter} closeModal={onClose} isInModal={true} />
         </div>
         
-        <div className="p-4 border-t sticky bottom-0 bg-white">
+        <div className="p-4 border-t fixed bottom-0 left-0 right-0 bg-white z-50">
           <div className="flex flex-col space-y-3 items-center px-0 justify-end">
             <Button onClick={() => {
             onClose();
