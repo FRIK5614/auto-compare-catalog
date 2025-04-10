@@ -14,7 +14,6 @@ import NotFound from "./pages/NotFound";
 import TmcAvtoCatalog from "./components/TmcAvtoCatalog";
 import { AdminProvider } from "./contexts/AdminContext";
 import { CarsProvider } from "./contexts/CarsContext";
-import { ChatProvider } from "./contexts/ChatContext";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -22,7 +21,6 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminImport from "./pages/AdminImport";
 import AdminChat from "./pages/AdminChat";
 import AdminCars from "./pages/AdminCars";
-import ChatWidget from "./components/ChatWidget";
 import { supabase } from "./integrations/supabase/client";
 import 'swiper/css';
 
@@ -36,10 +34,9 @@ const queryClient = new QueryClient({
   },
 });
 
-// AppContent component to handle routes and conditional rendering of ChatWidget
+// AppContent component to handle routes
 const AppContent = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // Create storage bucket for car images if it doesn't exist
   useEffect(() => {
@@ -104,7 +101,6 @@ const AppContent = () => {
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-        {!isAdminRoute && <ChatWidget />}
       </TooltipProvider>
     </>
   );
@@ -117,9 +113,7 @@ const App = () => {
       <BrowserRouter>
         <CarsProvider>
           <AdminProvider>
-            <ChatProvider>
-              <AppContent />
-            </ChatProvider>
+            <AppContent />
           </AdminProvider>
         </CarsProvider>
       </BrowserRouter>

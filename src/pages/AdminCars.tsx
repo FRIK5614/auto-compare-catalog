@@ -86,7 +86,7 @@ const AdminCars = () => {
           loading={admin.loading || false}
         />
         
-        <AlertDialog open={!!carToDelete} onOpenChange={() => setCarToDelete(null)}>
+        <AlertDialog open={!!carToDelete} onOpenChange={(open) => !open && setCarToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Вы уверены?</AlertDialogTitle>

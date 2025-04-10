@@ -101,6 +101,8 @@ export const useCars = () => {
   
   // Function to apply sorting
   const applySorting = (cars: Car[], sortBy?: string): Car[] => {
+    if (!cars || cars.length === 0) return [];
+    
     const carsCopy = [...cars];
     
     switch (sortBy) {
@@ -156,6 +158,7 @@ export const useCars = () => {
     exportCarsData,
     importCarsData,
     uploadCarImage,
+    applySorting,
     // Export these functions to fix the build errors
     addToFavorites,
     removeFromFavorites,
