@@ -8,14 +8,12 @@ import CarDetailsContent from "@/components/car-details/CarDetailsContent";
 
 const CarDetails = () => {
   return (
-    <CarsProvider>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <CarDetailsContent />
-        <ComparePanel />
-        <Footer />
-      </div>
-    </CarsProvider>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <CarDetailsContent />
+      <ComparePanel />
+      <Footer />
+    </div>
   );
 };
 

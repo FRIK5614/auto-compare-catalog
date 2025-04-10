@@ -1,7 +1,7 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car } from "../types/car";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export const useCarDetails = () => {
   const {
@@ -14,13 +14,19 @@ export const useCarDetails = () => {
     addCar,
     uploadCarImage
   } = useGlobalCars();
+  
+  // Используем ref, чтобы отслеживать первоначальную загрузку
+  const initialLoadDone = useRef(false);
 
-  // Reload cars on mount
+  // Загружаем автомобили только при первом монтировании
   useEffect(() => {
-    reloadCars();
+    if (!initialLoadDone.current) {
+      reloadCars();
+      initialLoadDone.current = true;
+    }
   }, [reloadCars]);
 
-  // Enhanced version of getCarById with logging for debugging
+  // Улучшенная версия getCarById с логированием для отладки
   const enhancedGetCarById = (id: string) => {
     console.log('Looking for car with ID:', id);
     console.log('Available cars:', cars.length);
