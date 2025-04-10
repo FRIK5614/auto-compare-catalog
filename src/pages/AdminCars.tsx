@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -91,6 +92,13 @@ const AdminCars = () => {
       setIsDeleteDialogOpen(false);
     }
   };
+  
+  const handleDelete = (id: string) => {
+    const car = cars.find(c => c.id === id);
+    if (car) {
+      openDeleteDialog(car);
+    }
+  };
 
   return (
     <AdminLayout>
@@ -136,30 +144,26 @@ const AdminCars = () => {
         <AdminCarsList 
           cars={filteredCars} 
           onEdit={(id) => navigate(`/admin/cars/edit/${id}`)}
-          onDelete={(id) => {
-            const car = cars.find(c => c.id === id);
-            if (car) {
-              setCarToDelete(car);
-              setIsDeleteDialogOpen(true);
-            }
-          }}
+          onDelete={handleDelete}
           onView={(id) => navigate(`/car/${id}`)}
         />
 
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
-              <AlertDialogDescription>
-                Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {isDeleteDialogOpen && (
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
 
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
