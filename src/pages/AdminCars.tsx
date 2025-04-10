@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -21,6 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
@@ -31,6 +33,7 @@ const AdminCars = () => {
   const { cars, deleteCar, exportCarsData, importCarsData } = useCars();
   const [searchTerm, setSearchTerm] = useState("");
   const [carToDelete, setCarToDelete] = useState<Car | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importData, setImportData] = useState("");
   const navigate = useNavigate();
@@ -74,6 +77,11 @@ const AdminCars = () => {
         description: "Неверный формат данных",
       });
     }
+  };
+  
+  const openDeleteDialog = (car: Car) => {
+    setCarToDelete(car);
+    setIsDeleteDialogOpen(true);
   };
 
   return (
@@ -171,7 +179,7 @@ const AdminCars = () => {
                           variant="ghost"
                           size="icon"
                           className="text-red-500"
-                          onClick={() => setCarToDelete(car)}
+                          onClick={() => openDeleteDialog(car)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -184,7 +192,7 @@ const AdminCars = () => {
           </Table>
         </div>
 
-        <AlertDialog open={!!carToDelete} onOpenChange={(open) => !open && setCarToDelete(null)}>
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
@@ -195,13 +203,14 @@ const AdminCars = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Отмена</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-red-500 hover:bg-red-600"
                 onClick={() => {
                   if (carToDelete) {
                     deleteCar(carToDelete.id);
                     setCarToDelete(null);
+                    setIsDeleteDialogOpen(false);
                   }
                 }}
               >
@@ -232,7 +241,7 @@ const AdminCars = () => {
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setImportDialogOpen(false)}>Отмена</AlertDialogCancel>
               <AlertDialogAction onClick={handleImport}>
                 Импортировать
               </AlertDialogAction>

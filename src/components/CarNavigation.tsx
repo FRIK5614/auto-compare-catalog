@@ -1,10 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCars } from '@/hooks/useCars';
-import { Car } from '@/types/car';
 
 interface CarNavigationProps {
   currentCarId: string;
