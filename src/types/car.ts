@@ -71,6 +71,7 @@ export interface Car {
   isPopular?: boolean;
   country?: string; // Country field for car origin
   viewCount?: number; // Track number of views
+  image_url?: string; // Legacy field for backward compatibility
 }
 
 export interface CarFilter {

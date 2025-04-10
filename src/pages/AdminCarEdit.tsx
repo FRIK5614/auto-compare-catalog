@@ -100,6 +100,7 @@ const AdminCarEdit = () => {
         description: "",
         isNew: true,
         country: "",
+        image_url: "",
       });
     }
   }, [id, isNewCar, getCarById, navigate, toast]);
@@ -115,13 +116,19 @@ const AdminCarEdit = () => {
       // Обработка вложенных свойств
       if (name.includes(".")) {
         const [parent, child] = name.split(".");
-        return {
-          ...prev,
-          [parent]: {
-            ...prev[parent as keyof Car],
-            [child]: value,
-          },
-        };
+        const parentObj = prev[parent as keyof typeof prev];
+        
+        if (typeof parentObj === 'object' && parentObj !== null) {
+          return {
+            ...prev,
+            [parent]: {
+              ...parentObj,
+              [child]: value,
+            },
+          };
+        }
+        
+        return prev;
       }
       
       return {
@@ -144,13 +151,19 @@ const AdminCarEdit = () => {
       // Обработка вложенных свойств
       if (name.includes(".")) {
         const [parent, child] = name.split(".");
-        return {
-          ...prev,
-          [parent]: {
-            ...prev[parent as keyof Car],
-            [child]: isNaN(numValue) ? 0 : numValue,
-          },
-        };
+        const parentObj = prev[parent as keyof typeof prev];
+        
+        if (typeof parentObj === 'object' && parentObj !== null) {
+          return {
+            ...prev,
+            [parent]: {
+              ...parentObj,
+              [child]: isNaN(numValue) ? 0 : numValue,
+            },
+          };
+        }
+        
+        return prev;
       }
       
       return {
