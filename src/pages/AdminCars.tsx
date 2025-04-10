@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
@@ -96,7 +97,7 @@ const AdminCars = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              <AlertDialogAction onClick={confirmDelete}>
                 Удалить
               </AlertDialogAction>
             </AlertDialogFooter>
