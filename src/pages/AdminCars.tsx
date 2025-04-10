@@ -87,25 +87,27 @@ const AdminCars = () => {
           loading={admin.loading || false}
         />
         
-        <AlertDialog 
-          open={!!carToDelete} 
-          onOpenChange={(open) => !open && setCarToDelete(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Это действие нельзя отменить. Автомобиль будет безвозвратно удален из системы.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-                Удалить
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {!!carToDelete && (
+          <AlertDialog 
+            open={!!carToDelete} 
+            onOpenChange={(open) => !open && setCarToDelete(null)}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Это действие нельзя отменить. Автомобиль будет безвозвратно удален из системы.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+                  Удалить
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </AdminLayout>
   );
