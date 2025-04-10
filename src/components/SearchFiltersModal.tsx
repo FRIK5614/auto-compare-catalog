@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SearchFilters from "@/components/search-filters";
@@ -7,21 +6,25 @@ import { HeadphonesIcon, Filter, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 interface SearchFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
   scrollToContactForm?: () => void;
 }
-
-const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFiltersModalProps) => {
-  const { filter, setFilter } = useCars();
+const SearchFiltersModal = ({
+  isOpen,
+  onClose,
+  scrollToContactForm
+}: SearchFiltersModalProps) => {
+  const {
+    filter,
+    setFilter
+  } = useCars();
   const isMobile = useIsMobile();
-  
+
   // На мобильных устройствах используем Sheet (нижний выдвижной экран)
   if (isMobile) {
-    return (
-      <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    return <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
         <SheetContent side="bottom" className="h-screen w-full max-w-full p-0">
           <div className="flex flex-col h-full">
             <SheetHeader className="px-4 py-5 border-b sticky top-0 bg-white z-10">
@@ -31,23 +34,13 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
                   Фильтры
                 </SheetTitle>
                 <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      const newFilter = {};
-                      setFilter(newFilter);
-                    }}
-                    className="h-8 text-auto-gray-700 text-xs"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => {
+                  const newFilter = {};
+                  setFilter(newFilter);
+                }} className="h-8 text-auto-gray-700 text-xs">
                     Сбросить
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={onClose}
-                    className="text-gray-600"
-                  >
+                  <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-600">
                     <X className="h-6 w-6" />
                   </Button>
                 </div>
@@ -55,50 +48,33 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
             </SheetHeader>
             
             <div className="flex-1 overflow-auto px-4 pt-4">
-              <SearchFilters 
-                filter={filter} 
-                setFilter={setFilter} 
-                closeModal={onClose} 
-                isInModal={true} 
-              />
+              <SearchFilters filter={filter} setFilter={setFilter} closeModal={onClose} isInModal={true} />
             </div>
             
             <div className="px-4 py-3 border-t mt-auto bg-white sticky bottom-0">
               <div className="flex flex-col space-y-3">
-                <Button 
-                  onClick={() => {
-                    onClose();
-                  }}
-                  variant="blue"
-                  className="w-full"
-                >
+                <Button onClick={() => {
+                onClose();
+              }} variant="blue" className="w-full">
                   Применить
                 </Button>
                 
-                {scrollToContactForm && (
-                  <Button 
-                    onClick={() => {
-                      onClose();
-                      setTimeout(() => scrollToContactForm(), 300);
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
+                {scrollToContactForm && <Button onClick={() => {
+                onClose();
+                setTimeout(() => scrollToContactForm(), 300);
+              }} variant="outline" className="w-full">
                     <HeadphonesIcon className="mr-2 h-5 w-5" />
                     Подобрать через специалиста
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </div>
         </SheetContent>
-      </Sheet>
-    );
+      </Sheet>;
   }
-  
+
   // На десктопе используем обычный Dialog
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+  return <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] p-0">
         <DialogHeader className="px-4 py-4 border-b sticky top-0 bg-white z-10">
           <div className="flex items-center justify-between">
@@ -107,23 +83,13 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
               Фильтры
             </DialogTitle>
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  const newFilter = {};
-                  setFilter(newFilter);
-                }}
-                className="h-8 text-auto-gray-700 text-xs"
-              >
+              <Button variant="outline" size="sm" onClick={() => {
+              const newFilter = {};
+              setFilter(newFilter);
+            }} className="h-8 text-auto-gray-700 text-xs">
                 Сбросить
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onClose}
-                className="text-gray-600"
-              >
+              <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-600">
                 <X className="h-6 w-6" />
               </Button>
             </div>
@@ -131,44 +97,27 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
         </DialogHeader>
         
         <div className="p-4 max-h-[calc(80vh-190px)] overflow-auto">
-          <SearchFilters 
-            filter={filter} 
-            setFilter={setFilter} 
-            closeModal={onClose} 
-            isInModal={true} 
-          />
+          <SearchFilters filter={filter} setFilter={setFilter} closeModal={onClose} isInModal={true} />
         </div>
         
         <div className="p-4 border-t sticky bottom-0 bg-white">
-          <div className="flex flex-col space-y-3 items-center">
-            <Button 
-              onClick={() => {
-                onClose();
-              }}
-              variant="blue"
-              className="w-full max-w-xs"
-            >
+          <div className="flex flex-col space-y-3 items-center px-0 justify-end">
+            <Button onClick={() => {
+            onClose();
+          }} variant="blue" className="w-full max-w-xs">
               Применить
             </Button>
             
-            {scrollToContactForm && (
-              <Button 
-                onClick={() => {
-                  onClose();
-                  setTimeout(() => scrollToContactForm(), 300);
-                }}
-                variant="outline"
-                className="w-full max-w-xs"
-              >
+            {scrollToContactForm && <Button onClick={() => {
+            onClose();
+            setTimeout(() => scrollToContactForm(), 300);
+          }} variant="outline" className="w-full max-w-xs">
                 <HeadphonesIcon className="mr-2 h-5 w-5" />
                 Подобрать через специалиста
-              </Button>
-            )}
+              </Button>}
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default SearchFiltersModal;
