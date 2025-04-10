@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Car, CarFilter, Order } from "../types/car";
 import { fetchAllCars, fetchOrders, saveCar, updateCar, deleteCar, updateOrderStatus, incrementCarViewCount } from "../services/api";
@@ -30,6 +29,7 @@ interface CarsContextType {
   getOrders: () => Order[];
   exportCarsData: () => string;
   importCarsData: (data: string) => boolean;
+  uploadCarImage: (file: File) => Promise<string>;
 }
 
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
@@ -45,12 +45,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const [filter, setFilter] = useState<CarFilter>({});
   const { toast } = useToast();
 
-  // Загрузка заказов из Supabase
   const loadOrders = async () => {
     try {
       const ordersData = await fetchOrders();
       
-      // Преобразуем в формат Order
       const formattedOrders: Order[] = ordersData.map(order => ({
         id: order.id,
         carId: order.car_id,
@@ -65,11 +63,9 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to load orders from Supabase:", err);
       
-      // Проверяем, есть ли данные в localStorage (для обратной совместимости)
-      const savedOrders = localStorage.getItem("orders");
-      if (savedOrders) {
+      if (localStorage.getItem("orders")) {
         try {
-          setOrders(JSON.parse(savedOrders));
+          setOrders(JSON.parse(localStorage.getItem("orders")!));
         } catch (err) {
           console.error("Failed to parse saved orders:", err);
         }
@@ -77,7 +73,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Загрузка избранного из Supabase
   const loadFavorites = async () => {
     try {
       const { data, error } = await supabase
@@ -92,7 +87,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         const favoriteIds = data.map(item => item.car_id);
         setFavorites(favoriteIds);
       } else {
-        // Проверяем, есть ли данные в localStorage (для обратной совместимости)
         const savedFavorites = localStorage.getItem("favorites");
         if (savedFavorites) {
           setFavorites(JSON.parse(savedFavorites));
@@ -101,7 +95,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to load favorites from Supabase:", err);
       
-      // Используем localStorage как запасной вариант
       const savedFavorites = localStorage.getItem("favorites");
       if (savedFavorites) {
         setFavorites(JSON.parse(savedFavorites));
@@ -109,7 +102,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Загрузка сравнения из localStorage (пока оставляем в localStorage)
   useEffect(() => {
     const savedCompareCars = localStorage.getItem("compareCars");
     if (savedCompareCars) {
@@ -117,7 +109,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Сохранение сравнения в localStorage
   useEffect(() => {
     localStorage.setItem("compareCars", JSON.stringify(compareCars));
   }, [compareCars]);
@@ -132,10 +123,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       setCars(data);
       setFilteredCars(data);
       
-      // Загружаем заказы
       await loadOrders();
       
-      // Загружаем избранное
       await loadFavorites();
       
       setLoading(false);
@@ -160,7 +149,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     await loadCars();
   };
 
-  // Фильтрация автомобилей
   useEffect(() => {
     let result = [...cars];
 
@@ -207,23 +195,20 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setFilteredCars(result);
   }, [cars, filter]);
 
-  // Добавление в избранное
   const addToFavorites = async (carId: string) => {
     if (!favorites.includes(carId)) {
       try {
-        // Добавляем в Supabase
         const { error } = await supabase
           .from('favorites')
           .insert({
             car_id: carId,
-            user_id: 'anonymous' // Временное решение, в будущем будет использоваться auth.uid()
+            user_id: 'anonymous'
           });
         
         if (error) {
           throw error;
         }
         
-        // Обновляем состояние
         setFavorites([...favorites, carId]);
         
         toast({
@@ -233,7 +218,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error("Failed to add to favorites:", err);
         
-        // Используем локальное состояние как запасной вариант
         setFavorites([...favorites, carId]);
         
         toast({
@@ -244,10 +228,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Удаление из избранного
   const removeFromFavorites = async (carId: string) => {
     try {
-      // Удаляем из Supabase
       const { error } = await supabase
         .from('favorites')
         .delete()
@@ -258,7 +240,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
       
-      // Обновляем состояние
       setFavorites(favorites.filter(id => id !== carId));
       
       toast({
@@ -268,7 +249,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to remove from favorites:", err);
       
-      // Используем локальное состояние как запасной вариант
       setFavorites(favorites.filter(id => id !== carId));
       
       toast({
@@ -314,13 +294,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     return cars.find(car => car.id === id);
   };
 
-  // Просмотр автомобиля
   const viewCar = async (carId: string) => {
     try {
-      // Увеличиваем счетчик просмотров в Supabase
       await incrementCarViewCount(carId);
       
-      // Обновляем локальное состояние
       setCars(prevCars => 
         prevCars.map(car => 
           car.id === carId 
@@ -331,7 +308,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to update view count:", err);
       
-      // Используем локальное состояние как запасной вариант
       setCars(prevCars => 
         prevCars.map(car => 
           car.id === carId 
@@ -342,13 +318,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Удаление автомобиля
   const deleteCar = async (carId: string) => {
     try {
-      // Удаляем из Supabase
       await deleteCar(carId);
       
-      // Обновляем локальное состояние
       setCars(prevCars => prevCars.filter(car => car.id !== carId));
       
       toast({
@@ -358,7 +331,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to delete car:", err);
       
-      // Используем локальное состояние как запасной вариант
       setCars(prevCars => prevCars.filter(car => car.id !== carId));
       
       toast({
@@ -368,13 +340,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Обновление автомобиля
   const updateCar = async (updatedCar: Car) => {
     try {
-      // Обновляем в Supabase
       await updateCar(updatedCar);
       
-      // Обновляем локальное состояние
       setCars(prevCars => 
         prevCars.map(car => 
           car.id === updatedCar.id ? updatedCar : car
@@ -388,7 +357,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to update car:", err);
       
-      // Используем локальное состояние как запасной вариант
       setCars(prevCars => 
         prevCars.map(car => 
           car.id === updatedCar.id ? updatedCar : car
@@ -402,13 +370,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Добавление автомобиля
   const addCar = async (newCar: Car) => {
     try {
-      // Сохраняем в Supabase
       const savedCar = await saveCar(newCar);
       
-      // Обновляем локальное состояние с сохраненным автомобилем
       setCars(prevCars => [...prevCars, savedCar]);
       
       toast({
@@ -418,7 +383,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to add car:", err);
       
-      // Используем локальное состояние как запасной вариант
       setCars(prevCars => [...prevCars, newCar]);
       
       toast({
@@ -428,17 +392,14 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Обработка заказа
   const processOrder = async (orderId: string, status: Order['status']) => {
     try {
-      // Обновляем статус в Supabase
       const success = await updateOrderStatus(orderId, status);
       
       if (!success) {
         throw new Error("Failed to update order status");
       }
       
-      // Обновляем локальное состояние
       const updatedOrders = orders.map(order => 
         order.id === orderId ? { ...order, status } : order
       );
@@ -452,14 +413,12 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to process order:", err);
       
-      // Используем локальное состояние как запасной вариант
       const updatedOrders = orders.map(order => 
         order.id === orderId ? { ...order, status } : order
       );
       
       setOrders(updatedOrders);
       
-      // Сохраняем в localStorage для обратной совместимости
       localStorage.setItem("orders", JSON.stringify(updatedOrders));
       
       toast({
@@ -484,11 +443,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         setCars(parsedData);
         setFilteredCars(parsedData);
         
-        // Сохраняем данные в Supabase
         try {
-          // Сначала очистим таблицу
           supabase.from('vehicles').delete().neq('id', 'placeholder').then(async () => {
-            // Теперь добавим каждый автомобиль отдельно
             for (const car of parsedData) {
               const vehicle = {
                 id: car.id,
@@ -509,7 +465,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
                 drivetrain: car.drivetrain,
                 dimensions: car.dimensions,
                 performance: car.performance,
-                // Преобразуем features в JSON-совместимый формат
                 features: JSON.stringify(car.features),
                 image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
                 description: car.description,
@@ -549,6 +504,43 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const uploadCarImage = async (file: File): Promise<string> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { data, error } = await supabase.storage
+        .from('car-images')
+        .upload(filePath, file);
+      
+      if (error) {
+        throw error;
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from('car-images')
+        .getPublicUrl(filePath);
+      
+      toast({
+        title: "Изображение загружено",
+        description: "Изображение успешно загружено на сервер"
+      });
+      
+      return urlData.publicUrl;
+    } catch (err) {
+      console.error("Failed to upload image:", err);
+      
+      toast({
+        variant: "destructive",
+        title: "Ошибка загрузки",
+        description: "Не удалось загрузить изображение. Попробуйте еще раз."
+      });
+      
+      throw err;
+    }
+  };
+
   return (
     <CarsContext.Provider
       value={{
@@ -575,7 +567,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         processOrder,
         getOrders,
         exportCarsData,
-        importCarsData
+        importCarsData,
+        uploadCarImage
       }}
     >
       {children}
