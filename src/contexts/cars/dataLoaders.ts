@@ -1,14 +1,15 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { fetchAllCars, fetchOrders } from "@/services/api";
 import { Car, Order } from "@/types/car";
 import { loadFavoritesFromLocalStorage, loadOrdersFromLocalStorage } from "./utils";
+import { databaseService } from "@/services/database/DatabaseProvider";
 
 // Load cars from API
 export const loadCars = async (): Promise<Car[]> => {
   try {
-    const data = await fetchAllCars();
-    console.log("Loaded cars from API:", data.length);
+    // Используем абстракцию базы данных для загрузки автомобилей
+    const data = await databaseService.getCars();
+    console.log("Loaded cars from database:", data.length);
     return data;
   } catch (err) {
     console.error("Failed to load cars:", err);
@@ -16,10 +17,10 @@ export const loadCars = async (): Promise<Car[]> => {
   }
 };
 
-// Load orders from Supabase or localStorage
+// Load orders from database or localStorage
 export const loadOrders = async (): Promise<Order[]> => {
   try {
-    const ordersData = await fetchOrders();
+    const ordersData = await databaseService.getOrders();
     
     const formattedOrders: Order[] = ordersData.map(order => ({
       id: order.id,
@@ -33,30 +34,18 @@ export const loadOrders = async (): Promise<Order[]> => {
     
     return formattedOrders;
   } catch (err) {
-    console.error("Failed to load orders from Supabase:", err);
+    console.error("Failed to load orders from database:", err);
     return loadOrdersFromLocalStorage();
   }
 };
 
-// Load favorites from Supabase or localStorage
+// Load favorites from database or localStorage
 export const loadFavorites = async (): Promise<string[]> => {
   try {
-    const { data, error } = await supabase
-      .from('favorites')
-      .select('car_id');
-    
-    if (error) {
-      throw error;
-    }
-    
-    if (data && data.length > 0) {
-      const favoriteIds = data.map(item => item.car_id);
-      return favoriteIds;
-    } else {
-      return loadFavoritesFromLocalStorage();
-    }
+    // Используем абстракцию базы данных для загрузки избранного
+    return await databaseService.getFavorites();
   } catch (err) {
-    console.error("Failed to load favorites from Supabase:", err);
+    console.error("Failed to load favorites from database:", err);
     return loadFavoritesFromLocalStorage();
   }
 };
