@@ -18,7 +18,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
   const { filter, setFilter } = useCars();
   const isMobile = useIsMobile();
   
-  // On mobile, use the Sheet component (bottom sheet)
+  // На мобильных устройствах используем Sheet (нижний выдвижной экран)
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -68,7 +68,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
     );
   }
   
-  // On desktop, use a regular Dialog
+  // На десктопе используем обычный Dialog
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px] p-0">

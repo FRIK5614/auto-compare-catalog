@@ -42,7 +42,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const [yearRange, setYearRange] = useState<[number, number]>([1990, new Date().getFullYear()]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
-  // Get unique values for dropdowns
+  // Получаем уникальные значения для выпадающих списков
   const brands = getUniqueValues("brand");
   const bodyTypes = getUniqueValues("bodyType");
   const fuelTypes = getUniqueValues("engine").map(e => e?.fuelType).filter(Boolean) as string[];
@@ -50,7 +50,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const countries = getUniqueValues("country");
   
   useEffect(() => {
-    // Initialize price and year ranges
+    // Инициализируем диапазоны цен и годов
     const { min: minPrice, max: maxPrice } = getPriceRange();
     const { min: minYear, max: maxYear } = getYearRange();
     
@@ -62,7 +62,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       filter.maxYear || maxYear
     ]);
     
-    // Count active filters
+    // Считаем активные фильтры
     const active = [];
     if (filter.search) active.push("search");
     if (filter.brand) active.push("brand");
@@ -77,16 +77,16 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
     
   }, [filter, getPriceRange, getYearRange]);
   
-  const handlePriceChange = () => {
-    const min = parseInt(minPrice);
-    const max = parseInt(maxPrice);
+  const handlePriceChange = (min: string, max: string) => {
+    const minVal = parseInt(min);
+    const maxVal = parseInt(max);
     
-    // Validate and update the filter immediately
-    if (!isNaN(min) && !isNaN(max) && min <= max) {
+    // Валидируем и сразу обновляем фильтр
+    if (!isNaN(minVal) && !isNaN(maxVal) && minVal <= maxVal) {
       setFilter({
         ...filter,
-        minPrice: min,
-        maxPrice: max
+        minPrice: minVal,
+        maxPrice: maxVal
       });
     }
   };
@@ -94,7 +94,7 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   const handleYearChange = (value: [number, number]) => {
     setYearRange(value);
     
-    // Update filters immediately with the year range
+    // Сразу обновляем фильтры с диапазоном лет
     setFilter({
       ...filter,
       minYear: value[0],
@@ -126,7 +126,6 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
   };
   
   const applyFilters = () => {
-    handlePriceChange();
     if (closeModal) {
       closeModal();
     }
@@ -220,16 +219,10 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         placeholder="0"
                         value={minPrice}
                         onChange={(e) => {
-                          setMinPrice(e.target.value);
-                          // Apply price change on input change
-                          const min = parseInt(e.target.value);
-                          const max = parseInt(maxPrice);
-                          if (!isNaN(min) && !isNaN(max) && min <= max) {
-                            setFilter({
-                              ...filter,
-                              minPrice: min
-                            });
-                          }
+                          const newValue = e.target.value;
+                          setMinPrice(newValue);
+                          // Применяем изменение цены при изменении ввода
+                          handlePriceChange(newValue, maxPrice);
                         }}
                         className="bg-auto-gray-50"
                       />
@@ -244,16 +237,10 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
                         placeholder="10000000"
                         value={maxPrice}
                         onChange={(e) => {
-                          setMaxPrice(e.target.value);
-                          // Apply price change on input change
-                          const min = parseInt(minPrice);
-                          const max = parseInt(e.target.value);
-                          if (!isNaN(min) && !isNaN(max) && min <= max) {
-                            setFilter({
-                              ...filter,
-                              maxPrice: max
-                            });
-                          }
+                          const newValue = e.target.value;
+                          setMaxPrice(newValue);
+                          // Применяем изменение цены при изменении ввода
+                          handlePriceChange(minPrice, newValue);
                         }}
                         className="bg-auto-gray-50"
                       />
@@ -469,7 +456,8 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
       {isInModal && closeModal && (
         <div className="p-4 border-t border-auto-gray-200">
           <Button 
-            className="w-full bg-auto-blue-600 hover:bg-auto-blue-700"
+            className="w-full"
+            variant="blue" 
             onClick={applyFilters}
           >
             Применить фильтры

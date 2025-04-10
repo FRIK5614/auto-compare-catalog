@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -34,7 +33,6 @@ import { Car } from "@/types/car";
 import LoadingState from "@/components/LoadingState";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Sort options
 type SortOption = {
   label: string;
   value: string;
@@ -114,22 +112,21 @@ const Catalog = () => {
   const CARS_PER_PAGE = 12;
   const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
 
-  // Apply URL search params on load
   useEffect(() => {
     const newFilter: any = { ...filter };
     
     const bodyType = searchParams.get("bodyType");
     if (bodyType) {
-      newFilter.bodyTypes = [bodyType];
+      newFilter.bodyType = bodyType;
     }
     
     if (searchParams.get("filter") === "new") {
-      newFilter.isNew = true;
+      newFilter.onlyNew = true;
     }
     
     const brand = searchParams.get("brand");
     if (brand) {
-      newFilter.brands = [brand];
+      newFilter.brand = brand;
     }
     
     const pageParam = searchParams.get("page");
@@ -148,7 +145,6 @@ const Catalog = () => {
     setFilter(newFilter);
   }, [searchParams, setFilter]);
 
-  // Update URL when page or sort changes
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set("page", currentPage.toString());
@@ -156,7 +152,6 @@ const Catalog = () => {
     setSearchParams(newParams);
   }, [currentPage, sortOption]);
 
-  // Pagination calculations
   const startIndex = (currentPage - 1) * CARS_PER_PAGE;
   const currentPageCars = filteredCars.slice(startIndex, startIndex + CARS_PER_PAGE);
 
@@ -166,7 +161,7 @@ const Catalog = () => {
       ...filter,
       sortBy: mapSortOptionToFilter(value)
     });
-    setCurrentPage(1); // Reset to first page when sort changes
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -174,13 +169,11 @@ const Catalog = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Generate pagination items
   const generatePaginationItems = () => {
     const items = [];
     const maxVisiblePages = 5;
     
     if (totalPages <= maxVisiblePages) {
-      // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
@@ -194,7 +187,6 @@ const Catalog = () => {
         );
       }
     } else {
-      // Show first page
       items.push(
         <PaginationItem key={1}>
           <PaginationLink 
@@ -206,7 +198,6 @@ const Catalog = () => {
         </PaginationItem>
       );
       
-      // Add ellipsis if current page is not close to first page
       if (currentPage > 3) {
         items.push(
           <PaginationItem key="start-ellipsis">
@@ -215,18 +206,15 @@ const Catalog = () => {
         );
       }
       
-      // Calculate range of visible pages
       let startPage = Math.max(2, currentPage - 1);
       let endPage = Math.min(totalPages - 1, currentPage + 1);
       
-      // Adjust range if at edges
       if (currentPage <= 3) {
         endPage = Math.min(totalPages - 1, 4);
       } else if (currentPage >= totalPages - 2) {
         startPage = Math.max(2, totalPages - 3);
       }
       
-      // Add visible pages
       for (let i = startPage; i <= endPage; i++) {
         items.push(
           <PaginationItem key={i}>
@@ -240,7 +228,6 @@ const Catalog = () => {
         );
       }
       
-      // Add ellipsis if current page is not close to last page
       if (currentPage < totalPages - 2) {
         items.push(
           <PaginationItem key="end-ellipsis">
@@ -249,7 +236,6 @@ const Catalog = () => {
         );
       }
       
-      // Show last page
       items.push(
         <PaginationItem key={totalPages}>
           <PaginationLink 
@@ -291,7 +277,7 @@ const Catalog = () => {
               <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
                 {isMobile && (
                   <Button 
-                    variant="outline" 
+                    variant="blue" 
                     className="flex items-center" 
                     onClick={openFilterModal}
                   >
@@ -334,7 +320,7 @@ const Catalog = () => {
                     <p className="text-auto-gray-500 mb-6">
                       По выбранным фильтрам не найдено ни одного автомобиля. Попробуйте изменить параметры поиска.
                     </p>
-                    <Button variant="outline" onClick={openFilterModal}>
+                    <Button variant="blue" onClick={openFilterModal}>
                       Изменить фильтры
                     </Button>
                   </div>

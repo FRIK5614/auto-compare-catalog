@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -77,10 +76,17 @@ const AdminCars = () => {
       });
     }
   };
-  
+
   const openDeleteDialog = (car: Car) => {
     setCarToDelete(car);
     setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (carToDelete) {
+      deleteCar(carToDelete.id);
+      setCarToDelete(null);
+    }
   };
 
   return (
@@ -194,26 +200,14 @@ const AdminCars = () => {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+              <AlertDialogTitle>Удаление автомобиля</AlertDialogTitle>
               <AlertDialogDescription>
-                Вы собираетесь удалить автомобиль{" "}
-                {carToDelete?.brand} {carToDelete?.model} ({carToDelete?.year}).
-                Это действие нельзя отменить.
+                Вы уверены, что хотите удалить этот автомобиль? Это действие нельзя отменить.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-red-500 hover:bg-red-600"
-                onClick={() => {
-                  if (carToDelete) {
-                    deleteCar(carToDelete.id);
-                    setCarToDelete(null);
-                  }
-                }}
-              >
-                Удалить
-              </AlertDialogAction>
+              <AlertDialogAction onClick={confirmDelete}>Удалить</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

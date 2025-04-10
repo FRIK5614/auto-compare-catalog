@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -218,7 +217,7 @@ const IndexContent = () => {
               {isMobile && (
                 <div className="mb-4">
                   <Button 
-                    variant="outline" 
+                    variant="blue" 
                     onClick={openFilterModal} 
                     className="w-full flex items-center justify-center"
                   >

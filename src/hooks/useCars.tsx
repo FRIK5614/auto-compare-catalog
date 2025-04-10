@@ -32,12 +32,12 @@ export const useCars = () => {
     uploadCarImage
   } = useGlobalCars();
 
-  // Optimize loading by applying limit
+  // Оптимизируем загрузку, применяя ограничение
   useEffect(() => {
     if (filter && !filter.limit && window.location.pathname === '/') {
       setFilter({
         ...filter,
-        limit: 24 // Limit cars on homepage
+        limit: 24 // Ограничиваем количество автомобилей на главной странице
       });
     }
   }, [filter, setFilter]);
@@ -68,7 +68,7 @@ export const useCars = () => {
   
   const isInCompare = (carId: string) => compareCars.includes(carId);
   
-  // Get most viewed cars
+  // Получаем самые просматриваемые автомобили
   const getMostViewedCars = (limit = 5): Car[] => {
     return [...cars]
       .filter(car => car.viewCount && car.viewCount > 0)
@@ -76,13 +76,13 @@ export const useCars = () => {
       .slice(0, limit);
   };
   
-  // Get unique values for filters
+  // Получаем уникальные значения для фильтров
   const getUniqueValues = <T extends keyof Car>(field: T): Car[T][] => {
     const values = cars.map(car => car[field]);
     return [...new Set(values)].filter(Boolean) as Car[T][];
   };
   
-  // Get min and max values for numerical filters
+  // Получаем минимальные и максимальные значения для числовых фильтров
   const getPriceRange = () => {
     const prices = cars.map(car => car.price.base);
     return {
@@ -99,7 +99,7 @@ export const useCars = () => {
     };
   };
   
-  // Function to apply sorting
+  // Функция для применения сортировки
   const applySorting = (carsToSort: Car[], sortBy?: string): Car[] => {
     if (!carsToSort || carsToSort.length === 0) return [];
     
@@ -107,9 +107,17 @@ export const useCars = () => {
     
     switch (sortBy) {
       case "priceAsc":
-        return carsCopy.sort((a, b) => a.price.base - b.price.base);
+        return carsCopy.sort((a, b) => {
+          const priceA = a.price.discount ? a.price.base - a.price.discount : a.price.base;
+          const priceB = b.price.discount ? b.price.base - b.price.discount : b.price.base;
+          return priceA - priceB;
+        });
       case "priceDesc":
-        return carsCopy.sort((a, b) => b.price.base - a.price.base);
+        return carsCopy.sort((a, b) => {
+          const priceA = a.price.discount ? a.price.base - a.price.discount : a.price.base;
+          const priceB = b.price.discount ? b.price.base - b.price.discount : b.price.base;
+          return priceB - priceA;
+        });
       case "yearDesc":
         return carsCopy.sort((a, b) => b.year - a.year);
       case "yearAsc":
@@ -124,7 +132,7 @@ export const useCars = () => {
     }
   };
   
-  // Apply sorting to filtered cars
+  // Применяем сортировку к отфильтрованным автомобилям
   const sortedFilteredCars = applySorting(filteredCars, filter.sortBy);
   
   return {
@@ -159,7 +167,7 @@ export const useCars = () => {
     importCarsData,
     uploadCarImage,
     applySorting,
-    // Export these functions to fix the build errors
+    // Экспортируем эти функции для исправления ошибок сборки
     addToFavorites,
     removeFromFavorites,
     addToCompare,

@@ -27,32 +27,7 @@ const CarCard = ({ car, className }: CarCardProps) => {
   const { toggleFavorite, toggleCompare, isFavorite, isInCompare } = useCars();
   
   const currentImage = car.images[imageIndex];
-  const touchStartX = useState<number | null>(null);
   
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX[1](e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX[0] === null) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX[0] - touchEndX;
-    
-    // Detect swipe (threshold of 50px)
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        // Swipe left - next image
-        setImageIndex((prev) => (prev + 1) % car.images.length);
-      } else {
-        // Swipe right - previous image
-        setImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
-      }
-    }
-    
-    touchStartX[1](null);
-  };
-
   return (
     <Card className={cn("overflow-hidden group h-full flex flex-col", className)}>
       <div className="relative overflow-hidden h-48">
@@ -61,8 +36,6 @@ const CarCard = ({ car, className }: CarCardProps) => {
             src={currentImage.url}
             alt={currentImage.alt}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
           />
         </Link>
         
@@ -81,23 +54,6 @@ const CarCard = ({ car, className }: CarCardProps) => {
             Скидка {formatPrice(car.price.discount)}
           </Badge>
         )}
-        
-        <div className="absolute bottom-0 left-0 w-full p-2 flex justify-between items-center bg-gradient-to-t from-black/70 to-transparent">
-          <div className="flex space-x-1">
-            {car.images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setImageIndex(idx);
-                }}
-                className={`w-2 h-2 rounded-full ${
-                  idx === imageIndex ? "bg-white" : "bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
       </div>
       
       <CardContent className="flex-1 p-4">
