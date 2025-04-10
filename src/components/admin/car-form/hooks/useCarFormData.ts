@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
   const [car, setCar] = useState<Car | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, any>>({});
   const [formLoading, setFormLoading] = useState(false);
+  const initialDataLoadedRef = useRef(false);
 
   // Load car data
   useEffect(() => {
@@ -96,10 +97,13 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
     }
   }, [id, isNewCar, getCarById, navigate, toast, cars, loading]);
 
-  // Reload cars data
+  // Reload cars data only once on initial mount
   useEffect(() => {
-    reloadCars();
-  }, [reloadCars]);
+    if (!initialDataLoadedRef.current && !loading) {
+      initialDataLoadedRef.current = true;
+      reloadCars();
+    }
+  }, [reloadCars, loading]);
 
   return {
     car,

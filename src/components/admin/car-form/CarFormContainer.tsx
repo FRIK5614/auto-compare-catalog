@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import LoadingState from '@/components/LoadingState';
@@ -14,6 +14,7 @@ import { Car } from '@/types/car';
 const CarFormContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isNewCar = id === "new";
+  const navigate = useNavigate();
   
   // Get car data
   const {
@@ -49,7 +50,7 @@ const CarFormContainer: React.FC = () => {
   const { loading: fetchLoading, fetchCarFromUrl } = useExternalCarData(setCar, setImages);
 
   // Initialize images when car is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (car && car.images) {
       initializeImagesFromCar(car);
     }
@@ -108,6 +109,10 @@ const CarFormContainer: React.FC = () => {
       
       // Call the save function with correct parameters
       await saveCar(updatedCar, isNewCar);
+      
+      if (isNewCar) {
+        navigate(`/admin/cars`);
+      }
     } finally {
       setFormLoading(false);
     }
