@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   Select,
@@ -86,7 +85,6 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Блокируем скролл при открытом меню
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add('select-dropdown-open');
@@ -99,7 +97,6 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
     };
   }, [isOpen]);
 
-  // Максимально агрессивная блокировка событий для предотвращения всплытия
   const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     e.preventDefault();
