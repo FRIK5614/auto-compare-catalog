@@ -13,9 +13,17 @@ import { SearchInput } from "./SearchInput";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
+import { CarFilter } from "@/types/car";
 
-const SearchFilters = () => {
-  const { filter, setFilter, reloadCars, loading } = useCars();
+export interface SearchFiltersProps {
+  filter: CarFilter;
+  setFilter: (filter: CarFilter) => void;
+  closeModal?: () => void;
+  isInModal?: boolean;
+}
+
+export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: SearchFiltersProps) => {
+  const { reloadCars, loading } = useCars();
 
   const resetFilters = () => {
     setFilter({});
