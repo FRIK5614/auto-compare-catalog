@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import SearchFilters from "@/components/search-filters";
@@ -7,13 +6,11 @@ import { HeadphonesIcon, Filter, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 interface SearchFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
   scrollToContactForm?: () => void;
 }
-
 const SearchFiltersModal = ({
   isOpen,
   onClose,
@@ -86,15 +83,10 @@ const SearchFiltersModal = ({
             <h2 className="text-xl font-bold">Фильтры</h2>
           </div>
           <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                const newFilter = {};
-                setFilter(newFilter);
-              }} 
-              className="h-8 text-auto-gray-700 text-xs"
-            >
+            <Button variant="outline" size="sm" onClick={() => {
+            const newFilter = {};
+            setFilter(newFilter);
+          }} className="h-8 text-auto-gray-700 text-xs">
               Сбросить
             </Button>
             <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-600">
@@ -109,35 +101,24 @@ const SearchFiltersModal = ({
         </div>
         
         {/* Кнопки внизу (вертикально) */}
-        <div className="p-4 border-t bg-white sticky bottom-0 mt-auto">
+        <div className="p-4 border-t fixed bottom-0 left-0 right-0 bg-white z-50">
           <div className="flex flex-col space-y-3 mx-auto w-full max-w-xs">
-            <Button 
-              onClick={() => {
-                onClose();
-              }} 
-              variant="blue" 
-              className="w-full"
-            >
+            <Button onClick={() => {
+            onClose();
+          }} variant="blue" className="w-full">
               Применить
             </Button>
             
-            {scrollToContactForm && 
-              <Button 
-                onClick={() => {
-                  onClose();
-                  setTimeout(() => scrollToContactForm(), 300);
-                }} 
-                variant="outline" 
-                className="w-full"
-              >
+            {scrollToContactForm && <Button onClick={() => {
+            onClose();
+            setTimeout(() => scrollToContactForm(), 300);
+          }} variant="outline" className="w-full">
                 <HeadphonesIcon className="mr-2 h-5 w-5" />
                 Подобрать через специалиста
-              </Button>
-            }
+              </Button>}
           </div>
         </div>
       </DialogContent>
     </Dialog>;
 };
-
 export default SearchFiltersModal;
