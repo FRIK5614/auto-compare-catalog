@@ -58,11 +58,10 @@ const FeaturedCars = ({
   // Calculate number of items to show based on viewport size
   const getCarouselOptions = () => {
     return {
-      align: "start",
+      align: "start" as const,
       loop: false,
       skipSnaps: false,
       startIndex: 0,
-      slidesToScroll: 1,
     };
   };
 
