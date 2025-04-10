@@ -96,11 +96,11 @@ const IndexContent = () => {
                   Подбор по параметрам
                 </Button>
               </div>
-              <div className="mt-4">
+              <div className="mt-4 flex justify-center">
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="bg-transparent border-white text-white hover:bg-white hover:text-auto-blue-800"
+                  className="bg-transparent border-white text-white hover:bg-white hover:text-auto-blue-800 w-full sm:w-auto"
                   onClick={scrollToConsultForm}
                 >
                   <UserRound className="mr-2 h-5 w-5" />

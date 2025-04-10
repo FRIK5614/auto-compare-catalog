@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/pagination";
 import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { Car } from "@/types/car";
+import LoadingState from "@/components/LoadingState";
 
 // Sort options
 type SortOption = {
@@ -79,8 +80,28 @@ const sortOptions: SortOption[] = [
   }
 ];
 
+const mapSortOptionFromFilter = (filterSort?: string): string => {
+  switch (filterSort) {
+    case "priceAsc": return "price_asc";
+    case "priceDesc": return "price_desc";
+    case "yearDesc": return "year_desc";
+    case "yearAsc": return "year_asc";
+    default: return "default";
+  }
+};
+
+const mapSortOptionToFilter = (sortOption: string): string => {
+  switch (sortOption) {
+    case "price_asc": return "priceAsc";
+    case "price_desc": return "priceDesc";
+    case "year_desc": return "yearDesc";
+    case "year_asc": return "yearAsc";
+    default: return "popularity";
+  }
+};
+
 const Catalog = () => {
-  const { filteredCars, filter, setFilter } = useCars();
+  const { filteredCars, filter, setFilter, loading } = useCars();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,6 +137,9 @@ const Catalog = () => {
     const sortParam = searchParams.get("sort");
     if (sortParam && sortOptions.some(option => option.value === sortParam)) {
       setSortOption(sortParam);
+      newFilter.sortBy = mapSortOptionToFilter(sortParam);
+    } else {
+      setSortOption(mapSortOptionFromFilter(newFilter.sortBy));
     }
     
     setFilter(newFilter);
@@ -123,6 +147,8 @@ const Catalog = () => {
 
   // Apply sorting to cars
   useEffect(() => {
+    if (loading) return;
+    
     const selectedSortOption = sortOptions.find(option => option.value === sortOption);
     if (selectedSortOption) {
       const sorted = [...filteredCars].sort(selectedSortOption.sortFn);
@@ -130,7 +156,7 @@ const Catalog = () => {
     } else {
       setSortedCars(filteredCars);
     }
-  }, [filteredCars, sortOption]);
+  }, [filteredCars, sortOption, loading]);
 
   // Update URL when page or sort changes
   useEffect(() => {
@@ -146,6 +172,10 @@ const Catalog = () => {
 
   const handleSortChange = (value: string) => {
     setSortOption(value);
+    setFilter({
+      ...filter,
+      sortBy: mapSortOptionToFilter(value)
+    });
     setCurrentPage(1); // Reset to first page when sort changes
   };
 
@@ -301,7 +331,9 @@ const Catalog = () => {
               </div>
               
               <div className="w-full md:w-3/4 lg:w-4/5 md:pl-6">
-                {currentPageCars.length === 0 ? (
+                {loading ? (
+                  <LoadingState count={CARS_PER_PAGE} type="card" />
+                ) : currentPageCars.length === 0 ? (
                   <div className="flex flex-col items-center justify-center bg-white p-8 rounded-lg text-center">
                     <div className="w-16 h-16 bg-auto-gray-100 rounded-full flex items-center justify-center mb-4">
                       <ArrowUpDown className="h-8 w-8 text-auto-gray-400" />

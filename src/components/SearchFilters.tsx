@@ -383,27 +383,28 @@ const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: 
             </AccordionItem>
           </Accordion>
         </ScrollArea>
-        
-        <Separator className="my-4" />
-        
-        <div>
-          <Label className="text-sm text-auto-gray-600 mb-2">Сортировка</Label>
-          <Select
-            value={filter.sortBy || "popularity"}
-            onValueChange={handleSortChange}
-          >
-            <SelectTrigger className="bg-white">
-              <SelectValue placeholder="По популярности" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="popularity">По популярности</SelectItem>
-              <SelectItem value="priceAsc">По цене (сначала дешевле)</SelectItem>
-              <SelectItem value="priceDesc">По цене (сначала дороже)</SelectItem>
-              <SelectItem value="yearDesc">По году (сначала новее)</SelectItem>
-              <SelectItem value="yearAsc">По году (сначала старше)</SelectItem>
-            </SelectContent>
-          </Select>
+      </div>
+      
+      {/* Moved sorting out of filters */}
+      <div className="p-4 border-t border-auto-gray-200">
+        <div className="mb-2">
+          <h3 className="font-medium">Сортировка</h3>
         </div>
+        <Select
+          value={filter.sortBy || "popularity"}
+          onValueChange={handleSortChange}
+        >
+          <SelectTrigger className="bg-white w-full">
+            <SelectValue placeholder="По популярности" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="popularity">По популярности</SelectItem>
+            <SelectItem value="priceAsc">По цене (сначала дешевле)</SelectItem>
+            <SelectItem value="priceDesc">По цене (сначала дороже)</SelectItem>
+            <SelectItem value="yearDesc">По году (сначала новее)</SelectItem>
+            <SelectItem value="yearAsc">По году (сначала старше)</SelectItem>
+          </SelectContent>
+        </Select>
         
         {isInModal && closeModal && (
           <div className="mt-4">
