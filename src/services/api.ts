@@ -220,6 +220,25 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
  * Функция для преобразования объекта из таблицы vehicles в формат Car
  */
 const transformVehicleToCar = (vehicle: any): Car => {
+  // Безопасная обработка поля features
+  let featuresData = [];
+  try {
+    // Проверяем тип данных features
+    if (typeof vehicle.features === 'string') {
+      // Если это строка, пробуем распарсить как JSON
+      featuresData = JSON.parse(vehicle.features);
+    } else if (Array.isArray(vehicle.features)) {
+      // Если это уже массив, используем как есть
+      featuresData = vehicle.features;
+    } else if (vehicle.features && typeof vehicle.features === 'object') {
+      // Если это объект, но не массив, оборачиваем в массив
+      featuresData = [vehicle.features];
+    }
+  } catch (error) {
+    console.warn(`Ошибка при парсинге features для автомобиля ${vehicle.id}:`, error);
+    featuresData = []; // В случае ошибки используем пустой массив
+  }
+
   // Создаем базовый объект Car
   const car: Car = {
     id: vehicle.id,
@@ -227,7 +246,7 @@ const transformVehicleToCar = (vehicle: any): Car => {
     model: vehicle.model,
     year: vehicle.year,
     bodyType: vehicle.body_type || 'Не указан',
-    colors: vehicle.colors || ['Белый'],
+    colors: Array.isArray(vehicle.colors) ? vehicle.colors : ['Белый'],
     price: {
       base: vehicle.price || 0,
       discount: vehicle.price_discount
@@ -261,7 +280,7 @@ const transformVehicleToCar = (vehicle: any): Car => {
         combined: 8.5
       }
     },
-    features: vehicle.features ? JSON.parse(vehicle.features) : [],
+    features: featuresData,
     images: [
       {
         id: `img-${vehicle.id}-1`,

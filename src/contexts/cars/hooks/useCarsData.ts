@@ -37,6 +37,20 @@ export const useCarsData = () => {
         setFavorites(favoritesData);
         
         setLoading(false);
+        
+        // Уведомляем пользователя о количестве загруженных автомобилей
+        if (carsData.length > 0) {
+          toast({
+            title: "Данные загружены",
+            description: `Успешно загружено ${carsData.length} автомобилей из базы данных`
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "База данных пуста",
+            description: "В базе данных нет автомобилей. Добавьте автомобили через панель администратора."
+          });
+        }
       } catch (err) {
         console.error("Failed to initialize data:", err);
         const errorMessage = err instanceof Error ? err.message : "Не удалось загрузить данные";
@@ -56,19 +70,31 @@ export const useCarsData = () => {
   // Функция для перезагрузки автомобилей
   const reloadCars = async () => {
     // Предотвращаем параллельные вызовы reloadCars
-    if (reloadInProgress.current) return;
+    if (reloadInProgress.current) {
+      toast({
+        title: "Загрузка данных",
+        description: "Обновление данных уже выполняется, пожалуйста подождите"
+      });
+      return;
+    }
     
     reloadInProgress.current = true;
     
     try {
       setLoading(true);
       setError(null);
+      toast({
+        title: "Загрузка данных",
+        description: "Обновление данных из базы данных..."
+      });
+      
       const data = await loadCars();
       setCars(data);
       
       if (data.length === 0) {
         toast({
-          title: "Данные обновлены",
+          variant: "destructive",
+          title: "База данных пуста",
           description: "База данных пуста. Добавьте автомобили через панель администратора."
         });
       } else {

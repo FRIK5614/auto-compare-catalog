@@ -69,11 +69,22 @@ export const useCarDetails = () => {
     }
   }, [cars.length, reloadCars, loading, error]);
 
-  // Улучшенная версия getCarById с логированием для отладки
+  // Улучшенная версия getCarById с поддержкой числовых и UUID идентификаторов
   const enhancedGetCarById = (id: string) => {
     console.log('Looking for car with ID:', id);
     console.log('Available cars:', cars.length);
-    const car = cars.find(car => car.id === id);
+    
+    // Пробуем найти по точному совпадению ID (UUID)
+    let car = cars.find(car => car.id === id);
+    
+    // Если не нашли и ID выглядит как число, попробуем найти в массиве автомобилей с индексом
+    if (!car && /^\d+$/.test(id)) {
+      const index = parseInt(id) - 1; // Преобразуем в индекс массива (0-based)
+      if (index >= 0 && index < cars.length) {
+        car = cars[index];
+      }
+    }
+    
     console.log('Found car:', car ? 'Yes' : 'No');
     return car;
   };

@@ -10,6 +10,7 @@ import CarTitle from "./CarTitle";
 import CarTabs from "./CarTabs";
 import CarDetailsSidebar from "./CarDetailsSidebar";
 import CarNavigation from "@/components/CarNavigation";
+import ErrorState from "@/components/ErrorState";
 
 const CarDetailsContent: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,10 +25,18 @@ const CarDetailsContent: React.FC = () => {
     isInCompare, 
     viewCar,
     loading,
-    error
+    error,
+    reloadCars
   } = useCars();
   
-  const car = getCarById(id || "");
+  // Пробуем загрузить данные при первом рендере, если массив автомобилей пуст
+  useEffect(() => {
+    if (cars.length === 0 && !loading && !error) {
+      reloadCars();
+    }
+  }, [cars.length, loading, error, reloadCars]);
+  
+  const car = id ? getCarById(id) : null;
   const viewRegistered = useRef(false);
   
   useEffect(() => {
@@ -43,6 +52,9 @@ const CarDetailsContent: React.FC = () => {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center p-8">
           <h2 className="text-2xl font-bold mb-4">Загрузка данных...</h2>
+          <p className="mb-6 text-auto-gray-600">
+            Пожалуйста, подождите, идет загрузка данных из базы.
+          </p>
         </div>
       </div>
     );
@@ -53,13 +65,30 @@ const CarDetailsContent: React.FC = () => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center p-8">
-          <h2 className="text-2xl font-bold mb-4">Ошибка загрузки данных</h2>
+          <ErrorState 
+            message={`Ошибка загрузки данных: ${error}`} 
+            onRetry={reloadCars}
+          />
+          <div className="mt-4">
+            <Button asChild>
+              <Link to="/">Вернуться в каталог</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Показываем сообщение о загрузке, если массив автомобилей пуст
+  if (cars.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Загрузка автомобилей</h2>
           <p className="mb-6 text-auto-gray-600">
-            {error}
+            Пожалуйста, подождите, идет загрузка данных из базы.
           </p>
-          <Button asChild>
-            <Link to="/">Вернуться в каталог</Link>
-          </Button>
+          <Button onClick={reloadCars}>Обновить</Button>
         </div>
       </div>
     );
@@ -73,8 +102,14 @@ const CarDetailsContent: React.FC = () => {
           <p className="mb-6 text-auto-gray-600">
             К сожалению, информация об этом автомобиле отсутствует в нашей базе данных.
           </p>
-          <Button asChild>
+          <p className="mb-6 text-auto-gray-600">
+            Запрошенный ID: {id}
+          </p>
+          <Button asChild className="mr-2">
             <Link to="/">Вернуться в каталог</Link>
+          </Button>
+          <Button variant="outline" onClick={() => reloadCars()}>
+            Обновить данные
           </Button>
         </div>
       </div>
