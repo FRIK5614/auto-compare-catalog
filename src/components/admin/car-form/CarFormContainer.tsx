@@ -26,12 +26,13 @@ const CarFormContainer: React.FC = () => {
   const [car, setCar] = useState<Car | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, any>>({});
   
-  // Load data when component mounts
+  // Перезагружаем данные автомобилей при каждом открытии формы
   useEffect(() => {
+    // Принудительная перезагрузка данных из базы
     reloadCars();
   }, [reloadCars]);
 
-  // Load car data or initialize new car
+  // Загружаем данные автомобиля после перезагрузки всех автомобилей
   useEffect(() => {
     if (!isNewCar && id) {
       console.log("Looking for car with ID:", id);
@@ -103,7 +104,7 @@ const CarFormContainer: React.FC = () => {
     }
   }, [id, isNewCar, getCarById, navigate, toast, cars]);
 
-  // Save car
+  // Save car with updated logic to ensure data is properly saved
   const handleSave = async (updatedCar: Car, imageUrl?: string) => {
     if (!car) return;
     
@@ -131,23 +132,27 @@ const CarFormContainer: React.FC = () => {
         await addCar(updatedCar);
         toast({
           title: "Автомобиль добавлен",
-          description: "Новый автомобиль успешно добавлен",
+          description: "Новый автомобиль успешно добавлен в базу данных",
         });
       } else {
         await updateCar(updatedCar);
         toast({
           title: "Автомобиль обновлен",
-          description: "Информация об автомобиле успешно обновлена",
+          description: "Информация об автомобиле успешно обновлена в базе данных",
         });
       }
       
+      // Принудительно обновляем данные после сохранения
+      await reloadCars();
+      
+      // Перенаправляем пользователя на список автомобилей
       navigate("/admin/cars");
     } catch (error) {
       console.error("Error saving car:", error);
       toast({
         variant: "destructive",
         title: "Ошибка сохранения",
-        description: "Не удалось сохранить автомобиль",
+        description: "Не удалось сохранить автомобиль в базу данных",
       });
     } finally {
       setLoading(false);

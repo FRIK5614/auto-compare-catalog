@@ -91,15 +91,24 @@ function useCarFilters(cars: Car[]) {
     return [...cars].sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
+        case 'priceAsc':
           return a.price.base - b.price.base;
         case 'price-desc':
+        case 'priceDesc':
           return b.price.base - a.price.base;
         case 'year-asc':
+        case 'yearAsc':
           return a.year - b.year;
         case 'year-desc':
+        case 'yearDesc':
           return b.year - a.year;
         case 'popular':
+        case 'popularity':
           return (b.viewCount || 0) - (a.viewCount || 0);
+        case 'nameAsc':
+          return `${a.brand} ${a.model}`.localeCompare(`${b.brand} ${b.model}`);
+        case 'nameDesc':
+          return `${b.brand} ${b.model}`.localeCompare(`${a.brand} ${a.model}`);
         default:
           return 0;
       }
@@ -108,7 +117,7 @@ function useCarFilters(cars: Car[]) {
 
   const applyAdvancedFilter = (filterParams: any) => {
     return cars.filter(car => {
-      // Реализация логики расширенной фильтрации
+      // Логика расширенной фильтрации
       return true;
     });
   };

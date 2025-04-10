@@ -1,110 +1,80 @@
 
-import { useState, useRef, TouchEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { CarImage } from "@/types/car";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { CarImage } from "@/types/car";
 
 interface CarImageGalleryProps {
   images: CarImage[];
-  isNew: boolean;
   carId: string;
+  isNew?: boolean;
 }
 
-const CarImageGallery = ({ images, isNew, carId }: CarImageGalleryProps) => {
-  const [imageIndex, setImageIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
+const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
   
-  const currentImage = images[imageIndex];
   const hasMultipleImages = images.length > 1;
   
-  // Handle swipe gestures for image navigation
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
   };
   
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (touchStartX.current === null) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const diffX = touchEndX - touchStartX.current;
-    
-    // If swipe distance is significant (more than 50px)
-    if (Math.abs(diffX) > 50) {
-      if (diffX > 0) {
-        // Swipe right (previous image)
-        setImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
-      } else {
-        // Swipe left (next image)
-        setImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-      }
-    }
-    
-    touchStartX.current = null;
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
   };
-
-  const handlePrevImage = () => {
-    setImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+  
+  const defaultImage = {
+    id: "default",
+    url: "/placeholder.svg",
+    alt: "Изображение автомобиля"
   };
-
-  const handleNextImage = () => {
-    setImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
+  
+  const currentImage = images.length > 0 ? images[currentIndex] : defaultImage;
+  
   return (
-    <div 
-      ref={imageRef}
-      className="relative overflow-hidden h-48"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <Link to={`/car/${carId}`} className="block h-full w-full relative">
-        <img
-          src={currentImage.url}
+    <Link to={`/car/${carId}`} className="block relative group overflow-hidden rounded-t-lg">
+      <div className="relative aspect-[4/3] overflow-hidden bg-auto-gray-100">
+        <img 
+          src={currentImage.url} 
           alt={currentImage.alt}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-      </Link>
-      
-      <div className="absolute top-3 left-3 flex flex-col gap-2">
+        
+        {/* Помещаем маркер страны в верхнем левом углу */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {/* Компоненты для отображения маркеров будут вставлены здесь */}
+        </div>
+        
+        {/* Помещаем маркер "Новинка" во правом левом углу */}
         {isNew && (
-          <Badge className="bg-auto-blue-600">Новинка</Badge>
+          <Badge className="absolute top-12 left-3 bg-auto-blue-600">
+            Новинка
+          </Badge>
+        )}
+        
+        {hasMultipleImages && (
+          <>
+            <button
+              onClick={handlePrevClick}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="h-4 w-4 text-auto-gray-700" />
+            </button>
+            <button
+              onClick={handleNextClick}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="h-4 w-4 text-auto-gray-700" />
+            </button>
+          </>
         )}
       </div>
-      
-      {hasMultipleImages && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-          {images.map((_, idx) => (
-            <div 
-              key={idx} 
-              className={`w-2 h-2 rounded-full ${
-                idx === imageIndex ? "bg-white" : "bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-auto-gray-700 rounded-full"
-        onClick={handlePrevImage}
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-auto-gray-700 rounded-full"
-        onClick={handleNextImage}
-      >
-        <ChevronRight className="h-6 w-6" />
-      </Button>
-    </div>
+    </Link>
   );
 };
 

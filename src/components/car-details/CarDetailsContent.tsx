@@ -78,7 +78,7 @@ const CarDetailsContent: React.FC = () => {
           </div>
         </div>
         
-        <div className="mt-8">
+        <div className="mt-8 overflow-x-hidden">
           <CarNavigation currentCarId={car.id} className="mb-4" />
         </div>
       </div>

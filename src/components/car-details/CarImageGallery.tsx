@@ -56,8 +56,9 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative h-[300px] sm:h-[400px] md:h-[500px]">
+        {/* Перемещаем маркер "Новинка" ниже, чтобы он не перекрывался с маркером страны */}
         {isNew && (
-          <Badge className="absolute top-4 left-4 z-10 bg-auto-blue-600">Новинка</Badge>
+          <Badge className="absolute top-16 left-4 z-10 bg-auto-blue-600">Новинка</Badge>
         )}
 
         <img

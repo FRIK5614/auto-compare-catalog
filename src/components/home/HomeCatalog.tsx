@@ -86,13 +86,13 @@ const HomeCatalog = ({
               </div>
             ) : (
               <>
-                <div className="mb-4 flex justify-between items-center">
+                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="flex items-center">
+                  <div className="w-full sm:w-auto">
                     <Select value={sortOption} onValueChange={handleSortChange}>
-                      <SelectTrigger className="w-[200px]">
+                      <SelectTrigger className="w-full sm:w-[200px]">
                         <SelectValue placeholder="Сортировка" />
                       </SelectTrigger>
                       <SelectContent>

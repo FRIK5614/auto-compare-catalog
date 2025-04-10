@@ -63,7 +63,17 @@ const HomeContent = () => {
     consultFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Получаем новые автомобили по признаку "isNew"
   const newCars = cars.filter(car => car.isNew).slice(0, 8);
+  
+  // Сортируем автомобили по дате добавления (используем id как прокси для даты, т.к. id обычно содержит timestamp)
+  // Если в данных есть реальное поле с датой добавления, используйте его вместо этого
+  const recentlyAddedCars = [...cars].sort((a, b) => {
+    // Если есть поле "created_at" или аналогичное, используйте его
+    // Иначе, используем id как прокси для сортировки (последние добавленные имеют больший id)
+    return b.id.localeCompare(a.id);
+  }).slice(0, 8);
+  
   const popularCars = cars.filter(car => car.isPopular).slice(0, 8);
 
   return (
@@ -83,18 +93,31 @@ const HomeContent = () => {
 
       <FeatureCards />
 
-      {newCars.length > 0 || loading ? (
+      {/* Новые поступления (последние добавленные) */}
+      {recentlyAddedCars.length > 0 && (
         <FeaturedCars 
-          cars={newCars} 
+          cars={recentlyAddedCars} 
           title="Новые поступления" 
           subtitle="Самые свежие модели в нашем каталоге"
           loading={loading}
           error={error}
           onRetry={reloadCars}
         />
-      ) : null}
+      )}
       
-      {popularCars.length > 0 || loading ? (
+      {/* Отдельный блок для новых автомобилей (с маркером isNew) */}
+      {newCars.length > 0 && (
+        <FeaturedCars 
+          cars={newCars} 
+          title="Новинки рынка" 
+          subtitle="Новые модели автомобилей"
+          loading={loading}
+          error={error}
+          onRetry={reloadCars}
+        />
+      )}
+      
+      {popularCars.length > 0 && (
         <FeaturedCars 
           cars={popularCars} 
           title="Популярные модели" 
@@ -103,7 +126,7 @@ const HomeContent = () => {
           error={error}
           onRetry={reloadCars}
         />
-      ) : null}
+      )}
 
       <HomeCatalog 
         loading={loading}
