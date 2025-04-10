@@ -9,13 +9,12 @@ const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => {
-  // Enhanced event handling for the trigger
+  // Enhanced event handling for the trigger with more comprehensive event blocking
   const handleEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    e.preventDefault();
   };
 
   return (

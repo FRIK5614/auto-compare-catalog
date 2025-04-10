@@ -84,7 +84,7 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="w-full sm:w-auto relative z-[100]">
+                  <div className="w-full sm:w-auto relative z-[2000]">
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>

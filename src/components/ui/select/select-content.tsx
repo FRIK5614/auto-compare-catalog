@@ -9,13 +9,12 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
-  // Comprehensive event blocking for content and all child elements
+  // Enhanced comprehensive event blocking
   const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    e.preventDefault();
   };
 
   return (

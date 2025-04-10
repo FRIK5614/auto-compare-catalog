@@ -84,14 +84,15 @@ interface SortOptionsProps {
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Улучшенная функция блокировки событий - обработка событий для всех родительских элементов
+  // Максимально агрессивная блокировка событий для предотвращения всплытия
   const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    e.preventDefault();
     return false;
   };
 
@@ -106,7 +107,9 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
 
   return (
     <div 
-      className="relative z-[1000] w-full md:w-[240px] select-dropdown"
+      ref={containerRef}
+      className="relative z-[2000] w-full md:w-[240px] select-dropdown"
+      onClick={blockAllEvents}
       onClickCapture={blockAllEvents}
       onMouseDown={blockAllEvents}
       onTouchStart={blockAllEvents}
@@ -125,7 +128,7 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         <SelectTrigger className="w-full bg-white">
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
-        <SelectContent position="popper" className="z-[1000]">
+        <SelectContent position="popper" className="z-[2000] bg-white">
           {sortOptions.map(option => (
             <SelectItem 
               key={option.value} 

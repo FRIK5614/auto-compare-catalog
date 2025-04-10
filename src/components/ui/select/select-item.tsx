@@ -9,13 +9,13 @@ const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => {
-  // Enhanced event handling for each item
-  const blockAllEvents = (e: React.SyntheticEvent) => {
+  // Improved event handling for select items
+  const handleClick = (e: React.SyntheticEvent) => {
+    // We still want the click to register for the select item, but prevent propagation
     e.stopPropagation();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    e.preventDefault();
   };
 
   return (
@@ -25,12 +25,12 @@ const SelectItem = React.forwardRef<
         "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
-      onClick={blockAllEvents}
-      onMouseDown={blockAllEvents}
-      onTouchStart={blockAllEvents}
-      onTouchEnd={blockAllEvents}
-      onTouchMove={blockAllEvents}
-      onPointerDown={blockAllEvents}
+      onClick={handleClick}
+      onMouseDown={handleClick}
+      onTouchStart={handleClick}
+      onTouchEnd={handleClick}
+      onTouchMove={handleClick}
+      onPointerDown={handleClick}
       data-no-card-click="true"
       {...props}
     >
