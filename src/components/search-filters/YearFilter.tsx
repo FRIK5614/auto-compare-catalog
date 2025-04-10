@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useCars } from "@/hooks/useCars";
 import { CarFilter } from "@/types/car";
 
-interface YearFilterProps {
+export interface YearFilterProps {
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
 }

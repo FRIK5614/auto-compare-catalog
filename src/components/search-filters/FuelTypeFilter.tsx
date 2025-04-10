@@ -15,14 +15,23 @@ import {
 import { useCars } from "@/hooks/useCars";
 import { CarFilter } from "@/types/car";
 
-interface FuelTypeFilterProps {
+export interface FuelTypeFilterProps {
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
 }
 
 export const FuelTypeFilter = ({ filter, setFilter }: FuelTypeFilterProps) => {
   const { getUniqueValues } = useCars();
-  const fuelTypes = getUniqueValues("engine").map(e => e?.fuelType).filter(Boolean) as string[];
+  // We need to extract the fuelType values correctly
+  const engines = getUniqueValues("engine");
+  const fuelTypes = engines
+    .map(engine => {
+      if (typeof engine === 'object' && engine && 'fuelType' in engine) {
+        return (engine as any).fuelType;
+      }
+      return null;
+    })
+    .filter(Boolean) as string[];
   
   return (
     <AccordionItem value="fuelType" className="border-b border-auto-gray-200">

@@ -15,14 +15,23 @@ import {
 import { useCars } from "@/hooks/useCars";
 import { CarFilter } from "@/types/car";
 
-interface TransmissionFilterProps {
+export interface TransmissionFilterProps {
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
 }
 
 export const TransmissionFilter = ({ filter, setFilter }: TransmissionFilterProps) => {
   const { getUniqueValues } = useCars();
-  const transmissionTypes = getUniqueValues("transmission").map(t => t?.type).filter(Boolean) as string[];
+  // We need to extract the transmission type values correctly
+  const transmissions = getUniqueValues("transmission");
+  const transmissionTypes = transmissions
+    .map(transmission => {
+      if (typeof transmission === 'object' && transmission && 'type' in transmission) {
+        return (transmission as any).type;
+      }
+      return null;
+    })
+    .filter(Boolean) as string[];
   
   return (
     <AccordionItem value="transmission" className="border-b border-auto-gray-200">

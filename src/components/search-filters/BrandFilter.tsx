@@ -15,7 +15,7 @@ import {
 import { useCars } from "@/hooks/useCars";
 import { CarFilter } from "@/types/car";
 
-interface BrandFilterProps {
+export interface BrandFilterProps {
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
 }

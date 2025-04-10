@@ -13,10 +13,18 @@ import { FuelTypeFilter } from "./FuelTypeFilter";
 import { TransmissionFilter } from "./TransmissionFilter";
 import { CountryFilter } from "./CountryFilter";
 import { ExtraFilter } from "./ExtraFilter";
+import { CarFilter } from "@/types/car";
 
-const SearchFilters = () => {
+interface SearchFiltersProps {
+  filter: CarFilter;
+  setFilter: (filter: CarFilter) => void;
+  closeModal?: () => void;
+  isInModal?: boolean;
+}
+
+const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: SearchFiltersProps) => {
   const navigate = useNavigate();
-  const { filter, setFilter, getUniqueValues, getPriceRange, getYearRange } = useCars();
+  const { getUniqueValues, getPriceRange, getYearRange } = useCars();
 
   const resetFilters = useCallback(() => {
     setFilter({});
@@ -29,8 +37,8 @@ const SearchFilters = () => {
   // Get unique values for filters
   const brands = getUniqueValues('brand');
   const bodyTypes = getUniqueValues('bodyType');
-  const fuelTypes = getUniqueValues('engine.fuelType');
-  const transmissionTypes = getUniqueValues('transmission.type');
+  const fuelTypes = getUniqueValues('engine').map(e => e?.fuelType).filter(Boolean) as string[];
+  const transmissionTypes = getUniqueValues('transmission').map(t => t?.type).filter(Boolean) as string[];
   const countries = getUniqueValues('country');
   
   // Get min/max price and year ranges
@@ -45,43 +53,36 @@ const SearchFilters = () => {
         <BrandFilter 
           filter={filter} 
           setFilter={setFilter} 
-          brands={brands}
         />
         
         <BodyTypeFilter 
           filter={filter} 
           setFilter={setFilter} 
-          bodyTypes={bodyTypes}
         />
         
         <PriceFilter 
           filter={filter} 
           setFilter={setFilter} 
-          priceRange={priceRange}
         />
         
         <YearFilter 
           filter={filter} 
           setFilter={setFilter} 
-          yearRange={yearRange}
         />
         
         <FuelTypeFilter 
           filter={filter} 
           setFilter={setFilter} 
-          fuelTypes={fuelTypes}
         />
         
         <TransmissionFilter 
           filter={filter} 
           setFilter={setFilter} 
-          transmissionTypes={transmissionTypes}
         />
         
         <CountryFilter 
           filter={filter} 
           setFilter={setFilter} 
-          countries={countries}
         />
         
         <ExtraFilter 
