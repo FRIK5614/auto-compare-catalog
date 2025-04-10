@@ -87,7 +87,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           onLogout={handleLogout}
         />
 
-        <SidebarInset className="bg-background flex-1 p-0 md:p-2 mt-[60px] md:mt-0">
+        <SidebarInset className="bg-background flex-1 p-2 mt-0 md:mt-0">
           {children || <Outlet />}
         </SidebarInset>
       </div>
