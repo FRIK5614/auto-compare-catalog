@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -10,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CarsProvider } from "@/contexts/CarsContext";
 import { useCars } from "@/hooks/useCars";
-import { Heart, BarChart2, ChevronRight, ChevronLeft, Share2, Phone, ArrowLeft, ArrowRight } from "lucide-react";
+import { Heart, BarChart2, ChevronRight, ChevronLeft, Share2, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { useToast } from "@/hooks/use-toast";
+import CarLoadingAnimation from "@/components/CarLoadingAnimation";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("ru-RU", {
@@ -64,18 +63,6 @@ const CarDetailsContent = () => {
   const currentIndex = cars.findIndex(c => c.id === car.id);
   const prevCar = currentIndex > 0 ? cars[currentIndex - 1] : null;
   const nextCar = currentIndex < cars.length - 1 ? cars[currentIndex + 1] : null;
-
-  const goToPreviousCar = () => {
-    if (prevCar) {
-      navigate(`/car/${prevCar.id}`);
-    }
-  };
-
-  const goToNextCar = () => {
-    if (nextCar) {
-      navigate(`/car/${nextCar.id}`);
-    }
-  };
 
   const handlePrevImage = () => {
     setActiveImageIndex((prev) => 
@@ -225,27 +212,7 @@ const CarDetailsContent = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="relative h-[300px] sm:h-[400px] md:h-[500px]">
-                {/* Car Navigation */}
-                <div className="absolute top-4 right-4 z-20 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full bg-white/80 hover:bg-white"
-                    onClick={goToPreviousCar}
-                    disabled={!prevCar}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-full bg-white/80 hover:bg-white"
-                    onClick={goToNextCar}
-                    disabled={!nextCar}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                {/* Removed car navigation arrows */}
                 
                 {car.isNew && (
                   <Badge className="absolute top-4 left-4 z-10 bg-auto-blue-600">Новинка</Badge>

@@ -31,7 +31,7 @@ const CarCard = ({ car, className }: CarCardProps) => {
   
   const currentImage = car.images[imageIndex];
   
-  // Handle swipe gestures
+  // Handle swipe gestures for image navigation
   const handleTouchStart = (e: TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -105,6 +105,8 @@ const CarCard = ({ car, className }: CarCardProps) => {
             ))}
           </div>
         )}
+        
+        {/* We've removed the arrow buttons here */}
       </div>
       
       <CardContent className="flex-1 p-4">

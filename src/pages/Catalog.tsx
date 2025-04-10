@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -32,6 +33,7 @@ import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { Car } from "@/types/car";
 import LoadingState from "@/components/LoadingState";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CarLoadingAnimation from "@/components/CarLoadingAnimation";
 
 type SortOption = {
   label: string;
@@ -107,6 +109,7 @@ const Catalog = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<string>("default");
+  const [isChangingSortOption, setIsChangingSortOption] = useState(false);
   const isMobile = useIsMobile();
 
   const CARS_PER_PAGE = 12;
@@ -146,22 +149,35 @@ const Catalog = () => {
   }, [searchParams, setFilter]);
 
   useEffect(() => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("page", currentPage.toString());
-    newParams.set("sort", sortOption);
-    setSearchParams(newParams);
-  }, [currentPage, sortOption]);
+    // Prevent this effect during the initial render or when sorting is changing
+    if (!isChangingSortOption) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("page", currentPage.toString());
+      newParams.set("sort", sortOption);
+      setSearchParams(newParams);
+    }
+  }, [currentPage, sortOption, isChangingSortOption]);
 
   const startIndex = (currentPage - 1) * CARS_PER_PAGE;
   const currentPageCars = filteredCars.slice(startIndex, startIndex + CARS_PER_PAGE);
 
   const handleSortChange = (value: string) => {
+    setIsChangingSortOption(true);
     setSortOption(value);
     setFilter({
       ...filter,
       sortBy: mapSortOptionToFilter(value)
     });
     setCurrentPage(1);
+    
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("page", "1");
+    newParams.set("sort", value);
+    setSearchParams(newParams);
+    
+    // Reset the flag after state updates
+    setTimeout(() => setIsChangingSortOption(false), 50);
   };
 
   const handlePageChange = (page: number) => {
@@ -269,9 +285,11 @@ const Catalog = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-auto-gray-900">Каталог автомобилей</h1>
-                <p className="text-auto-gray-600 mt-1">
-                  Найдено {filteredCars.length} автомобилей
-                </p>
+                {!loading && (
+                  <p className="text-auto-gray-600 mt-1">
+                    Найдено {filteredCars.length} автомобилей
+                  </p>
+                )}
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
@@ -310,7 +328,9 @@ const Catalog = () => {
               
               <div className={`w-full ${isMobile ? '' : 'md:w-3/4 lg:w-4/5'} ${isMobile ? '' : 'md:pl-6'}`}>
                 {loading ? (
-                  <LoadingState count={CARS_PER_PAGE} type="card" />
+                  <div className="flex justify-center items-center min-h-[400px]">
+                    <CarLoadingAnimation />
+                  </div>
                 ) : currentPageCars.length === 0 ? (
                   <div className="flex flex-col items-center justify-center bg-white p-8 rounded-lg text-center">
                     <div className="w-16 h-16 bg-auto-gray-100 rounded-full flex items-center justify-center mb-4">

@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SearchFilters } from "@/components/search-filters";
+import SearchFilters from "@/components/SearchFilters";
 import { Button } from "@/components/ui/button";
-import { X, HeadphonesIcon, Filter } from "lucide-react";
+import { HeadphonesIcon, Filter } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SearchFiltersModalProps {
@@ -30,9 +30,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
                   <Filter className="mr-2 h-5 w-5 text-primary" />
                   Фильтры
                 </SheetTitle>
-                <SheetClose className="rounded-full h-8 w-8 flex items-center justify-center hover:bg-muted">
-                  <X className="h-5 w-5" />
-                </SheetClose>
+                {/* Removed the duplicate close button, SheetContent has its own close button */}
               </div>
             </SheetHeader>
             
@@ -78,14 +76,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
               <Filter className="mr-2 h-5 w-5 text-primary" />
               Фильтры
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full h-8 w-8 hover:bg-muted"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            {/* Removed the duplicate close button, DialogContent has its own close button */}
           </div>
         </DialogHeader>
         
