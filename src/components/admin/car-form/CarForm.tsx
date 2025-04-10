@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ interface CarFormProps {
   loading: boolean;
   onSave: (car: Car, imageFile?: File) => Promise<void>;
   formErrors: Record<string, any>;
+  imagePreview: string | null;
+  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleImageUrlChange?: (url: string) => void;
   handleAddImage?: (url: string) => void;
   handleRemoveImage?: (index: number) => void;
@@ -26,13 +28,13 @@ const CarForm = ({
   loading, 
   onSave, 
   formErrors,
+  imagePreview,
+  handleImageUpload,
   handleImageUrlChange,
   handleAddImage,
   handleRemoveImage
 }: CarFormProps) => {
   const navigate = useNavigate();
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const methods = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
@@ -42,40 +44,10 @@ const CarForm = ({
   
   const { handleSubmit, formState: { isValid, errors } } = methods;
 
-  // Set initial image preview
-  React.useEffect(() => {
-    if (car.images && car.images.length > 0) {
-      setImagePreview(car.images[0].url);
-    } else if (car.image_url) {
-      setImagePreview(car.image_url);
-    }
-  }, [car]);
-
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const preview = reader.result as string;
-        setImagePreview(preview);
-        
-        // If handleImageUrlChange is provided, update image URL in parent component
-        if (handleImageUrlChange) {
-          handleImageUrlChange(preview);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Submit form
   const onSubmit = async (data: CarFormValues) => {
     const updatedCar = mapFormValuesToCar(data, car);
-    await onSave(updatedCar, imageFile || undefined);
+    await onSave(updatedCar);
   };
 
   return (
