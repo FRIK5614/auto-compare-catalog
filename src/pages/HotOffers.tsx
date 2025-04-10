@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import ErrorState from "@/components/ErrorState";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext } from "@/components/ui/pagination";
+import { useToast } from "@/hooks/use-toast";
 
 interface TelegramPost {
   id: number;
@@ -32,6 +33,7 @@ const HotOffers = () => {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [totalPosts, setTotalPosts] = useState(0);
+  const { toast } = useToast();
   
   const fetchTelegramPosts = async (newOffset = 0) => {
     try {
@@ -75,6 +77,11 @@ const HotOffers = () => {
     } catch (err: any) {
       console.error('Error fetching Telegram posts:', err);
       setError('Не удалось загрузить ленту Telegram. Пожалуйста, попробуйте позже.');
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить посты из Telegram",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -124,19 +131,21 @@ const HotOffers = () => {
         <div className="grid gap-6">
           {loading && offset === 0 ? (
             // Loading skeletons for initial load
-            Array.from({ length: 6 }).map((_, index) => (
-              <Card key={`skeleton-${index}`}>
-                <CardHeader>
-                  <Skeleton className="h-5 w-40" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-40 w-full" />
-                </CardContent>
-              </Card>
-            ))
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Card key={`skeleton-${index}`}>
+                  <CardHeader>
+                    <Skeleton className="h-5 w-40" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-40 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : error ? (
             // Error state
             <ErrorState 
@@ -179,6 +188,11 @@ const HotOffers = () => {
                             alt="Изображение из Telegram" 
                             className="rounded-lg max-h-[300px] w-auto mx-auto"
                             loading="lazy"
+                            onError={(e) => {
+                              // Fallback if image fails to load
+                              console.error("Image failed to load:", post.photo_url);
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
                           />
                         </div>
                       )}
