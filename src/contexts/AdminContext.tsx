@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Car, Order } from '../types/car';
 import { useCars as useGlobalCars } from './CarsContext';
@@ -126,13 +125,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check localStorage for admin status on initial load
     const storedAdminStatus = localStorage.getItem(ADMIN_STORAGE_KEY);
     if (storedAdminStatus === 'true') {
       setIsAdmin(true);
     }
     
-    // Load site configuration from localStorage
     const storedConfig = localStorage.getItem(SITE_CONFIG_KEY);
     if (storedConfig) {
       try {
@@ -140,7 +137,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSiteConfig({...DEFAULT_CONFIG, ...parsedConfig});
       } catch (error) {
         console.error("Failed to parse site configuration:", error);
-        // If parsing fails, use default config
         setSiteConfig(DEFAULT_CONFIG);
       }
     }
@@ -148,7 +144,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setAdmin = (value: boolean) => {
     setIsAdmin(value);
-    // Store admin status in localStorage
     localStorage.setItem(ADMIN_STORAGE_KEY, value.toString());
   };
 
@@ -169,7 +164,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newConfig = {...siteConfig, ...config};
     setSiteConfig(newConfig);
     
-    // Save to localStorage
     try {
       localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(newConfig));
       console.log("Site configuration saved", newConfig);
@@ -183,7 +177,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Proxy methods from the global CarsContext for admin use
   const deleteCar = async (carId: string) => {
     return globalCars.deleteCar(carId);
   };

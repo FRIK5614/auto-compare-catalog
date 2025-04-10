@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAdmin } from '@/contexts/AdminContext';
 import { useCars } from '@/hooks/useCars';
@@ -161,9 +160,18 @@ const AdminSettings = () => {
   };
 
   const onCatalogSubmit = (values: z.infer<typeof catalogSettingsSchema>) => {
+    // Fixed: Ensure all required properties are present
     updateSiteConfig({
       ...siteConfig,
-      catalog: values
+      catalog: {
+        itemsPerPage: values.itemsPerPage,
+        defaultSorting: values.defaultSorting,
+        enableFiltering: values.enableFiltering,
+        enableComparison: values.enableComparison,
+        enableFavorites: values.enableFavorites,
+        hotOffersCount: values.hotOffersCount,
+        featuredCarsCount: values.featuredCarsCount
+      }
     });
     toast({
       title: "Настройки сохранены",
@@ -172,9 +180,15 @@ const AdminSettings = () => {
   };
 
   const onTelegramSubmit = (values: z.infer<typeof telegramSettingsSchema>) => {
+    // Fixed: Ensure all required properties are present
     updateSiteConfig({
       ...siteConfig,
-      telegram: values
+      telegram: {
+        botToken: values.botToken,
+        adminChatId: values.adminChatId,
+        notifyOnNewOrder: values.notifyOnNewOrder,
+        notifyOnMessage: values.notifyOnMessage
+      }
     });
     toast({
       title: "Настройки сохранены",
@@ -183,9 +197,16 @@ const AdminSettings = () => {
   };
 
   const onSeoSubmit = (values: z.infer<typeof seoSettingsSchema>) => {
+    // Fixed: Ensure all required properties are present
     updateSiteConfig({
       ...siteConfig,
-      seo: values
+      seo: {
+        metaTitle: values.metaTitle,
+        metaDescription: values.metaDescription,
+        ogImage: values.ogImage,
+        googleAnalyticsId: values.googleAnalyticsId,
+        yandexMetrikaId: values.yandexMetrikaId
+      }
     });
     toast({
       title: "Настройки сохранены",
