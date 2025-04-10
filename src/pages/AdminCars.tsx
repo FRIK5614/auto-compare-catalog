@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
@@ -12,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
