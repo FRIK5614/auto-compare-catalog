@@ -59,7 +59,7 @@ import {
   UserCheck 
 } from "lucide-react";
 
-type OrderStatus = "new" | "processing" | "completed" | "cancelled";
+type OrderStatus = "new" | "processing" | "completed" | "canceled";
 
 // Extended Order type with comments
 interface ExtendedOrder extends Order {
@@ -71,14 +71,14 @@ const statusColors: Record<OrderStatus, string> = {
   new: "bg-blue-500",
   processing: "bg-yellow-500",
   completed: "bg-green-500",
-  cancelled: "bg-red-500",
+  canceled: "bg-red-500",
 };
 
 const statusLabels: Record<OrderStatus, string> = {
   new: "Новый",
   processing: "В обработке",
   completed: "Завершен",
-  cancelled: "Отменен",
+  canceled: "Отменен",
 };
 
 const AdminOrders = () => {
@@ -141,9 +141,9 @@ const AdminOrders = () => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
-          order.customer_name.toLowerCase().includes(searchLower) ||
-          order.customer_email.toLowerCase().includes(searchLower) ||
-          order.customer_phone.toLowerCase().includes(searchLower) ||
+          order.customerName.toLowerCase().includes(searchLower) ||
+          order.customerEmail.toLowerCase().includes(searchLower) ||
+          order.customerPhone.toLowerCase().includes(searchLower) ||
           (order.comments && order.comments.toLowerCase().includes(searchLower)) ||
           (order.adminNotes && order.adminNotes.toLowerCase().includes(searchLower))
         );
@@ -152,8 +152,8 @@ const AdminOrders = () => {
       return true;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
   
@@ -163,7 +163,7 @@ const AdminOrders = () => {
     new: orders.filter(order => order.status === "new").length,
     processing: orders.filter(order => order.status === "processing").length,
     completed: orders.filter(order => order.status === "completed").length,
-    cancelled: orders.filter(order => order.status === "cancelled").length,
+    canceled: orders.filter(order => order.status === "canceled").length,
   };
   
   // Handle viewing an order
@@ -201,7 +201,7 @@ const AdminOrders = () => {
     
     toast({
       title: "Заказ удален",
-      description: `Заказ от ${selectedOrder.customer_name} был удален`,
+      description: `Заказ от ${selectedOrder.customerName} был удален`,
     });
     
     setIsDeleteDialogOpen(false);
@@ -266,7 +266,7 @@ const AdminOrders = () => {
           siteConfig.telegram?.adminChatId) {
         
         try {
-          const carName = getCarById(order.car_id)?.brand + " " + getCarById(order.car_id)?.model;
+          const carName = getCarById(order.carId)?.brand + " " + getCarById(order.carId)?.model;
           const statusText = statusLabels[newStatus];
           
           // Here you would implement the actual notification logic
@@ -310,12 +310,12 @@ const AdminOrders = () => {
     
     const newOrder: ExtendedOrder = {
       id: uuidv4(),
-      car_id: cars[0].id,
-      customer_name: "",
-      customer_email: "",
-      customer_phone: "",
+      carId: cars[0].id,
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
       status: "new",
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       comments: "",
       adminNotes: "Заказ создан вручную администратором"
     };
@@ -370,7 +370,7 @@ const AdminOrders = () => {
                         <SelectItem value="new">Новые ({orderCounts.new})</SelectItem>
                         <SelectItem value="processing">В обработке ({orderCounts.processing})</SelectItem>
                         <SelectItem value="completed">Завершенные ({orderCounts.completed})</SelectItem>
-                        <SelectItem value="cancelled">Отмененные ({orderCounts.cancelled})</SelectItem>
+                        <SelectItem value="canceled">Отмененные ({orderCounts.canceled})</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -436,15 +436,15 @@ const AdminOrders = () => {
                       </TableRow>
                     ) : (
                       filteredOrders.map((order) => {
-                        const car = getCarById(order.car_id);
+                        const car = getCarById(order.carId);
                         return (
                           <TableRow key={order.id}>
                             <TableCell>
-                              {format(new Date(order.created_at), "dd MMM yyyy, HH:mm", { locale: ru })}
+                              {format(new Date(order.createdAt), "dd MMM yyyy, HH:mm", { locale: ru })}
                             </TableCell>
                             <TableCell>
-                              <div className="font-medium">{order.customer_name}</div>
-                              <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                              <div className="font-medium">{order.customerName}</div>
+                              <div className="text-sm text-muted-foreground">{order.customerPhone}</div>
                             </TableCell>
                             <TableCell>
                               {car ? (
@@ -514,7 +514,7 @@ const AdminOrders = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredOrders.map((order) => {
-                  const car = getCarById(order.car_id);
+                  const car = getCarById(order.carId);
                   return (
                     <Card key={order.id} className="overflow-hidden">
                       <div className={`h-2 ${statusColors[order.status as OrderStatus]}`} />
@@ -524,13 +524,13 @@ const AdminOrders = () => {
                             {statusLabels[order.status as OrderStatus]}
                           </Badge>
                           <div className="text-sm text-muted-foreground">
-                            {format(new Date(order.created_at), "dd MMM yyyy, HH:mm", { locale: ru })}
+                            {format(new Date(order.createdAt), "dd MMM yyyy, HH:mm", { locale: ru })}
                           </div>
                         </div>
-                        <CardTitle className="text-lg">{order.customer_name}</CardTitle>
+                        <CardTitle className="text-lg">{order.customerName}</CardTitle>
                         <CardDescription>
-                          <div>{order.customer_phone}</div>
-                          <div>{order.customer_email}</div>
+                          <div>{order.customerPhone}</div>
+                          <div>{order.customerEmail}</div>
                         </CardDescription>
                       </CardHeader>
                       
@@ -588,7 +588,7 @@ const AdminOrders = () => {
                 {isEditMode ? "Редактирование заказа" : "Просмотр заказа"}
               </DialogTitle>
               <DialogDescription>
-                {format(new Date(selectedOrder.created_at), "dd MMMM yyyy, HH:mm", { locale: ru })}
+                {format(new Date(selectedOrder.createdAt), "dd MMMM yyyy, HH:mm", { locale: ru })}
               </DialogDescription>
             </DialogHeader>
             
@@ -620,7 +620,7 @@ const AdminOrders = () => {
                         <SelectItem value="new">Новый</SelectItem>
                         <SelectItem value="processing">В обработке</SelectItem>
                         <SelectItem value="completed">Завершен</SelectItem>
-                        <SelectItem value="cancelled">Отменен</SelectItem>
+                        <SelectItem value="canceled">Отменен</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
@@ -650,9 +650,9 @@ const AdminOrders = () => {
                         Новый
                       </Button>
                       <Button 
-                        disabled={selectedOrder.status === "cancelled" || processing} 
-                        onClick={() => handleUpdateOrderStatus(selectedOrder, "cancelled")}
-                        variant={selectedOrder.status === "cancelled" ? "outline" : "destructive"}
+                        disabled={selectedOrder.status === "canceled" || processing} 
+                        onClick={() => handleUpdateOrderStatus(selectedOrder, "canceled")}
+                        variant={selectedOrder.status === "canceled" ? "outline" : "destructive"}
                       >
                         {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XIcon className="h-4 w-4 mr-2" />}
                         Отменен
@@ -665,8 +665,8 @@ const AdminOrders = () => {
                     
                     {isEditMode ? (
                       <Select 
-                        value={selectedOrder.car_id} 
-                        onValueChange={(value) => setSelectedOrder({...selectedOrder, car_id: value})}
+                        value={selectedOrder.carId} 
+                        onValueChange={(value) => setSelectedOrder({...selectedOrder, carId: value})}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Выберите автомобиль" />
@@ -682,7 +682,7 @@ const AdminOrders = () => {
                     ) : (
                       <>
                         {(() => {
-                          const car = getCarById(selectedOrder.car_id);
+                          const car = getCarById(selectedOrder.carId);
                           if (!car) return <div className="text-muted-foreground">Автомобиль не найден</div>;
                           
                           return (
@@ -741,8 +741,8 @@ const AdminOrders = () => {
                     <Label htmlFor="customer_name">ФИО клиента</Label>
                     <Input
                       id="customer_name"
-                      value={selectedOrder.customer_name}
-                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_name: e.target.value})}
+                      value={selectedOrder.customerName}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customerName: e.target.value})}
                       readOnly={!isEditMode}
                     />
                   </div>
@@ -751,8 +751,8 @@ const AdminOrders = () => {
                     <Label htmlFor="customer_phone">Телефон</Label>
                     <Input
                       id="customer_phone"
-                      value={selectedOrder.customer_phone}
-                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_phone: e.target.value})}
+                      value={selectedOrder.customerPhone}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customerPhone: e.target.value})}
                       readOnly={!isEditMode}
                     />
                   </div>
@@ -761,8 +761,8 @@ const AdminOrders = () => {
                     <Label htmlFor="customer_email">Email</Label>
                     <Input
                       id="customer_email"
-                      value={selectedOrder.customer_email}
-                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customer_email: e.target.value})}
+                      value={selectedOrder.customerEmail}
+                      onChange={(e) => isEditMode && setSelectedOrder({...selectedOrder, customerEmail: e.target.value})}
                       readOnly={!isEditMode}
                     />
                   </div>
@@ -880,13 +880,13 @@ const AdminOrders = () => {
           {selectedOrder && (
             <div className="bg-muted/50 p-3 rounded-md">
               <p>
-                <span className="font-medium">Клиент:</span> {selectedOrder.customer_name}
+                <span className="font-medium">Клиент:</span> {selectedOrder.customerName}
               </p>
               <p>
-                <span className="font-medium">Телефон:</span> {selectedOrder.customer_phone}
+                <span className="font-medium">Телефон:</span> {selectedOrder.customerPhone}
               </p>
               <p>
-                <span className="font-medium">Дата заказа:</span> {format(new Date(selectedOrder.created_at), "dd.MM.yyyy HH:mm", { locale: ru })}
+                <span className="font-medium">Дата заказа:</span> {format(new Date(selectedOrder.createdAt), "dd.MM.yyyy HH:mm", { locale: ru })}
               </p>
             </div>
           )}

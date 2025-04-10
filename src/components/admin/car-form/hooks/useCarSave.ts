@@ -1,94 +1,83 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { useCars } from '@/hooks/useCars';
 import { Car } from '@/types/car';
+import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { saveCar, updateCar, deleteCar } from '@/services/api';
 
 export const useCarSave = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { 
-    updateCar, 
-    addCar, 
-    uploadCarImage,
-    reloadCars
-  } = useCars();
-  
   const [saving, setSaving] = useState(false);
-
-  // Save car with updated logic to ensure data is properly saved
-  const saveCar = async (car: Car, isNewCar: boolean, imageFile?: File) => {
-    if (!car) return;
-    
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
+  
+  // Save or update car
+  const handleSaveCar = async (car: Car, isNew: boolean = true) => {
     setSaving(true);
     
     try {
-      // Handle image file if provided
-      if (imageFile) {
-        try {
-          const imageUrl = await uploadCarImage(imageFile);
-          
-          // Update car with new image
-          if (car.images && car.images.length > 0) {
-            car.images[0].url = imageUrl;
-          } else {
-            car.images = [
-              {
-                id: uuidv4(),
-                url: imageUrl,
-                alt: `${car.brand} ${car.model}`,
-              }
-            ];
-          }
-          car.image_url = imageUrl;
-        } catch (error) {
-          console.error("Error uploading image:", error);
-          toast({
-            variant: "destructive",
-            title: "Ошибка загрузки изображения",
-            description: "Не удалось загрузить изображение. Пожалуйста, попробуйте снова.",
-          });
-          // Continue with saving even if image upload fails
-        }
-      }
+      // Generate ID for new cars
+      const carToSave: Car = isNew 
+        ? { ...car, id: car.id || uuidv4() } 
+        : car;
       
-      if (isNewCar) {
-        await addCar(car);
-        toast({
-          title: "Автомобиль добавлен",
-          description: "Новый автомобиль успешно добавлен в базу данных",
-        });
-      } else {
-        await updateCar(car);
-        toast({
-          title: "Автомобиль обновлен",
-          description: "Информация об автомобиле успешно обновлена в базе данных",
-        });
-      }
+      // Perform save or update based on isNew flag
+      const savedCar = isNew 
+        ? await saveCar(carToSave)
+        : await updateCar(carToSave);
+        
+      toast({
+        title: isNew ? "Автомобиль добавлен" : "Автомобиль обновлен",
+        description: `${savedCar.brand} ${savedCar.model} успешно ${isNew ? 'добавлен' : 'обновлен'}.`,
+      });
       
-      // Force reload data after saving
-      await reloadCars();
-      
-      // Redirect user to car list
-      navigate("/admin/cars");
-      return true;
+      return { success: true, car: savedCar };
     } catch (error) {
       console.error("Error saving car:", error);
-      const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
+      
       toast({
         variant: "destructive",
         title: "Ошибка сохранения",
-        description: errorMessage,
+        description: `Не удалось ${isNew ? 'добавить' : 'обновить'} автомобиль. Пожалуйста, попробуйте снова.`,
       });
-      return false;
+      
+      return { success: false, error };
     } finally {
       setSaving(false);
     }
   };
-
+  
+  // Delete car
+  const handleDeleteCar = async (carId: string) => {
+    setDeleting(true);
+    
+    try {
+      await deleteCar(carId);
+      
+      toast({
+        title: "Автомобиль удален",
+        description: "Автомобиль успешно удален из каталога.",
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      
+      toast({
+        variant: "destructive",
+        title: "Ошибка удаления",
+        description: "Не удалось удалить автомобиль. Пожалуйста, попробуйте снова.",
+      });
+      
+      return { success: false, error };
+    } finally {
+      setDeleting(false);
+    }
+  };
+  
   return {
     saving,
-    saveCar
+    deleting,
+    saveCar: handleSaveCar,
+    deleteCar: handleDeleteCar
   };
 };
