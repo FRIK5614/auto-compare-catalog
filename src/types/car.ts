@@ -96,12 +96,13 @@ export interface CarFilter {
   minYear?: number;       // Min year range
   maxYear?: number;       // Max year range
   fuelType?: string;      // Engine fuel type
-  transmissionType?: string; // Transmission type
+  transmissionType?: string[]; // Transmission type
   country?: string;       // Single country filter
   onlyNew?: boolean;      // New cars only flag
   search?: string;        // Search term
   sortBy?: 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc'; // Sort option
   limit?: number;         // Limit number of results
+  discount?: boolean;     // Flag to filter cars with discounts
 }
 
 export interface Order {
