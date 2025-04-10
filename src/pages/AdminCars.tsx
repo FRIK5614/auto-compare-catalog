@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -214,10 +213,7 @@ const AdminCars = () => {
           </AlertDialogContent>
         </AlertDialog>
 
-        <AlertDialog
-          open={importDialogOpen}
-          onOpenChange={setImportDialogOpen}
-        >
+        <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Импорт данных</AlertDialogTitle>
