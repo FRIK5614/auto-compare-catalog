@@ -14,21 +14,34 @@ const SelectValue = SelectPrimitive.Value
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
+>(({ className, children, ...props }, ref) => {
+  // Enhanced event handling for the trigger
+  const handleEvents = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        className
+      )}
+      onClick={handleEvents}
+      onMouseDown={handleEvents}
+      onTouchStart={handleEvents}
+      onTouchEnd={handleEvents}
+      onTouchMove={handleEvents}
+      onPointerDown={handleEvents}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="h-4 w-4 opacity-50" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  )
+})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef<
@@ -70,9 +83,13 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
-  // Handler to prevent events from propagating through the dropdown
-  const handlePointerDown = (e: React.PointerEvent) => {
+  // Comprehensive event blocking for content and all child elements
+  const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    e.preventDefault();
   };
 
   return (
@@ -86,7 +103,12 @@ const SelectContent = React.forwardRef<
           className
         )}
         position={position}
-        onPointerDown={handlePointerDown}
+        onClick={blockAllEvents}
+        onMouseDown={blockAllEvents}
+        onTouchStart={blockAllEvents}
+        onTouchEnd={blockAllEvents}
+        onTouchMove={blockAllEvents}
+        onPointerDown={blockAllEvents}
         {...props}
       >
         <SelectScrollUpButton />
@@ -96,6 +118,12 @@ const SelectContent = React.forwardRef<
             position === "popper" &&
               "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
           )}
+          onClick={blockAllEvents}
+          onMouseDown={blockAllEvents}
+          onTouchStart={blockAllEvents}
+          onTouchEnd={blockAllEvents}
+          onTouchMove={blockAllEvents}
+          onPointerDown={blockAllEvents}
         >
           {children}
         </SelectPrimitive.Viewport>
@@ -122,9 +150,12 @@ const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => {
-  // Handler to prevent events from propagating through each dropdown item
-  const handlePointerDown = (e: React.PointerEvent) => {
+  // Enhanced event handling for each item
+  const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
   };
 
   return (
@@ -134,7 +165,12 @@ const SelectItem = React.forwardRef<
         "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
-      onPointerDown={handlePointerDown}
+      onClick={blockAllEvents}
+      onMouseDown={blockAllEvents}
+      onTouchStart={blockAllEvents}
+      onTouchEnd={blockAllEvents}
+      onTouchMove={blockAllEvents}
+      onPointerDown={blockAllEvents}
       {...props}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">

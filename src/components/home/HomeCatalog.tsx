@@ -44,9 +44,11 @@ const HomeCatalog = ({
     navigate('/catalog');
   };
 
-  // This prevents clicks on the sort dropdown from propagating to elements underneath
+  // Prevent event bubbling for the entire sort container
   const handleSortContainerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    e.preventDefault();
   };
 
   return (
@@ -89,7 +91,14 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="w-full sm:w-auto" onClick={handleSortContainerClick}>
+                  <div 
+                    className="w-full sm:w-auto relative z-50" 
+                    onClick={handleSortContainerClick}
+                    onTouchStart={handleSortContainerClick}
+                    onTouchEnd={handleSortContainerClick}
+                    onTouchMove={handleSortContainerClick}
+                    onMouseDown={handleSortContainerClick}
+                  >
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>

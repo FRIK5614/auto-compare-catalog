@@ -83,30 +83,63 @@ interface SortOptionsProps {
 }
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
-  // Handler for mousedown event to prevent clicks propagating through the dropdown
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Comprehensive event blocking for all possible events
+  const blockEvent = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  // Handler for the select trigger click
+  const handleTriggerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
 
   return (
-    <Select value={sortOption} onValueChange={onSortChange}>
-      <SelectTrigger className="w-[200px]">
-        <SelectValue placeholder="Сортировка" />
-      </SelectTrigger>
-      <SelectContent 
-        onMouseDown={handleMouseDown} 
-        className="z-50"
+    <div 
+      onClick={blockEvent} 
+      onTouchStart={blockEvent}
+      onTouchEnd={blockEvent}
+      onMouseDown={blockEvent}
+      onMouseUp={blockEvent}
+      className="relative z-50"
+    >
+      <Select 
+        value={sortOption} 
+        onValueChange={onSortChange}
       >
-        {sortOptions.map(option => (
-          <SelectItem 
-            key={option.value} 
-            value={option.value}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        <SelectTrigger 
+          className="w-[200px]"
+          onClick={handleTriggerClick}
+          onMouseDown={blockEvent}
+          onTouchStart={blockEvent}
+          onPointerDown={blockEvent}
+        >
+          <SelectValue placeholder="Сортировка" />
+        </SelectTrigger>
+        <SelectContent 
+          onMouseDown={blockEvent}
+          onClick={blockEvent}
+          onTouchStart={blockEvent}
+          onTouchEnd={blockEvent}
+          onPointerDown={blockEvent}
+          position="popper"
+          className="z-50"
+        >
+          {sortOptions.map(option => (
+            <SelectItem 
+              key={option.value} 
+              value={option.value}
+              onMouseDown={blockEvent}
+              onClick={blockEvent}
+              onTouchStart={blockEvent}
+              onTouchEnd={blockEvent}
+              onPointerDown={blockEvent}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };

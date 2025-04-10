@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -94,9 +93,12 @@ const Catalog = () => {
     setIsFilterModalOpen(false);
   };
 
-  // This prevents clicks on the sort dropdown from propagating to elements underneath
-  const handleSortContainerClick = (e: React.MouseEvent) => {
+  const handleSortContainerClick = (e: React.SyntheticEvent) => {
     e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    e.preventDefault();
   };
 
   return (
@@ -106,7 +108,14 @@ const Catalog = () => {
       <main className="flex-grow">
         <section className="py-6 md:py-10 bg-auto-gray-50">
           <div className="container mx-auto px-4">
-            <div onClick={handleSortContainerClick}>
+            <div 
+              className="relative z-50"
+              onClick={handleSortContainerClick}
+              onTouchStart={handleSortContainerClick}
+              onTouchEnd={handleSortContainerClick}
+              onTouchMove={handleSortContainerClick}
+              onMouseDown={handleSortContainerClick}
+            >
               <CatalogHeader 
                 count={filteredCars.length}
                 loading={loading}
