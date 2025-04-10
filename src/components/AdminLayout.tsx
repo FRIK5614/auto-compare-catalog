@@ -21,7 +21,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const location = useLocation();
 
   useEffect(() => {
     if (orders && orders.length > 0) {
@@ -61,7 +60,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <SidebarProvider>
-      <div className="flex w-full min-h-screen">
+      <div className="flex w-full">
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background border-b p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Админ панель</h2>
           <Button 
@@ -87,7 +86,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           onLogout={handleLogout}
         />
 
-        <SidebarInset className="bg-background flex-1 p-2 mt-0 md:mt-0">
+        <SidebarInset className="bg-background flex-1 p-0 mt-0 md:mt-0">
           {children || <Outlet />}
         </SidebarInset>
       </div>

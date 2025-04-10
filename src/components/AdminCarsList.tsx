@@ -96,7 +96,7 @@ const AdminCarsList = ({
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 px-4">
         <CarSearchBar 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
@@ -115,17 +115,21 @@ const AdminCarsList = ({
         onDelete={handleDeleteClick}
       />
       
-      <CarListPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      <div className="px-4">
+        <CarListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
       
-      <BulkActionBar
-        selectedCount={selectedCars.length}
-        onClearSelection={() => setSelectedCars([])}
-        onBulkDelete={handleBulkDelete}
-      />
+      <div className="px-4">
+        <BulkActionBar
+          selectedCount={selectedCars.length}
+          onClearSelection={() => setSelectedCars([])}
+          onBulkDelete={handleBulkDelete}
+        />
+      </div>
       
       <CarDeleteDialog
         open={isDeleteDialogOpen}

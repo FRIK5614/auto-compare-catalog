@@ -88,8 +88,8 @@ const AdminCars = () => {
 
   return (
     <AdminLayout>
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-6">
+      <div className="p-0">
+        <div className="flex justify-between items-center mb-6 p-4">
           <h1 className="text-2xl font-bold">Управление автомобилями</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setImportDialogOpen(true)} className="flex items-center">
@@ -107,7 +107,7 @@ const AdminCars = () => {
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="px-4 mb-4">
           <Input 
             placeholder="Поиск по марке или модели..." 
             value={searchTerm} 
@@ -116,12 +116,14 @@ const AdminCars = () => {
           />
         </div>
 
-        <AdminCarsList 
-          cars={filteredCars} 
-          onEdit={id => navigate(`/admin/cars/edit/${id}`)} 
-          onDelete={handleDelete} 
-          onView={id => navigate(`/car/${id}`)} 
-        />
+        <div className="px-0">
+          <AdminCarsList 
+            cars={filteredCars} 
+            onEdit={id => navigate(`/admin/cars/edit/${id}`)} 
+            onDelete={handleDelete} 
+            onView={id => navigate(`/car/${id}`)} 
+          />
+        </div>
 
         <CarDeleteDialog 
           open={isDeleteDialogOpen} 
