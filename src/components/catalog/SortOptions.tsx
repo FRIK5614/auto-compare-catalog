@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -86,6 +86,19 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Блокируем скролл при открытом меню
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('select-dropdown-open');
+    } else {
+      document.body.classList.remove('select-dropdown-open');
+    }
+    
+    return () => {
+      document.body.classList.remove('select-dropdown-open');
+    };
+  }, [isOpen]);
+
   // Максимально агрессивная блокировка событий для предотвращения всплытия
   const blockAllEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
@@ -108,7 +121,7 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
   return (
     <div 
       ref={containerRef}
-      className="relative z-[2000] w-full md:w-[240px] select-dropdown"
+      className="relative z-[3000] w-full md:w-[240px] select-dropdown"
       onClick={blockAllEvents}
       onClickCapture={blockAllEvents}
       onMouseDown={blockAllEvents}
@@ -119,6 +132,14 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
       onPointerUp={blockAllEvents}
       data-no-card-click="true"
     >
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/10 z-[2999]" 
+          onClick={() => setIsOpen(false)}
+          data-no-card-click="true"
+        />
+      )}
+      
       <Select 
         value={sortOption} 
         onValueChange={handleSelectItem}
@@ -128,7 +149,11 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         <SelectTrigger className="w-full bg-white">
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
-        <SelectContent position="popper" className="z-[2000] bg-white">
+        <SelectContent 
+          position="popper" 
+          className="z-[3000] bg-white"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           {sortOptions.map(option => (
             <SelectItem 
               key={option.value} 

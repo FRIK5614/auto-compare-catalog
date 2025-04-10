@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -97,5 +98,16 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Блокировка взаимодействия с контентом под открытым меню */
+  body.select-dropdown-open {
+    overflow: hidden;
+    touch-action: none;
+  }
+  
+  .select-dropdown {
+    pointer-events: auto;
+    position: relative;
   }
 }

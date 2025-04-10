@@ -26,22 +26,18 @@ const CarCard = ({ car, className }: CarCardProps) => {
   
   // Улучшенная и более строгая проверка для предотвращения кликов на карточке
   const handleCardClick = (e: React.MouseEvent) => {
-    // Проверяем, происходит ли клик из элемента с атрибутом или классом, указывающим на интерактивный элемент
-    const target = e.target as HTMLElement;
+    // Проверяем элементы по всей цепочке для атрибута no-card-click
+    const path = e.nativeEvent.composedPath();
+    const isFromInteractiveElement = Array.from(path).some((el) => {
+      if (el instanceof HTMLElement) {
+        return el.dataset?.noCardClick === 'true' || 
+               el.classList.contains('select-dropdown') ||
+               el.closest('[data-no-card-click="true"]') !== null;
+      }
+      return false;
+    });
     
-    // Ищем любые элементы, которые должны блокировать клик по карточке
-    const isInteractiveElement = 
-      target.closest('[data-no-card-click="true"]') || 
-      target.closest('.select-dropdown') ||
-      target.closest('[role="combobox"]') || 
-      target.closest('[role="option"]') ||
-      target.closest('[data-radix-select-trigger]') ||
-      target.closest('[data-radix-select-content]') ||
-      target.closest('[data-radix-select-item]') ||
-      target.closest('[data-state="open"]') ||
-      target.closest('[data-radix-popper-content-wrapper]');
-
-    if (isInteractiveElement) {
+    if (isFromInteractiveElement) {
       console.log('Предотвращение перехода по карточке, клик на интерактивном элементе');
       e.stopPropagation();
       e.preventDefault();

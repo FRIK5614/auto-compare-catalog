@@ -15,6 +15,7 @@ const SelectTrigger = React.forwardRef<
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
+    e.preventDefault();
   };
 
   return (

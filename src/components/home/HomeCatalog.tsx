@@ -40,7 +40,8 @@ const HomeCatalog = ({
     });
   };
 
-  const loadMore = () => {
+  const loadMore = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigate('/catalog');
   };
 
@@ -61,6 +62,7 @@ const HomeCatalog = ({
                   variant="blue" 
                   onClick={openFilterModal} 
                   className="w-full flex items-center justify-center"
+                  data-no-card-click="true"
                 >
                   <Filter className="mr-2 h-5 w-5" />
                   Открыть фильтры
@@ -84,7 +86,7 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="w-full sm:w-auto relative z-[2000]">
+                  <div className="w-full sm:w-auto relative z-[3000]">
                     <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>
@@ -101,6 +103,7 @@ const HomeCatalog = ({
                       onClick={loadMore} 
                       variant="outline" 
                       className="px-8"
+                      data-no-card-click="true"
                     >
                       Показать еще
                     </Button>

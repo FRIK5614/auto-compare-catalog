@@ -101,7 +101,7 @@ const Catalog = () => {
       <main className="flex-grow">
         <section className="py-6 md:py-10 bg-auto-gray-50">
           <div className="container mx-auto px-4">
-            <div className="relative z-[100]">
+            <div className="relative z-[3000]">
               <CatalogHeader 
                 count={filteredCars.length}
                 loading={loading}

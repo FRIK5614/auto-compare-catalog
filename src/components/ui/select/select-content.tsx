@@ -15,6 +15,7 @@ const SelectContent = React.forwardRef<
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
+    e.preventDefault();
   };
 
   return (
