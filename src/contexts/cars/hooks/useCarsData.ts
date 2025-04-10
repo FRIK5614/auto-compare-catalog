@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Car, Order } from "@/types/car";
 import { useToast } from "@/hooks/use-toast";
 import { loadCars, loadFavorites, loadOrders } from "../dataLoaders";
@@ -11,23 +11,27 @@ export const useCarsData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const dataInitialized = useRef(false);
 
-  // Initialize data
+  // Инициализируем данные
   useEffect(() => {
+    if (dataInitialized.current) return;
+    dataInitialized.current = true;
+    
     const initializeData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Load cars
+        // Загружаем автомобили
         const carsData = await loadCars();
         setCars(carsData);
         
-        // Load orders
+        // Загружаем заказы
         const ordersData = await loadOrders();
         setOrders(ordersData);
         
-        // Load favorites
+        // Загружаем избранное
         const favoritesData = await loadFavorites();
         setFavorites(favoritesData);
         
@@ -48,7 +52,7 @@ export const useCarsData = () => {
     initializeData();
   }, [toast]);
 
-  // Function to reload cars
+  // Функция для перезагрузки автомобилей
   const reloadCars = async () => {
     try {
       setLoading(true);

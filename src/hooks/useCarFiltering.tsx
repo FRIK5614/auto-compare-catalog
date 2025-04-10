@@ -1,6 +1,7 @@
 
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 import { Car, CarFilter } from "../types/car";
+import { useRef } from "react";
 
 export const useCarFiltering = () => {
   const {
@@ -10,10 +11,10 @@ export const useCarFiltering = () => {
     setFilter
   } = useGlobalCars();
   
-  // Create a filter utils object
+  // Создаем объект фильтров
   const carFilters = useCarFilters(cars);
 
-  // Apply sorting to filtered cars
+  // Применяем сортировку к отфильтрованным автомобилям
   const sortedFilteredCars = carFilters.applySorting(filteredCars, filter.sortBy);
 
   return {
@@ -21,7 +22,7 @@ export const useCarFiltering = () => {
     filteredCars: sortedFilteredCars,
     filter,
     setFilter,
-    // Export utilities from carFilters
+    // Экспортируем утилиты из carFilters
     getMostViewedCars: carFilters.getMostViewedCars,
     getUniqueValues: carFilters.getUniqueValues,
     getPriceRange: carFilters.getPriceRange,
@@ -31,9 +32,9 @@ export const useCarFiltering = () => {
   };
 };
 
-// Helper hook to avoid circular dependencies
+// Вспомогательный хук для избежания циклических зависимостей
 function useCarFilters(cars: Car[]) {
-  // Helper functions
+  // Вспомогательные функции
   const getMostViewedCars = (limit = 4) => {
     return [...cars]
       .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
@@ -97,7 +98,7 @@ function useCarFilters(cars: Car[]) {
 
   const applyAdvancedFilter = (filterParams: any) => {
     return cars.filter(car => {
-      // Implement advanced filtering logic here
+      // Реализация логики расширенной фильтрации
       return true;
     });
   };

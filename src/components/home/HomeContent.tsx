@@ -21,27 +21,32 @@ const HomeContent = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const consultFormRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const initialParamsApplied = useRef(false);
 
   useEffect(() => {
-    const newFilter: any = { ...filter };
-    
-    const bodyType = searchParams.get("bodyType");
-    if (bodyType) {
-      newFilter.bodyTypes = [bodyType];
+    if (!initialParamsApplied.current) {
+      initialParamsApplied.current = true;
+      
+      const newFilter: any = { ...filter };
+      
+      const bodyType = searchParams.get("bodyType");
+      if (bodyType) {
+        newFilter.bodyTypes = [bodyType];
+      }
+      
+      if (searchParams.get("filter") === "new") {
+        newFilter.isNew = true;
+      }
+      
+      const brand = searchParams.get("brand");
+      if (brand) {
+        newFilter.brands = [brand];
+      }
+      
+      newFilter.limit = 24;
+      
+      setFilter(newFilter);
     }
-    
-    if (searchParams.get("filter") === "new") {
-      newFilter.isNew = true;
-    }
-    
-    const brand = searchParams.get("brand");
-    if (brand) {
-      newFilter.brands = [brand];
-    }
-    
-    newFilter.limit = 24;
-    
-    setFilter(newFilter);
   }, [searchParams, setFilter, filter]);
 
   const openFilterModal = () => {

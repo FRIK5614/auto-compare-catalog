@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+
+import { useEffect, useRef } from "react";
 import { useCarDetails } from "./useCarDetails";
 import { useCarFiltering } from "./useCarFiltering";
 import { useCarActions } from "./useCarActions";
@@ -11,10 +12,14 @@ export const useCars = () => {
   const carFiltering = useCarFiltering();
   const carActions = useCarActions();
   const carsState = useCarsState();
+  
+  // Используем ref для отслеживания первой инициализации
+  const initialFilterApplied = useRef(false);
 
-  // Initialize filters for home page
+  // Инициализируем фильтры для домашней страницы только один раз
   useEffect(() => {
-    if (carFiltering.filter && !carFiltering.filter.limit && window.location.pathname === '/') {
+    if (!initialFilterApplied.current && carFiltering.filter && !carFiltering.filter.limit && window.location.pathname === '/') {
+      initialFilterApplied.current = true;
       carFiltering.setFilter({
         ...carFiltering.filter,
         limit: 24
@@ -22,7 +27,7 @@ export const useCars = () => {
     }
   }, [carFiltering.filter, carFiltering.setFilter]);
 
-  // Combine all the hooks into a single API
+  // Объединяем все хуки в единый API
   return {
     // Car data and state
     cars: carsState.cars,

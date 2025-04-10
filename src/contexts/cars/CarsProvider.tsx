@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useRef } from "react";
 import { CarsContextType } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
 import { useFilters } from "./hooks/useFilters";
@@ -11,7 +11,10 @@ import { useOrders } from "./hooks/useOrders";
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
 export const CarsProvider = ({ children }: { children: ReactNode }) => {
-  // Use our custom hooks
+  // Ref для отслеживания инициализации
+  const isInitialized = useRef(false);
+  
+  // Используем наши кастомные хуки
   const { 
     cars, 
     setCars, 
@@ -50,7 +53,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     importCarsData,
     exportCarsData,
     getCarById
-  } = useCarsCRUD(cars); // Передаем текущие автомобили в хук
+  } = useCarsCRUD(cars);
   
   const {
     orders,
@@ -59,13 +62,17 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     getOrders
   } = useOrders();
 
-  // Sync state between hooks
-  if (initialFavorites.length > 0 && favorites.length === 0) {
-    setFavorites(initialFavorites);
-  }
-  
-  if (initialOrders.length > 0 && orders.length === 0) {
-    setOrders(initialOrders);
+  // Синхронизация состояния между хуками (только первый раз)
+  if (!isInitialized.current) {
+    if (initialFavorites.length > 0 && favorites.length === 0) {
+      setFavorites(initialFavorites);
+    }
+    
+    if (initialOrders.length > 0 && orders.length === 0) {
+      setOrders(initialOrders);
+    }
+    
+    isInitialized.current = true;
   }
 
   return (
