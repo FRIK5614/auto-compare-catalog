@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Hardcoded token - in production you would use a secret
+const TELEGRAM_BOT_TOKEN = "7829427763:AAEbz_SNa835tCr0u4tJ2wcDx68MuIsbftM";
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -15,15 +18,11 @@ Deno.serve(async (req) => {
   try {
     // Get request body or fallback to default channel
     const { channelName = 'VoeAVTO' } = await req.json();
-
-    // Fetch the Telegram bot token from the environment
-    const telegramToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    if (!telegramToken) {
-      throw new Error('TELEGRAM_BOT_TOKEN not found in environment variables');
-    }
+    
+    console.log(`Fetching posts from channel: ${channelName}`);
 
     // Get channel updates from Telegram API
-    const response = await fetch(`https://api.telegram.org/bot${telegramToken}/getUpdates`);
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -53,7 +52,7 @@ Deno.serve(async (req) => {
             const largestPhoto = post.photo.reduce((max, photo) => 
               photo.file_size > max.file_size ? photo : max, post.photo[0]);
             
-            photoUrl = `https://api.telegram.org/file/bot${telegramToken}/${largestPhoto.file_id}`;
+            photoUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${largestPhoto.file_id}`;
           }
           
           return {

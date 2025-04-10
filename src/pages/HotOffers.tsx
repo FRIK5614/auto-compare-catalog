@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import ErrorState from "@/components/ErrorState";
 
 interface TelegramPost {
   id: number;
@@ -20,28 +21,33 @@ const HotOffers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  useEffect(() => {
-    const fetchTelegramPosts = async () => {
-      try {
-        setLoading(true);
-        
-        const { data, error } = await supabase.functions.invoke('telegram-feed', {
-          body: { channelName: 'VoeAVTO' }
-        });
-        
-        if (error) {
-          throw new Error(error.message);
-        }
-        
-        setPosts(data || []);
-      } catch (err: any) {
-        console.error('Error fetching Telegram posts:', err);
-        setError('Не удалось загрузить ленту Telegram. Пожалуйста, попробуйте позже.');
-      } finally {
-        setLoading(false);
+  const fetchTelegramPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Fetching Telegram posts...');
+      
+      const { data, error } = await supabase.functions.invoke('telegram-feed', {
+        body: { channelName: 'VoeAVTO' }
+      });
+      
+      if (error) {
+        console.error('Error invoking telegram-feed function:', error);
+        throw new Error(error.message);
       }
-    };
-    
+      
+      console.log('Telegram posts received:', data);
+      setPosts(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Error fetching Telegram posts:', err);
+      setError('Не удалось загрузить ленту Telegram. Пожалуйста, попробуйте позже.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchTelegramPosts();
   }, []);
   
@@ -94,19 +100,10 @@ const HotOffers = () => {
             ))
           ) : error ? (
             // Error state
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <p className="text-red-600 text-center">{error}</p>
-                <div className="flex justify-center mt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => window.location.reload()}
-                  >
-                    Попробовать снова
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ErrorState 
+              message={error}
+              onRetry={fetchTelegramPosts}
+            />
           ) : posts.length === 0 ? (
             // Empty state
             <Card>
