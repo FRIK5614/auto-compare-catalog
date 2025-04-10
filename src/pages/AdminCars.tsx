@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, FileUp, FileDown } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
@@ -198,6 +197,7 @@ const AdminCars = () => {
           </Table>
         </div>
 
+        {/* Delete Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -213,6 +213,7 @@ const AdminCars = () => {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Import Dialog */}
         <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
