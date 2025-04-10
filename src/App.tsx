@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import TmcAvtoCatalog from "./components/TmcAvtoCatalog";
 import { AdminProvider } from "./contexts/AdminContext";
 import { CarsProvider } from "./contexts/CarsContext";
+import { ChatProvider } from "./contexts/ChatContext";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -113,7 +114,9 @@ const App = () => {
       <BrowserRouter>
         <CarsProvider>
           <AdminProvider>
-            <AppContent />
+            <ChatProvider>
+              <AppContent />
+            </ChatProvider>
           </AdminProvider>
         </CarsProvider>
       </BrowserRouter>
