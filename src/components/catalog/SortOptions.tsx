@@ -85,23 +85,29 @@ interface SortOptionsProps {
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   
-  // Prevent dropdown from causing page interaction with card beneath it
-  const preventBubbling = (e: React.MouseEvent | React.TouchEvent) => {
+  // Функция для предотвращения всплытия всех событий
+  const blockAllEvents = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    e.preventDefault();
+    return false;
   };
 
   return (
     <div 
-      className="relative z-[3000] w-full md:w-[240px]"
-      onClick={preventBubbling}
-      onMouseDown={preventBubbling}
-      onTouchStart={preventBubbling}
-      onTouchEnd={preventBubbling}
+      className="relative z-[3001] w-full md:w-[240px]"
+      onClick={blockAllEvents}
+      onMouseDown={blockAllEvents}
+      onTouchStart={blockAllEvents}
+      onTouchEnd={blockAllEvents}
       data-no-card-click="true"
     >
+      {/* Фоновая маска для закрытия выпадающего списка */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/10 z-[2999]" 
+          className="fixed inset-0 bg-black/10 z-[3000]" 
           onClick={() => setIsOpen(false)}
           data-no-card-click="true"
         />
@@ -117,20 +123,29 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         onOpenChange={setIsOpen}
       >
         <SelectTrigger 
-          className="w-full bg-white relative z-[3001]"
+          className="w-full bg-white relative z-[3001] border-auto-gray-300"
+          onClick={blockAllEvents}
+          onMouseDown={blockAllEvents}
+          onTouchStart={blockAllEvents}
+          onTouchEnd={blockAllEvents}
           data-no-card-click="true"
         >
           <SelectValue placeholder="Сортировка" />
         </SelectTrigger>
+        
         <SelectContent 
           position="popper" 
-          className="z-[3001] bg-white"
+          className="z-[3001] bg-white shadow-lg"
           data-no-card-click="true"
         >
           {sortOptions.map(option => (
             <SelectItem 
               key={option.value} 
               value={option.value}
+              onClick={blockAllEvents}
+              onMouseDown={blockAllEvents}
+              onTouchStart={blockAllEvents}
+              onTouchEnd={blockAllEvents}
               data-no-card-click="true"
             >
               {option.label}
