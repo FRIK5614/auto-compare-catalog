@@ -82,40 +82,14 @@ interface SortOptionsProps {
   onSortChange: (value: string) => void;
 }
 
-// Long press duration in milliseconds
-const LONG_PRESS_DURATION = 300; 
-
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
-  const touchStarted = useRef(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Function to stop event propagation
+  const stopPropagation = (e: React.SyntheticEvent) => {
     e.stopPropagation();
-    touchStarted.current = true;
-    
-    pressTimer.current = setTimeout(() => {
-      // Long press detected
-      setIsOpen(true);
-      touchStarted.current = false;
-    }, LONG_PRESS_DURATION);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-    }
-    touchStarted.current = false;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    // Cancel long press if finger moves too much
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
+    if (e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
     }
   };
 
@@ -130,10 +104,13 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
 
   return (
     <div 
-      className="relative z-[100] w-full md:w-[240px]" 
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
+      className="relative z-[100] w-full md:w-[240px]"
+      onClick={stopPropagation}
+      onMouseDown={stopPropagation}
+      onTouchStart={stopPropagation}
+      onTouchEnd={stopPropagation}
+      onTouchMove={stopPropagation}
+      onPointerDown={stopPropagation}
     >
       <Select 
         value={sortOption} 

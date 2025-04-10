@@ -24,8 +24,31 @@ const CarCard = ({ car, className }: CarCardProps) => {
   const isFavoriteCard = typeof isFavorite === 'function' ? isFavorite(car.id) : false;
   const isInCompareCard = typeof isInCompare === 'function' ? isInCompare(car.id) : false;
   
+  // Check if click is on the card but not on a child with specified classes
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements or sort options
+    const target = e.target as HTMLElement;
+    const isInteractiveElement = 
+      target.closest('[role="combobox"]') || 
+      target.closest('[role="option"]') ||
+      target.closest('.select-dropdown') ||
+      target.closest('[data-radix-select-trigger]') ||
+      target.closest('[data-radix-select-content]') ||
+      target.closest('[data-radix-select-item]');
+    
+    if (isInteractiveElement) {
+      // Don't process the card click
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+  };
+  
   return (
-    <Card className={cn("overflow-hidden group h-full flex flex-col", className)}>
+    <Card 
+      className={cn("overflow-hidden group h-full flex flex-col", className)}
+      onClick={handleCardClick}
+    >
       <div className="relative">
         <CarImageGallery 
           images={car.images} 
