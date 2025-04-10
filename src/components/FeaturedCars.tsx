@@ -7,6 +7,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface FeaturedCarsProps {
   cars: Car[];
@@ -25,7 +32,6 @@ const FeaturedCars = ({
   error = null,
   onRetry 
 }: FeaturedCarsProps) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(4);
   const isMobile = useIsMobile();
 
@@ -49,13 +55,15 @@ const FeaturedCars = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Always move one car at a time
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(cars.length - visibleCount, prev + 1));
+  // Calculate number of items to show based on viewport size
+  const getCarouselOptions = () => {
+    return {
+      align: "start",
+      loop: false,
+      skipSnaps: false,
+      startIndex: 0,
+      slidesToScroll: 1,
+    };
   };
 
   return (
@@ -66,31 +74,6 @@ const FeaturedCars = ({
             <h2 className="text-2xl md:text-3xl font-bold text-auto-gray-900">{title}</h2>
             {subtitle && <p className="text-auto-gray-600 mt-1">{subtitle}</p>}
           </div>
-          
-          {!loading && !error && cars.length > 0 && (
-            <div className="flex space-x-2 mt-4 md:mt-0">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handlePrevious}
-                disabled={currentIndex === 0}
-                className="rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
-                aria-label="Previous car"
-              >
-                <ChevronLeft className="h-5 w-5 text-white" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleNext}
-                disabled={currentIndex >= cars.length - visibleCount}
-                className="rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
-                aria-label="Next car"
-              >
-                <ChevronRight className="h-5 w-5 text-white" />
-              </Button>
-            </div>
-          )}
         </div>
         
         {error && <ErrorState message={error} onRetry={onRetry} />}
@@ -100,25 +83,35 @@ const FeaturedCars = ({
         ) : !error && cars.length === 0 ? (
           <LoadingState count={visibleCount} type="card" />
         ) : !error && (
-          <div className="relative overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${currentIndex * (100 / visibleCount)}%)`,
-                width: `${(cars.length * 100) / visibleCount}%`,
-              }}
-            >
+          <Carousel
+            opts={getCarouselOptions()}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
               {cars.map((car) => (
-                <div
-                  key={car.id}
-                  className="px-2"
-                  style={{ width: `${100 / cars.length}%` }}
+                <CarouselItem 
+                  key={car.id} 
+                  className={`pl-4 ${
+                    isMobile 
+                      ? "basis-full" 
+                      : visibleCount === 2 
+                        ? "basis-1/2" 
+                        : visibleCount === 3 
+                          ? "basis-1/3" 
+                          : "basis-1/4"
+                  }`}
                 >
                   <CarCard car={car} className="h-full" />
-                </div>
+                </CarouselItem>
               ))}
-            </div>
-          </div>
+            </CarouselContent>
+            <CarouselPrevious 
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
+            />
+            <CarouselNext 
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white border-none"
+            />
+          </Carousel>
         )}
       </div>
     </div>
