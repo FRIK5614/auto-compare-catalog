@@ -1,23 +1,22 @@
 
-import { Car } from "@/types/car";
-import { useToast } from "@/hooks/use-toast";
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 
-export const useCarActions = (
-  cars: Car[], 
-  favorites: string[], 
-  compareCars: string[]
-) => {
-  const { toast } = useToast();
-  const { addToFavorites, removeFromFavorites, addToCompare, removeFromCompare } = useGlobalCars();
+export const useCarActions = () => {
+  const {
+    favorites = [], // Add default value
+    compareCars = [], // Add default value
+    addToFavorites,
+    removeFromFavorites,
+    addToCompare,
+    removeFromCompare,
+    clearCompare,
+    processOrder,
+    getOrders,
+    exportCarsData,
+    importCarsData
+  } = useGlobalCars();
 
-  // Проверка, является ли автомобиль избранным
-  const isFavorite = (carId: string) => favorites.includes(carId);
-  
-  // Проверка, добавлен ли автомобиль к сравнению
-  const isInCompare = (carId: string) => compareCars.includes(carId);
-  
-  // Переключение статуса избранного
+  // Utility functions for working with favorites and comparison
   const toggleFavorite = (carId: string) => {
     if (favorites.includes(carId)) {
       removeFromFavorites(carId);
@@ -26,27 +25,33 @@ export const useCarActions = (
     }
   };
 
-  // Переключение статуса сравнения
   const toggleCompare = (carId: string) => {
     if (compareCars.includes(carId)) {
       removeFromCompare(carId);
     } else {
-      if (compareCars.length >= 3) {
-        toast({
-          variant: "destructive",
-          title: "Ограничение сравнения",
-          description: "Можно сравнивать не более 3 автомобилей одновременно"
-        });
-        return;
-      }
       addToCompare(carId);
     }
   };
 
+  const isFavorite = (carId: string) => {
+    return Array.isArray(favorites) && favorites.includes(carId);
+  };
+
+  const isInCompare = (carId: string) => {
+    return Array.isArray(compareCars) && compareCars.includes(carId);
+  };
+
   return {
+    favorites,
+    compareCarsIds: compareCars,
+    toggleFavorite,
+    toggleCompare,
     isFavorite,
     isInCompare,
-    toggleFavorite,
-    toggleCompare
+    clearCompare,
+    processOrder,
+    getOrders,
+    exportCarsData,
+    importCarsData
   };
 };

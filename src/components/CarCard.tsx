@@ -59,6 +59,10 @@ const CarCard = ({ car, className }: CarCardProps) => {
   // Add visual indicator for multiple images if there's more than one
   const hasMultipleImages = car.images.length > 1;
   
+  // Safe check for isFavorite and isInCompare functions
+  const isFavoriteCard = typeof isFavorite === 'function' ? isFavorite(car.id) : false;
+  const isInCompareCard = typeof isInCompare === 'function' ? isInCompare(car.id) : false;
+  
   return (
     <Card className={cn("overflow-hidden group h-full flex flex-col", className)}>
       <div 
@@ -105,8 +109,6 @@ const CarCard = ({ car, className }: CarCardProps) => {
             ))}
           </div>
         )}
-        
-        {/* We've removed the arrow buttons here */}
       </div>
       
       <CardContent className="flex-1 p-4">
@@ -187,11 +189,11 @@ const CarCard = ({ car, className }: CarCardProps) => {
               size="icon"
               className={cn(
                 "text-auto-gray-700 hover:text-auto-red-500",
-                isFavorite(car.id) && "text-red-500 hover:text-red-700 border-red-500 hover:bg-red-50"
+                isFavoriteCard && "text-red-500 hover:text-red-700 border-red-500 hover:bg-red-50"
               )}
               onClick={() => toggleFavorite(car.id)}
             >
-              <Heart className="h-5 w-5" fill={isFavorite(car.id) ? "currentColor" : "none"} />
+              <Heart className="h-5 w-5" fill={isFavoriteCard ? "currentColor" : "none"} />
             </Button>
             
             <Button
@@ -199,7 +201,7 @@ const CarCard = ({ car, className }: CarCardProps) => {
               size="icon"
               className={cn(
                 "text-auto-gray-700 hover:text-auto-blue-600",
-                isInCompare(car.id) && "text-auto-blue-600 hover:text-auto-blue-700 border-auto-blue-600 hover:bg-auto-blue-50"
+                isInCompareCard && "text-auto-blue-600 hover:text-auto-blue-700 border-auto-blue-600 hover:bg-auto-blue-50"
               )}
               onClick={() => toggleCompare(car.id)}
             >
