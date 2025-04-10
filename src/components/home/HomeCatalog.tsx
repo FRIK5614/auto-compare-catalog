@@ -8,14 +8,8 @@ import { CarFilter } from "@/types/car";
 import SearchFilters from "@/components/SearchFilters";
 import CarCard from "@/components/CarCard";
 import LoadingState from "@/components/LoadingState";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { mapSortOptionFromFilter, mapSortOptionToFilter, sortOptions } from "@/components/catalog/SortOptions";
+import { SortOptions } from "@/components/catalog/SortOptions";
+import { mapSortOptionFromFilter, mapSortOptionToFilter } from "@/components/catalog/SortOptions";
 
 interface HomeCatalogProps {
   loading: boolean;
@@ -48,6 +42,11 @@ const HomeCatalog = ({
 
   const loadMore = () => {
     navigate('/catalog');
+  };
+
+  // This prevents clicks on the sort dropdown from propagating to elements underneath
+  const handleSortContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -90,19 +89,8 @@ const HomeCatalog = ({
                   <p className="text-auto-gray-600">
                     Найдено автомобилей: <span className="font-semibold">{filteredCars.length}</span>
                   </p>
-                  <div className="w-full sm:w-auto">
-                    <Select value={sortOption} onValueChange={handleSortChange}>
-                      <SelectTrigger className="w-full sm:w-[200px]">
-                        <SelectValue placeholder="Сортировка" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sortOptions.map(option => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="w-full sm:w-auto" onClick={handleSortContainerClick}>
+                    <SortOptions sortOption={sortOption} onSortChange={handleSortChange} />
                   </div>
                 </div>
                 

@@ -94,6 +94,11 @@ const Catalog = () => {
     setIsFilterModalOpen(false);
   };
 
+  // This prevents clicks on the sort dropdown from propagating to elements underneath
+  const handleSortContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -101,14 +106,16 @@ const Catalog = () => {
       <main className="flex-grow">
         <section className="py-6 md:py-10 bg-auto-gray-50">
           <div className="container mx-auto px-4">
-            <CatalogHeader 
-              count={filteredCars.length}
-              loading={loading}
-              isMobile={isMobile}
-              sortOption={sortOption}
-              onSortChange={handleSortChange}
-              onOpenFilterModal={openFilterModal}
-            />
+            <div onClick={handleSortContainerClick}>
+              <CatalogHeader 
+                count={filteredCars.length}
+                loading={loading}
+                isMobile={isMobile}
+                sortOption={sortOption}
+                onSortChange={handleSortChange}
+                onOpenFilterModal={openFilterModal}
+              />
+            </div>
             
             <div className="flex flex-col md:flex-row">
               <div className={`${isMobile ? 'hidden' : 'block'} md:w-1/4 lg:w-1/5`}>

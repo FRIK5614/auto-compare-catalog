@@ -83,14 +83,26 @@ interface SortOptionsProps {
 }
 
 export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChange }) => {
+  // Handler for mousedown event to prevent clicks propagating through the dropdown
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <Select value={sortOption} onValueChange={onSortChange}>
       <SelectTrigger className="w-[200px]">
         <SelectValue placeholder="Сортировка" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent 
+        onMouseDown={handleMouseDown} 
+        className="z-50"
+      >
         {sortOptions.map(option => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem 
+            key={option.value} 
+            value={option.value}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             {option.label}
           </SelectItem>
         ))}
