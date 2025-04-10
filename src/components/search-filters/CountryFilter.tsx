@@ -27,7 +27,7 @@ export const CountryFilter = ({ filter, setFilter }: CountryFilterProps) => {
   return (
     <AccordionItem value="country" className="border-b border-auto-gray-200">
       <AccordionTrigger className="py-3 text-base font-medium hover:no-underline">
-        Страна производства
+        Экспорт из страны
       </AccordionTrigger>
       <AccordionContent>
         <Select

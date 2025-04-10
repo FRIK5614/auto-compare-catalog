@@ -29,32 +29,27 @@ export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: Sear
     setFilter({});
   };
 
+  const applyFilters = () => {
+    reloadCars();
+    if (isInModal && closeModal) {
+      closeModal();
+    }
+  };
+
   return (
     <div className="w-full bg-white rounded-lg shadow-sm border border-auto-gray-200">
       <div className="p-4 border-b border-auto-gray-200">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-auto-gray-900">Фильтры</h3>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={resetFilters}
-              className="h-8 text-auto-gray-700 text-xs flex items-center"
-            >
-              <X className="h-3.5 w-3.5 mr-1" />
-              Сбросить
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={reloadCars}
-              disabled={loading}
-              className="h-8 text-auto-gray-700 text-xs flex items-center"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
-              Обновить
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={resetFilters}
+            className="h-8 text-auto-gray-700 text-xs flex items-center"
+          >
+            <X className="h-3.5 w-3.5 mr-1" />
+            Сбросить
+          </Button>
         </div>
         <SearchInput filter={filter} setFilter={setFilter} />
       </div>
@@ -69,6 +64,21 @@ export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: Sear
         <CountryFilter filter={filter} setFilter={setFilter} />
         <ExtraFilter filter={filter} setFilter={setFilter} />
       </Accordion>
+
+      <div className="p-4 sticky bottom-0 bg-white border-t border-auto-gray-200">
+        <Button 
+          variant="blue" 
+          size="default" 
+          onClick={applyFilters}
+          disabled={loading}
+          className="w-full flex items-center justify-center"
+        >
+          {loading ? (
+            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+          ) : null}
+          Применить
+        </Button>
+      </div>
     </div>
   );
 };

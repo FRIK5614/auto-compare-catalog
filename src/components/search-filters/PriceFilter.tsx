@@ -19,22 +19,36 @@ export const PriceFilter = ({ filter, setFilter }: PriceFilterProps) => {
   const { getPriceRange } = useCars();
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+  const priceRange = getPriceRange();
   
   useEffect(() => {
-    const { min: minPrice, max: maxPrice } = getPriceRange();
-    
-    setMinPrice(filter.minPrice?.toString() || minPrice.toString());
-    setMaxPrice(filter.maxPrice?.toString() || maxPrice.toString());
-  }, [filter, getPriceRange]);
+    setMinPrice(filter.minPrice?.toString() || priceRange.min.toString());
+    setMaxPrice(filter.maxPrice?.toString() || priceRange.max.toString());
+  }, [filter, priceRange]);
   
-  const handlePriceChange = (min: string, max: string) => {
-    const minVal = parseInt(min);
-    const maxVal = parseInt(max);
+  const handleMinPriceChange = (value: string) => {
+    const minVal = parseInt(value);
+    setMinPrice(value);
     
-    if (!isNaN(minVal) && !isNaN(maxVal) && minVal <= maxVal) {
+    if (!isNaN(minVal)) {
+      const maxVal = filter.maxPrice || parseInt(maxPrice);
       setFilter({
         ...filter,
         minPrice: minVal,
+        maxPrice: maxVal > minVal ? maxVal : undefined
+      });
+    }
+  };
+  
+  const handleMaxPriceChange = (value: string) => {
+    const maxVal = parseInt(value);
+    setMaxPrice(value);
+    
+    if (!isNaN(maxVal)) {
+      const minVal = filter.minPrice || parseInt(minPrice);
+      setFilter({
+        ...filter,
+        minPrice: minVal < maxVal ? minVal : undefined,
         maxPrice: maxVal
       });
     }
@@ -57,11 +71,7 @@ export const PriceFilter = ({ filter, setFilter }: PriceFilterProps) => {
                 type="number"
                 placeholder="0"
                 value={minPrice}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setMinPrice(newValue);
-                  handlePriceChange(newValue, maxPrice);
-                }}
+                onChange={(e) => handleMinPriceChange(e.target.value)}
                 className="bg-auto-gray-50"
               />
             </div>
@@ -74,11 +84,7 @@ export const PriceFilter = ({ filter, setFilter }: PriceFilterProps) => {
                 type="number"
                 placeholder="10000000"
                 value={maxPrice}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setMaxPrice(newValue);
-                  handlePriceChange(minPrice, newValue);
-                }}
+                onChange={(e) => handleMaxPriceChange(e.target.value)}
                 className="bg-auto-gray-50"
               />
             </div>

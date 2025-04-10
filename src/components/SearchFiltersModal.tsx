@@ -22,7 +22,7 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent side="bottom" className="h-[90vh] sm:max-w-full p-0">
+        <SheetContent side="bottom" className="h-screen w-full max-w-full p-0">
           <div className="flex flex-col h-full">
             <SheetHeader className="px-4 py-3 border-b">
               <div className="flex items-center justify-between">
