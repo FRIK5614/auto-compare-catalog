@@ -22,6 +22,7 @@ export const processOrder = async (
       order.id === orderId ? { ...order, status } : order
     );
     
+    saveOrdersToLocalStorage(updatedOrders);
     onSuccess(updatedOrders);
     
     return {

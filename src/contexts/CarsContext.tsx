@@ -107,35 +107,35 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle adding to favorites
   const handleAddToFavorites = (carId: string) => {
-    const toastContent = addToFavorites(
+    const result = addToFavorites(
       carId, 
       favorites, 
       (newFavorites) => setFavorites(newFavorites),
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle removing from favorites
   const handleRemoveFromFavorites = (carId: string) => {
-    const toastContent = removeFromFavorites(
+    const result = removeFromFavorites(
       carId, 
       favorites, 
       (newFavorites) => setFavorites(newFavorites),
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle adding to compare
   const handleAddToCompare = (carId: string) => {
-    const toastContent = addToCompare(
+    const result = addToCompare(
       carId, 
       compareCars, 
       (newCompareCars) => setCompareCars(newCompareCars),
@@ -146,30 +146,30 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle removing from compare
   const handleRemoveFromCompare = (carId: string) => {
-    const toastContent = removeFromCompare(
+    const result = removeFromCompare(
       carId, 
       compareCars, 
       (newCompareCars) => setCompareCars(newCompareCars)
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle clearing compare
   const clearCompare = () => {
-    const toastContent = clearCompareAction(() => setCompareCars([]));
+    const result = clearCompareAction(() => setCompareCars([]));
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
@@ -180,49 +180,49 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle deleting a car
   const handleDeleteCar = (carId: string) => {
-    const toastContent = deleteCarAction(
+    const result = deleteCarAction(
       carId, 
       cars, 
       (updatedCars) => setCars(updatedCars),
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle updating a car
   const handleUpdateCar = (updatedCar: Car) => {
-    const toastContent = updateCarAction(
+    const result = updateCarAction(
       updatedCar, 
       cars, 
       (updatedCars) => setCars(updatedCars),
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle adding a car
   const handleAddCar = (newCar: Car) => {
-    const toastContent = addCarAction(
+    const result = addCarAction(
       newCar, 
       cars, 
       (updatedCars) => setCars(updatedCars),
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
   // Handle processing an order
-  const handleProcessOrder = (orderId: string, status: Order['status']) => {
-    const toastContent = processOrderAction(
+  const handleProcessOrder = async (orderId: string, status: Order['status']) => {
+    const result = await processOrderAction(
       orderId, 
       status, 
       orders, 
@@ -230,8 +230,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       (message) => toast({ variant: "destructive", title: "Ошибка", description: message })
     );
     
-    if (toastContent) {
-      toast(toastContent);
+    if (result) {
+      toast(result);
     }
   };
 
@@ -247,7 +247,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   // Import cars data
   const handleImportCarsData = (data: string): boolean => {
-    return importCarsDataAction(
+    const success = importCarsDataAction(
       data,
       (parsedData) => {
         setCars(parsedData);
@@ -259,6 +259,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       },
       (message) => toast({ variant: "destructive", title: "Ошибка импорта", description: message })
     );
+    
+    return success;
   };
 
   // Upload car image

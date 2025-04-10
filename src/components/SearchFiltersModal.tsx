@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import SearchFilters from "@/components/SearchFilters";
+import { SearchFilters } from "@/components/search-filters";
 import { Button } from "@/components/ui/button";
 import { X, HeadphonesIcon, Filter } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
