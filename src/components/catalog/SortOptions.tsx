@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   Select,
@@ -97,13 +98,12 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
     };
   }, [isOpen]);
 
-  const blockAllEvents = (e: React.SyntheticEvent) => {
+  // Simplified event blocking - only applied to content, not the trigger
+  const blockEvents = (e: React.SyntheticEvent) => {
     e.stopPropagation();
-    e.preventDefault();
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    return false;
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -119,20 +119,15 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
     <div 
       ref={containerRef}
       className="relative z-[3000] w-full md:w-[240px] select-dropdown"
-      onClick={blockAllEvents}
-      onClickCapture={blockAllEvents}
-      onMouseDown={blockAllEvents}
-      onTouchStart={blockAllEvents}
-      onTouchEnd={blockAllEvents}
-      onTouchMove={blockAllEvents}
-      onPointerDown={blockAllEvents}
-      onPointerUp={blockAllEvents}
       data-no-card-click="true"
     >
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/10 z-[2999]" 
-          onClick={() => setIsOpen(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(false);
+          }}
           data-no-card-click="true"
         />
       )}
@@ -149,11 +144,17 @@ export const SortOptions: React.FC<SortOptionsProps> = ({ sortOption, onSortChan
         <SelectContent 
           position="popper" 
           className="z-[3000] bg-white"
+          onPointerDownOutside={(e) => {
+            e.preventDefault();
+            blockEvents(e);
+          }}
+          onClick={blockEvents}
         >
           {sortOptions.map(option => (
             <SelectItem 
               key={option.value} 
               value={option.value}
+              data-no-card-click="true"
             >
               {option.label}
             </SelectItem>
