@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ const Header = () => {
   
   const menuItems = [
     { icon: Home, text: "Главная", path: "/" },
-    { icon: Flame, text: "Горячие предложения", path: "/hot-offers" }, // Changed Fire to Flame
+    { icon: Flame, text: "Горячие предложения", path: "/hot-offers" },
     { icon: ArrowRightLeft, text: "Сравнение", path: "/compare" },
     { icon: Heart, text: "Избранное", path: "/favorites" },
     ...(isAdmin ? [{ icon: User, text: "Админ панель", path: "/admin" }] : []),
@@ -24,7 +23,6 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">AutoDeal</Link>
         
-        {/* Desktop Navigation */}
         <nav className="hidden md:block">
           <ul className="flex space-x-4">
             {menuItems.map((item) => (
@@ -40,7 +38,6 @@ const Header = () => {
           </ul>
         </nav>
         
-        {/* Mobile Navigation */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon" className="relative">
@@ -59,7 +56,6 @@ const Header = () => {
   );
 };
 
-// Mobile Menu Component
 const MobileMenu = ({ 
   menuItems, 
   isOpen, 
