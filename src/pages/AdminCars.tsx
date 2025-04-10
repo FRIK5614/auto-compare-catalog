@@ -12,8 +12,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
@@ -87,7 +86,7 @@ const AdminCars = () => {
           loading={admin.loading || false}
         />
         
-        {!!carToDelete && (
+        {carToDelete && (
           <AlertDialog 
             open={!!carToDelete} 
             onOpenChange={(open) => !open && setCarToDelete(null)}
