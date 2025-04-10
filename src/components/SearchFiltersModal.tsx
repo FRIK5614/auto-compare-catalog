@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SearchFilters from "@/components/search-filters";
@@ -6,11 +7,13 @@ import { HeadphonesIcon, Filter, X } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+
 interface SearchFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
   scrollToContactForm?: () => void;
 }
+
 const SearchFiltersModal = ({
   isOpen,
   onClose,
@@ -73,20 +76,26 @@ const SearchFiltersModal = ({
       </Sheet>;
   }
 
-  // На десктопе используем обычный Dialog
+  // На десктопе используем обычный Dialog с новой компоновкой
   return <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] p-0 py-[100px]">
-        <DialogHeader className="px-4 py-4 border-b sticky top-0 bg-white z-10">
+      <DialogContent className="sm:max-w-[600px] p-0">
+        {/* Заголовок фильтра с одним крестиком (вверху) */}
+        <div className="px-6 py-4 border-b bg-white">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold flex items-center">
+            <div className="flex items-center">
               <Filter className="mr-2 h-5 w-5 text-primary" />
-              Фильтры
-            </DialogTitle>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={() => {
-              const newFilter = {};
-              setFilter(newFilter);
-            }} className="h-8 text-auto-gray-700 text-xs">
+              <DialogTitle className="text-xl font-bold">Фильтры</DialogTitle>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const newFilter = {};
+                  setFilter(newFilter);
+                }} 
+                className="h-8 text-auto-gray-700 text-xs"
+              >
                 Сбросить
               </Button>
               <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-600">
@@ -94,30 +103,43 @@ const SearchFiltersModal = ({
               </Button>
             </div>
           </div>
-        </DialogHeader>
+        </div>
         
+        {/* Содержимое фильтра */}
         <div className="p-4 max-h-[calc(80vh-190px)] overflow-auto">
           <SearchFilters filter={filter} setFilter={setFilter} closeModal={onClose} isInModal={true} />
         </div>
         
-        <div className="p-4 border-t fixed bottom-0 left-0 right-0 bg-white z-50">
-          <div className="flex flex-col space-y-3 items-center px-0 justify-end">
-            <Button onClick={() => {
-            onClose();
-          }} variant="blue" className="w-full max-w-xs">
+        {/* Кнопки внизу (вертикально) */}
+        <div className="p-4 border-t fixed bottom-0 left-0 right-0 bg-white z-50 flex flex-col items-center">
+          <div className="flex flex-col space-y-3 w-full max-w-xs">
+            <Button 
+              onClick={() => {
+                onClose();
+              }} 
+              variant="blue" 
+              className="w-full"
+            >
               Применить
             </Button>
             
-            {scrollToContactForm && <Button onClick={() => {
-            onClose();
-            setTimeout(() => scrollToContactForm(), 300);
-          }} variant="outline" className="w-full max-w-xs">
+            {scrollToContactForm && 
+              <Button 
+                onClick={() => {
+                  onClose();
+                  setTimeout(() => scrollToContactForm(), 300);
+                }} 
+                variant="outline" 
+                className="w-full"
+              >
                 <HeadphonesIcon className="mr-2 h-5 w-5" />
                 Подобрать через специалиста
-              </Button>}
+              </Button>
+            }
           </div>
         </div>
       </DialogContent>
     </Dialog>;
 };
+
 export default SearchFiltersModal;

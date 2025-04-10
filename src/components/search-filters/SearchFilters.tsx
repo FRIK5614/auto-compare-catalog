@@ -11,7 +11,7 @@ import { CountryFilter } from "./CountryFilter";
 import { ExtraFilter } from "./ExtraFilter";
 import { SearchInput } from "./SearchInput";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useCars } from "@/hooks/useCars";
 import { CarFilter } from "@/types/car";
 
@@ -25,10 +25,6 @@ export interface SearchFiltersProps {
 export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: SearchFiltersProps) => {
   const { reloadCars, loading } = useCars();
 
-  const resetFilters = () => {
-    setFilter({});
-  };
-
   const applyFilters = () => {
     reloadCars();
     if (isInModal && closeModal) {
@@ -37,26 +33,12 @@ export const SearchFilters = ({ filter, setFilter, closeModal, isInModal }: Sear
   };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border border-auto-gray-200">
-      <div className="p-4 border-b border-auto-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-auto-gray-900">Фильтры</h3>
-          {!isInModal && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={resetFilters}
-              className="h-8 text-auto-gray-700 text-xs flex items-center"
-            >
-              <X className="h-3.5 w-3.5 mr-1" />
-              Сбросить
-            </Button>
-          )}
-        </div>
+    <div className="w-full bg-white rounded-lg">
+      <div className="mb-4">
         <SearchInput filter={filter} setFilter={setFilter} />
       </div>
 
-      <Accordion type="multiple" defaultValue={["brand", "price"]} className="px-4 py-2">
+      <Accordion type="multiple" defaultValue={["brand", "price"]} className="py-2">
         <BrandFilter filter={filter} setFilter={setFilter} />
         <BodyTypeFilter filter={filter} setFilter={setFilter} />
         <PriceFilter filter={filter} setFilter={setFilter} />
