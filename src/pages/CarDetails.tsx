@@ -422,25 +422,29 @@ const CarDetailsContent = () => {
                           <dt className="text-auto-gray-600">Максимальная скорость</dt>
                           <dd className="font-medium text-auto-gray-900">{car.performance.topSpeed} км/ч</dd>
                         </div>
-                        <div className="flex justify-between py-1 border-b border-auto-gray-100">
-                          <dt className="text-auto-gray-600">Расход в городе</dt>
-                          <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.city} л/100км</dd>
-                        </div>
-                        <div className="flex justify-between py-1 border-b border-auto-gray-100">
-                          <dt className="text-auto-gray-600">Расход на трассе</dt>
-                          <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.highway} л/100км</dd>
-                        </div>
-                        <div className="flex justify-between py-1 border-b border-auto-gray-100">
-                          <dt className="text-auto-gray-600">Смешанный цикл</dt>
-                          <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.combined} л/100км</dd>
-                        </div>
+                        {car.performance.fuelConsumption && (
+                          <>
+                            <div className="flex justify-between py-1 border-b border-auto-gray-100">
+                              <dt className="text-auto-gray-600">Расход в городе</dt>
+                              <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.city || "Н/Д"} л/100км</dd>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-auto-gray-100">
+                              <dt className="text-auto-gray-600">Расход на трассе</dt>
+                              <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.highway || "Н/Д"} л/100км</dd>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-auto-gray-100">
+                              <dt className="text-auto-gray-600">Смешанный цикл</dt>
+                              <dd className="font-medium text-auto-gray-900">{car.performance.fuelConsumption.combined || "Н/Д"} л/100км</dd>
+                            </div>
+                          </>
+                        )}
                       </dl>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="features" className="bg-white p-6 rounded-lg shadow-sm mt-4">
-                  {car.features.length > 0 ? (
+                  {car.features && car.features.length > 0 ? (
                     <div className="space-y-6">
                       {/* Group features by category */}
                       {Object.entries(
@@ -562,7 +566,7 @@ const CarDetailsContent = () => {
             </div>
             
             {/* Colors */}
-            {car.colors.length > 0 && (
+            {car.colors && car.colors.length > 0 && (
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold mb-4">Доступные цвета</h3>
                 <div className="flex flex-wrap gap-2">
