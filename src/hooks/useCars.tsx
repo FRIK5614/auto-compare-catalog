@@ -1,118 +1,69 @@
-
-import { useCars as useGlobalCars } from "../contexts/CarsContext";
-import { Car } from "../types/car";
 import { useEffect } from "react";
-import { useCarFilters } from "./useCarFilters";
+import { useCarDetails } from "./useCarDetails";
+import { useCarFiltering } from "./useCarFiltering";
 import { useCarActions } from "./useCarActions";
+import { useCarsState } from "./useCarsState";
 
 export const useCars = () => {
-  const {
-    cars,
-    filteredCars,
-    favorites,
-    compareCars,
-    orders,
-    loading,
-    error,
-    filter,
-    setFilter,
-    addToFavorites,
-    removeFromFavorites,
-    addToCompare,
-    removeFromCompare,
-    clearCompare,
-    getCarById,
-    reloadCars,
-    viewCar,
-    deleteCar,
-    updateCar,
-    addCar,
-    processOrder,
-    getOrders,
-    exportCarsData,
-    importCarsData,
-    uploadCarImage
-  } = useGlobalCars();
+  const carDetails = useCarDetails();
+  const carFiltering = useCarFiltering();
+  const carActions = useCarActions();
+  const carsState = useCarsState();
 
-  // Инициализация фильтров для домашней страницы
+  // Initialize filters for home page
   useEffect(() => {
-    if (filter && !filter.limit && window.location.pathname === '/') {
-      setFilter({
-        ...filter,
+    if (carFiltering.filter && !carFiltering.filter.limit && window.location.pathname === '/') {
+      carFiltering.setFilter({
+        ...carFiltering.filter,
         limit: 24
       });
     }
-  }, [filter, setFilter]);
+  }, [carFiltering.filter, carFiltering.setFilter]);
 
-  // Получение вспомогательных хуков
-  const filterUtils = useCarFilters(cars);
-  const actionUtils = useCarActions(cars, favorites, compareCars);
-
-  // Создание списка избранных и сравниваемых автомобилей
-  const favoriteCars = cars.filter(car => favorites.includes(car.id));
-  const comparisonCars = compareCars
-    .map(id => cars.find(car => car.id === id))
-    .filter((car): car is Car => car !== undefined);
-
-  // Сортировка отфильтрованных автомобилей
-  const sortedFilteredCars = filterUtils.applySorting(filteredCars, filter.sortBy);
-  
-  // Улучшенная версия getCarById, добавляющая логирование для отладки
-  const enhancedGetCarById = (id: string) => {
-    console.log('Looking for car with ID:', id);
-    console.log('Available cars:', cars.length);
-    const car = cars.find(car => car.id === id);
-    console.log('Found car:', car ? 'Yes' : 'No');
-    return car;
-  };
-
+  // Combine all the hooks into a single API
   return {
-    // Основные данные
-    cars,
-    filteredCars: sortedFilteredCars,
-    favoriteCars,
-    comparisonCars,
-    compareCarsIds: compareCars,
-    orders,
-    loading,
-    error,
-    filter,
-    setFilter,
+    // Car data and state
+    cars: carsState.cars,
+    loading: carsState.loading,
+    error: carsState.error,
+    filteredCars: carFiltering.filteredCars,
+    favoriteCars: carsState.favoriteCars,
+    comparisonCars: carsState.comparisonCars,
+    compareCarsIds: carActions.compareCarsIds,
+    orders: carsState.orders,
     
-    // Действия из useCarActions
-    toggleFavorite: actionUtils.toggleFavorite,
-    toggleCompare: actionUtils.toggleCompare,
-    isFavorite: actionUtils.isFavorite,
-    isInCompare: actionUtils.isInCompare,
+    // Filtering
+    filter: carFiltering.filter,
+    setFilter: carFiltering.setFilter,
     
-    // Базовые действия из CarsContext
-    clearCompare,
-    getCarById: enhancedGetCarById, // Используем улучшенную версию с логированием
-    reloadCars,
-    viewCar,
-    deleteCar,
-    updateCar,
-    addCar,
-    processOrder,
-    getOrders,
+    // Favorite and compare actions
+    toggleFavorite: carActions.toggleFavorite,
+    toggleCompare: carActions.toggleCompare,
+    isFavorite: carActions.isFavorite,
+    isInCompare: carActions.isInCompare,
+    clearCompare: carActions.clearCompare,
     
-    // Утилиты для фильтрации
-    getMostViewedCars: filterUtils.getMostViewedCars,
-    getUniqueValues: filterUtils.getUniqueValues,
-    getPriceRange: filterUtils.getPriceRange,
-    getYearRange: filterUtils.getYearRange,
-    applySorting: filterUtils.applySorting,
-    applyAdvancedFilter: filterUtils.applyAdvancedFilter,
+    // Car CRUD operations
+    getCarById: carDetails.getCarById,
+    reloadCars: carDetails.reloadCars,
+    viewCar: carDetails.viewCar,
+    deleteCar: carDetails.deleteCar,
+    updateCar: carDetails.updateCar,
+    addCar: carDetails.addCar,
     
-    // Экспорт/импорт и загрузка
-    exportCarsData,
-    importCarsData,
-    uploadCarImage,
+    // Filter utilities
+    getMostViewedCars: carFiltering.getMostViewedCars,
+    getUniqueValues: carFiltering.getUniqueValues,
+    getPriceRange: carFiltering.getPriceRange,
+    getYearRange: carFiltering.getYearRange,
+    applySorting: carFiltering.applySorting,
+    applyAdvancedFilter: carFiltering.applyAdvancedFilter,
     
-    // Прямые методы работы с избранным и сравнением
-    addToFavorites,
-    removeFromFavorites,
-    addToCompare,
-    removeFromCompare
+    // Other actions
+    processOrder: carActions.processOrder,
+    getOrders: carActions.getOrders,
+    exportCarsData: carActions.exportCarsData,
+    importCarsData: carActions.importCarsData,
+    uploadCarImage: carDetails.uploadCarImage,
   };
 };
