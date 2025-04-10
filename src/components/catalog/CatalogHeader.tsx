@@ -36,7 +36,7 @@ export const CatalogHeader: React.FC<CatalogHeaderProps> = ({
         {isMobile && (
           <Button 
             variant="blue" 
-            className="flex items-center" 
+            className="flex items-center z-30" 
             onClick={onOpenFilterModal}
           >
             <Filter className="mr-2 h-4 w-4" />

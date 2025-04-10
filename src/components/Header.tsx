@@ -3,9 +3,18 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/contexts/AdminContext";
-import { Menu, Home, Flame, ArrowRightLeft, Heart, User } from "lucide-react";
+import { Menu, Home, Flame, ArrowRightLeft, Heart, User, BookOpen } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
 const Header = () => {
   const { isAdmin } = useAdmin();
@@ -13,6 +22,7 @@ const Header = () => {
   
   const menuItems = [
     { icon: Home, text: "Главная", path: "/" },
+    { icon: BookOpen, text: "Каталог", path: "/catalog" },
     { icon: Flame, text: "Горячие предложения", path: "/hot-offers" },
     { icon: ArrowRightLeft, text: "Сравнение", path: "/compare" },
     { icon: Heart, text: "Избранное", path: "/favorites" },
@@ -20,24 +30,25 @@ const Header = () => {
   ];
   
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
+    <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">AutoDeal</Link>
         
-        <nav className="hidden md:block">
-          <ul className="flex space-x-4">
+        {/* Desktop Navigation */}
+        <NavigationMenu className="hidden md:flex">
+          <NavigationMenuList>
             {menuItems.map((item) => (
-              <li key={item.path}>
-                <Link 
-                  to={item.path}
-                  className="hover:text-blue-600 transition-colors duration-200"
-                >
-                  {item.text}
+              <NavigationMenuItem key={item.path}>
+                <Link to={item.path}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <item.icon className="h-4 w-4 mr-2" />
+                    <span>{item.text}</span>
+                  </NavigationMenuLink>
                 </Link>
-              </li>
+              </NavigationMenuItem>
             ))}
-          </ul>
-        </nav>
+          </NavigationMenuList>
+        </NavigationMenu>
         
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">

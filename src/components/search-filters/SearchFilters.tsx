@@ -41,7 +41,7 @@ export const SearchFilters = ({
   };
 
   return (
-    <div className="w-full rounded-lg bg-white/[0.34] relative z-20">
+    <div className="w-full rounded-lg bg-white/[0.34] relative z-10">
       <div className="mb-4">
         <SearchInput filter={filter} setFilter={setFilter} />
       </div>
