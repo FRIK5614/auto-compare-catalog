@@ -22,6 +22,7 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminImport from "./pages/AdminImport";
 import AdminChat from "./pages/AdminChat";
 import AdminCars from "./pages/AdminCars";
+import AdminCarEdit from "./pages/AdminCarEdit";
 import { supabase } from "./integrations/supabase/client";
 import 'swiper/css';
 
@@ -90,6 +91,8 @@ const AppContent = () => {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="tmcavto-catalog" element={<TmcAvtoCatalog />} />
             <Route path="cars" element={<AdminCars />} />
+            <Route path="cars/edit/:id" element={<AdminCarEdit />} />
+            <Route path="cars/new" element={<AdminCarEdit />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="import" element={<AdminImport />} />
             <Route path="settings" element={<AdminDashboard />} />
