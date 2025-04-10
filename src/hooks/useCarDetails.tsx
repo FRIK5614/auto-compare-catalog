@@ -25,6 +25,39 @@ export const useCarDetails = () => {
       initialLoadStarted.current = true;
       reloadCars().then(() => {
         initialLoadDone.current = true;
+        
+        // Логируем информацию о количестве автомобилей после загрузки
+        console.log("====== ИНФОРМАЦИЯ О БАЗЕ ДАННЫХ АВТОМОБИЛЕЙ ======");
+        console.log(`Всего автомобилей в базе: ${cars.length}`);
+        
+        // Группируем по брендам для более детального анализа
+        const brandCounts = cars.reduce((acc, car) => {
+          acc[car.brand] = (acc[car.brand] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        console.log("Распределение по брендам:");
+        Object.entries(brandCounts)
+          .sort(([, countA], [, countB]) => countB - countA)
+          .forEach(([brand, count]) => {
+            console.log(`- ${brand}: ${count} автомобилей`);
+          });
+        
+        // Группируем по странам
+        const countryCounts = cars.reduce((acc, car) => {
+          const country = car.country || 'Не указана';
+          acc[country] = (acc[country] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        console.log("Распределение по странам:");
+        Object.entries(countryCounts)
+          .sort(([, countA], [, countB]) => countB - countA)
+          .forEach(([country, count]) => {
+            console.log(`- ${country}: ${count} автомобилей`);
+          });
+        
+        console.log("============================================");
       });
     } else if (cars.length > 0) {
       initialLoadDone.current = true;
