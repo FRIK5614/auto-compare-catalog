@@ -74,6 +74,7 @@ export interface Car {
 }
 
 export interface CarFilter {
+  // Original properties
   brands?: string[];
   models?: string[];
   years?: number[];
@@ -86,6 +87,20 @@ export interface CarFilter {
   drivetrains?: string[];
   isNew?: boolean;
   countries?: string[]; // Countries filter
+  
+  // Extended properties for simpler filtering
+  brand?: string;         // Single brand filter
+  bodyType?: string;      // Single body type filter
+  minPrice?: number;      // Min price range
+  maxPrice?: number;      // Max price range
+  minYear?: number;       // Min year range
+  maxYear?: number;       // Max year range
+  fuelType?: string;      // Engine fuel type
+  transmissionType?: string; // Transmission type
+  country?: string;       // Single country filter
+  onlyNew?: boolean;      // New cars only flag
+  search?: string;        // Search term
+  sortBy?: 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc'; // Sort option
 }
 
 export interface Order {

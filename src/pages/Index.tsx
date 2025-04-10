@@ -201,7 +201,7 @@ const IndexContent = () => {
           
           <div className="flex flex-col md:flex-row">
             <div className="md:w-1/4 lg:w-1/5">
-              <SearchFilters />
+              <SearchFilters filter={filter} setFilter={setFilter} />
             </div>
             
             <div className="md:w-3/4 lg:w-4/5">

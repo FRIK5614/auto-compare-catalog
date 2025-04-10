@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import SearchFilters from "@/components/SearchFilters";
 import { Button } from "@/components/ui/button";
 import { X, HeadphonesIcon } from "lucide-react";
+import { useCars } from "@/hooks/useCars";
 
 interface SearchFiltersModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface SearchFiltersModalProps {
 }
 
 const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFiltersModalProps) => {
+  const { filter, setFilter } = useCars();
+  
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -22,7 +25,12 @@ const SearchFiltersModal = ({ isOpen, onClose, scrollToContactForm }: SearchFilt
           </Button>
         </DialogHeader>
         <div className="py-4">
-          <SearchFilters closeModal={onClose} isInModal={true} />
+          <SearchFilters 
+            filter={filter} 
+            setFilter={setFilter} 
+            closeModal={onClose} 
+            isInModal={true} 
+          />
           
           {scrollToContactForm && (
             <div className="mt-6 text-center">

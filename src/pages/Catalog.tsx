@@ -296,7 +296,7 @@ const Catalog = () => {
             <div className="flex flex-col md:flex-row">
               <div className="hidden md:block md:w-1/4 lg:w-1/5">
                 <div className="sticky top-4">
-                  <SearchFilters />
+                  <SearchFilters filter={filter} setFilter={setFilter} />
                 </div>
               </div>
               

@@ -32,9 +32,11 @@ interface SearchFiltersProps {
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
   className?: string;
+  closeModal?: () => void;
+  isInModal?: boolean;
 }
 
-const SearchFilters = ({ filter, setFilter, className }: SearchFiltersProps) => {
+const SearchFilters = ({ filter, setFilter, className, closeModal, isInModal }: SearchFiltersProps) => {
   const { getUniqueValues, getPriceRange, getYearRange } = useCars();
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [yearRange, setYearRange] = useState<[number, number]>([1990, new Date().getFullYear()]);
@@ -402,6 +404,14 @@ const SearchFilters = ({ filter, setFilter, className }: SearchFiltersProps) => 
             </SelectContent>
           </Select>
         </div>
+        
+        {isInModal && closeModal && (
+          <div className="mt-4">
+            <Button className="w-full" onClick={closeModal}>
+              Применить фильтры
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
