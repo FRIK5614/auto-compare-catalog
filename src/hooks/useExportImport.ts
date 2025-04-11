@@ -4,9 +4,21 @@ import { useCars } from './useCars';
 import { Car } from '@/types/car';
 import { useToast } from './use-toast';
 
+interface ImportResults {
+  total: number;
+  successful: number;
+  failed: number;
+  errors: string[];
+}
+
 export const useExportImport = () => {
   const { cars, reloadCars } = useCars();
-  const [importResults, setImportResults] = useState<{ success: Car[], errors: string[] }>({ success: [], errors: [] });
+  const [importResults, setImportResults] = useState<ImportResults>({ 
+    total: 0, 
+    successful: 0, 
+    failed: 0, 
+    errors: [] 
+  });
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [importData, setImportData] = useState("");
@@ -22,19 +34,19 @@ export const useExportImport = () => {
         year: car.year,
         colors: car.colors,
         price: car.price,
-        vin: car.vin || "",
-        status: car.status || "available",
+        // Using optional chaining for properties that might not exist
+        // or mapping from existing properties in the Car type
         bodyType: car.bodyType,
         transmission: car.transmission,
-        engineSize: car.engineSize,
-        power: car.power,
-        drive: car.drive,
+        engineCapacity: car.engine?.displacement,
+        enginePower: car.engine?.power,
+        drivetrain: car.drivetrain,
         country: car.country,
-        condition: car.condition || "new",
+        isNew: car.isNew,
         features: car.features,
         description: car.description,
-        image_url: car.image_url,
-        featured: car.featured,
+        image_url: car.images && car.images.length > 0 ? car.images[0].url : car.image_url,
+        viewCount: car.viewCount
       }));
 
       const jsonString = JSON.stringify(exportData, null, 2);
@@ -82,18 +94,23 @@ export const useExportImport = () => {
 
   const importCarsData = async (jsonData: string): Promise<boolean> => {
     setIsImporting(true);
-    setImportResults({ success: [], errors: [] });
+    setImportResults({ total: 0, successful: 0, failed: 0, errors: [] });
 
     try {
       const parsedData = JSON.parse(jsonData);
       const successItems: Car[] = [];
       const errorMessages: string[] = [];
-
+      
+      // Update the total count
+      const totalItems = Array.isArray(parsedData) ? parsedData.length : 0;
+      
       // Process import logic here
       // This is just a placeholder - you would implement actual import logic
-
+      
       setImportResults({
-        success: successItems,
+        total: totalItems,
+        successful: successItems.length,
+        failed: errorMessages.length,
         errors: errorMessages
       });
       
@@ -105,7 +122,9 @@ export const useExportImport = () => {
     } catch (error) {
       console.error('Error importing cars data:', error);
       setImportResults({
-        success: [],
+        total: 0,
+        successful: 0,
+        failed: 1,
         errors: ['Invalid JSON format or data structure']
       });
       return false;

@@ -32,7 +32,7 @@ const AdminImport = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="import">Импорт</TabsTrigger>
             <TabsTrigger value="export">Экспорт</TabsTrigger>
-            {importResults && importResults.success.length > 0 && 
+            {importResults && importResults.errors.length > 0 && 
               <TabsTrigger value="results">Результаты импорта</TabsTrigger>
             }
           </TabsList>
