@@ -101,9 +101,11 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
     );
   };
 
-  // Export cars data - Fixed to ensure it always returns a string
+  // Export cars data - Ensure it always returns a non-empty string
   const exportCarsData = (): string => {
-    // Ensure we're returning a string for blob creation
+    if (cars.length === 0) {
+      return "[]"; // Return empty array as string if no cars
+    }
     return JSON.stringify(cars, null, 2);
   };
 

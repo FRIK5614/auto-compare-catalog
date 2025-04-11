@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -36,13 +35,8 @@ const AdminCars = () => {
   const handleExport = () => {
     setIsExporting(true);
     try {
-      // Get data as a string first and check that it's valid
       const dataStr = exportCarsData();
-      if (!dataStr) {
-        throw new Error("Не удалось получить данные для экспорта");
-      }
       
-      // Create blob from the string
       const blob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

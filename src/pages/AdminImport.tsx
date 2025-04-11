@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { useCars } from "@/hooks/useCars";
@@ -37,11 +36,8 @@ const AdminImport = () => {
   const handleExport = () => {
     setIsExporting(true);
     try {
-      // Get the exported data as string and validate it exists
+      // Get the exported data as string - we know it's always a string now
       const dataStr = exportCarsData();
-      if (!dataStr) {
-        throw new Error("Не удалось получить данные для экспорта");
-      }
       
       // Create and download the blob
       const blob = new Blob([dataStr], { type: "application/json" });
