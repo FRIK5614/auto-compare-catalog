@@ -8,18 +8,19 @@ interface CarSearchBarProps {
   setSearchQuery: (query: string) => void;
 }
 
-const CarSearchBar = ({ searchQuery, setSearchQuery }: CarSearchBarProps) => {
+export const CarSearchBar: React.FC<CarSearchBarProps> = ({ 
+  searchQuery, 
+  setSearchQuery 
+}) => {
   return (
-    <div className="relative flex-1">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className="relative w-full max-w-md">
+      <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         placeholder="Поиск по марке или модели..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="pl-10"
+        className="pl-9"
       />
     </div>
   );
 };
-
-export default CarSearchBar;
