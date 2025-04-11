@@ -2,22 +2,16 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
-  SidebarMenu
-} from '@/components/ui/sidebar';
-import { 
   CarFront, 
   LogOut, 
   Settings, 
   ShoppingCart, 
   BarChart3,
   FileArchive,
-  Package,
-  ChevronRight,
-  ChevronLeft
+  Package
 } from 'lucide-react';
 import { SidebarMenuSection, MenuItemType } from './SidebarMenuSection';
 import { MobileSidebarMenu } from './MobileSidebarMenu';
-import { useSidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 
 type AdminMenuProps = {
@@ -34,7 +28,6 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   isMobile = false
 }) => {
   const location = useLocation();
-  const { state, toggleSidebar } = useSidebar();
 
   const isActive = (path: string) => {
     return location.pathname === path || 
@@ -78,28 +71,26 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <SidebarMenu className="overflow-y-auto flex-1">
-        {menuSections.flatMap(section => (
+    <div className="space-y-6">
+      {menuSections.map((section, idx) => (
+        <div key={idx} className="mb-6">
           <SidebarMenuSection
-            key={section.title}
             title={section.title}
             items={section.items}
             onItemClick={onItemClick}
             isActive={isActive}
           />
-        ))}
-      </SidebarMenu>
+        </div>
+      ))}
       
-      <div className="mt-auto p-2">
+      <div className="pt-4 border-t">
         <Button
           variant="outline"
-          size="icon"
-          onClick={toggleSidebar}
-          className="w-full flex items-center justify-center mb-2"
+          className="w-full"
+          onClick={onLogout}
         >
-          {state === "expanded" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          {state === "expanded" && <span className="ml-2">Свернуть</span>}
+          <LogOut className="h-4 w-4 mr-2" />
+          Выйти
         </Button>
       </div>
     </div>

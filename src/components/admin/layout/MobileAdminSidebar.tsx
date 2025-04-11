@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { AdminSidebarMenu } from './AdminSidebarMenu';
 import { cn } from '@/lib/utils';
+import { SheetContent } from '@/components/ui/sheet';
 
 type MobileAdminSidebarProps = {
   isOpen: boolean;
@@ -20,21 +21,13 @@ export const MobileAdminSidebar: React.FC<MobileAdminSidebarProps> = ({
   onItemClick,
   onLogout
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="md:hidden fixed inset-0 bg-black/50 z-40 animate-fadeIn"
-      onClick={onClose}
+    <SheetContent 
+      side="right" 
+      className="w-[80%] sm:w-[350px] bg-gradient-to-br from-white to-blue-50 p-0"
     >
-      <div 
-        className={cn(
-          "bg-gradient-to-br from-white to-blue-50 h-full w-[80%] sm:w-[350px] p-4 overflow-y-auto",
-          "animate-slideInRight shadow-xl"
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col h-full">
+        <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-semibold">Панель управления</h2>
           <Button 
             variant="ghost" 
@@ -46,16 +39,21 @@ export const MobileAdminSidebar: React.FC<MobileAdminSidebarProps> = ({
           </Button>
         </div>
         
-        <AdminSidebarMenu
-          newOrdersCount={newOrdersCount}
-          onItemClick={(e, path) => {
-            onItemClick(e, path);
-            onClose();
-          }}
-          onLogout={onLogout}
-          isMobile={true}
-        />
+        <div className="flex-1 overflow-y-auto p-4">
+          <AdminSidebarMenu
+            newOrdersCount={newOrdersCount}
+            onItemClick={(e, path) => {
+              onItemClick(e, path);
+              onClose();
+            }}
+            onLogout={() => {
+              onLogout();
+              onClose();
+            }}
+            isMobile={true}
+          />
+        </div>
       </div>
-    </div>
+    </SheetContent>
   );
 };

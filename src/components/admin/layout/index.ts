@@ -1,5 +1,5 @@
 
-export { AdminSidebar } from './AdminSidebar';
-export { AdminSidebarContent } from './AdminSidebarContent';
+export { AdminHeader } from './AdminHeader';
 export { AdminSidebarMenu } from './AdminSidebarMenu';
 export { MobileAdminSidebar } from './MobileAdminSidebar';
+export { SidebarMenuSection } from './SidebarMenuSection';

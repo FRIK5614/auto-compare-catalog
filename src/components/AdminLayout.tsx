@@ -2,13 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '@/contexts/AdminContext';
-import { Button } from '@/components/ui/button';
-import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { Menu, X } from 'lucide-react';
 import { useCars } from '@/hooks/useCars';
 import { useToast } from '@/hooks/use-toast';
-import { AdminSidebar } from './admin/layout/AdminSidebar';
-import { MobileAdminSidebar } from './admin/layout/MobileAdminSidebar';
+import { AdminHeader } from './admin/layout/AdminHeader';
+import { AdminSidebarMenu } from './admin/layout/AdminSidebarMenu';
 
 type AdminLayoutProps = {
   children?: React.ReactNode;
@@ -18,7 +15,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { isAdmin, logout } = useAdmin();
   const { orders, reloadOrders } = useCars();
   const [newOrdersCount, setNewOrdersCount] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
@@ -57,7 +53,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleMenuItemClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault();
     navigate(path);
-    setIsMobileMenuOpen(false);
   };
 
   const handleLogout = () => {
@@ -67,42 +62,31 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       description: "Вы вышли из панели администратора"
     });
     navigate('/');
-    setIsMobileMenuOpen(false);
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex w-full h-full bg-background">
-        <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background border-b p-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Админ панель</h2>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+    <div className="flex flex-col min-h-screen bg-background">
+      <AdminHeader 
+        newOrdersCount={newOrdersCount}
+        onItemClick={handleMenuItemClick}
+      />
+      
+      <div className="flex flex-1 overflow-hidden">
+        <div className="hidden md:block w-64 border-r bg-white overflow-y-auto">
+          <div className="p-4">
+            <AdminSidebarMenu
+              newOrdersCount={newOrdersCount}
+              onItemClick={handleMenuItemClick}
+              onLogout={handleLogout}
+            />
+          </div>
         </div>
-
-        <MobileAdminSidebar 
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-          newOrdersCount={newOrdersCount}
-          onItemClick={handleMenuItemClick}
-          onLogout={handleLogout}
-        />
-
-        <AdminSidebar 
-          newOrdersCount={newOrdersCount}
-          onItemClick={handleMenuItemClick}
-          onLogout={handleLogout}
-        />
-
-        <SidebarInset className="bg-background flex-1 p-4 mt-14 md:mt-0 overflow-y-auto">
+        
+        <main className="flex-1 overflow-y-auto p-4">
           {children || <Outlet />}
-        </SidebarInset>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
