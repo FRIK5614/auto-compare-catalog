@@ -34,9 +34,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     if (orders && orders.length > 0) {
       const count = orders.filter(order => order.status === 'new').length;
       setNewOrdersCount(count);
-      
-      // Добавим отладочную информацию о заказах
-      console.log('Loaded orders:', orders);
     }
   }, [orders]);
 
@@ -69,23 +66,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <AdminHeader 
         newOrdersCount={newOrdersCount}
         onItemClick={handleMenuItemClick}
+        onLogout={handleLogout}
       />
       
-      <div className="flex flex-1 overflow-hidden">
-        <div className="hidden md:block w-64 border-r bg-white overflow-y-auto">
-          <div className="p-4">
-            <AdminSidebarMenu
-              newOrdersCount={newOrdersCount}
-              onItemClick={handleMenuItemClick}
-              onLogout={handleLogout}
-            />
-          </div>
-        </div>
-        
-        <main className="flex-1 overflow-y-auto p-4">
-          {children || <Outlet />}
-        </main>
-      </div>
+      <main className="flex-1 overflow-y-auto p-4">
+        {children || <Outlet />}
+      </main>
     </div>
   );
 };

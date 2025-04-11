@@ -11,8 +11,6 @@ import {
   Package
 } from 'lucide-react';
 import { SidebarMenuSection, MenuItemType } from './SidebarMenuSection';
-import { MobileSidebarMenu } from './MobileSidebarMenu';
-import { Button } from '@/components/ui/button';
 
 type AdminMenuProps = {
   newOrdersCount: number;
@@ -61,12 +59,18 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
 
   if (isMobile) {
     return (
-      <MobileSidebarMenu
-        menuSections={menuSections}
-        onItemClick={onItemClick}
-        onLogout={onLogout}
-        isActive={isActive}
-      />
+      <div className="space-y-6">
+        {menuSections.map((section, idx) => (
+          <SidebarMenuSection
+            key={idx}
+            title={section.title}
+            items={section.items}
+            onItemClick={onItemClick}
+            isActive={isActive}
+            isMobile={true}
+          />
+        ))}
+      </div>
     );
   }
 
@@ -82,17 +86,6 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
           />
         </div>
       ))}
-      
-      <div className="pt-4 border-t">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={onLogout}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Выйти
-        </Button>
-      </div>
     </div>
   );
 };

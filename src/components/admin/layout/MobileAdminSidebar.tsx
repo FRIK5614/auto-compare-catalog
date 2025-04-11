@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { AdminSidebarMenu } from './AdminSidebarMenu';
-import { cn } from '@/lib/utils';
 import { SheetContent } from '@/components/ui/sheet';
 
 type MobileAdminSidebarProps = {

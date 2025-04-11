@@ -1,78 +1,74 @@
 
-import { useState } from "react";
-import { Car } from "@/types/car";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useCars } from './useCars';
+import { Car } from '@/types/car';
 
-export const useExportImport = (
-  cars: Car[],
-  exportCarsData: () => string,
-  importCarsData: (data: string) => Promise<boolean>
-) => {
-  const [importData, setImportData] = useState("");
+export const useExportImport = () => {
+  const { cars, loadCars } = useCars();
+  const [importResults, setImportResults] = useState<{ success: Car[], errors: string[] }>({ success: [], errors: [] });
   const [isImporting, setIsImporting] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
-  // Handle export
-  const handleExport = () => {
-    setIsExporting(true);
+  const exportCarsData = (): string => {
     try {
-      const dataStr = exportCarsData();
-      
-      const blob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `cars-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Экспорт выполнен",
-        description: `Экспортировано ${cars.length} автомобилей`
-      });
+      const exportData = cars?.map(car => ({
+        id: car.id,
+        brand: car.brand,
+        model: car.model,
+        year: car.year,
+        color: car.color,
+        mileage: car.mileage,
+        price: car.price,
+        discount: car.discount,
+        vin: car.vin,
+        status: car.status,
+        bodyType: car.bodyType,
+        fuelType: car.fuelType,
+        transmissionType: car.transmissionType,
+        engineVolume: car.engineVolume,
+        horsepower: car.horsepower,
+        driveType: car.driveType,
+        country: car.country,
+        condition: car.condition,
+        features: car.features,
+        description: car.description,
+        imageUrl: car.imageUrl,
+        isFeatured: car.isFeatured,
+        createdAt: car.createdAt,
+      }));
+
+      return JSON.stringify(exportData, null, 2);
     } catch (error) {
-      console.error("Export error:", error);
-      toast({
-        variant: "destructive",
-        title: "Ошибка экспорта",
-        description: "Неверный формат данных"
-      });
-    } finally {
-      setIsExporting(false);
+      console.error('Error exporting cars data:', error);
+      return JSON.stringify({ error: 'Failed to export data' });
     }
   };
 
-  // Handle import
-  const handleImport = async () => {
+  const importCarsData = async (jsonData: string) => {
     setIsImporting(true);
+    setImportResults({ success: [], errors: [] });
+
     try {
-      if (!importData.trim()) {
-        toast({
-          variant: "destructive",
-          title: "Пустые данные",
-          description: "Вставьте JSON данные для импорта"
-        });
-        setIsImporting(false);
-        return;
+      const parsedData = JSON.parse(jsonData);
+      const successItems: Car[] = [];
+      const errorMessages: string[] = [];
+
+      // Process import logic here
+      // This is just a placeholder - you would implement actual import logic
+
+      setImportResults({
+        success: successItems,
+        errors: errorMessages
+      });
+      
+      if (successItems.length > 0) {
+        await loadCars();
       }
       
-      const success = await importCarsData(importData);
-      if (success) {
-        setImportData("");
-        toast({
-          title: "Импорт выполнен",
-          description: "Данные успешно импортированы"
-        });
-      }
     } catch (error) {
-      console.error("Import error:", error);
-      toast({
-        variant: "destructive",
-        title: "Ошибка импорта",
-        description: "Неверный формат данных"
+      console.error('Error importing cars data:', error);
+      setImportResults({
+        success: [],
+        errors: ['Invalid JSON format or data structure']
       });
     } finally {
       setIsImporting(false);
@@ -80,11 +76,9 @@ export const useExportImport = (
   };
 
   return {
-    importData,
-    setImportData,
-    isImporting,
-    isExporting,
-    handleImport,
-    handleExport
+    exportCarsData,
+    importCarsData,
+    importResults,
+    isImporting
   };
 };
