@@ -21,7 +21,7 @@ export const MobileSidebarMenu: React.FC<MobileSidebarMenuProps> = ({
   isActive
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-[calc(100vh-100px)] overflow-y-auto pb-8">
       {menuSections.map((section, idx) => (
         <SidebarMenuSection
           key={idx}
@@ -33,9 +33,9 @@ export const MobileSidebarMenu: React.FC<MobileSidebarMenuProps> = ({
         />
       ))}
 
-      <div className="mt-6">
+      <div className="mt-6 px-2">
         <Button 
-          variant="default" 
+          variant="destructive" 
           className="w-full" 
           onClick={onLogout}
         >

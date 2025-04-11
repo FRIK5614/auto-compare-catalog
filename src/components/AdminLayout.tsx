@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Menu } from 'lucide-react';
+import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { Menu, X } from 'lucide-react';
 import { useCars } from '@/hooks/useCars';
 import { useToast } from '@/hooks/use-toast';
 import { AdminSidebar } from './admin/layout/AdminSidebar';
@@ -16,11 +16,23 @@ type AdminLayoutProps = {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { isAdmin, logout } = useAdmin();
-  const { orders } = useCars();
+  const { orders, reloadOrders } = useCars();
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
+
+  // Load orders on initial mount and when navigating to orders page
+  useEffect(() => {
+    const loadOrdersData = async () => {
+      if (location.pathname.includes('/admin/orders')) {
+        await reloadOrders();
+      }
+    };
+    
+    loadOrdersData();
+  }, [location.pathname, reloadOrders]);
 
   useEffect(() => {
     if (orders && orders.length > 0) {
@@ -59,8 +71,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex w-full">
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex w-full h-full bg-background">
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background border-b p-4 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Админ панель</h2>
           <Button 
@@ -68,7 +80,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             size="icon" 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <Menu className="h-5 w-5" />
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
 
@@ -86,7 +98,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           onLogout={handleLogout}
         />
 
-        <SidebarInset className="bg-background flex-1 p-0 mt-0 md:mt-0">
+        <SidebarInset className="bg-background flex-1 p-4 mt-14 md:mt-0 overflow-y-auto">
           {children || <Outlet />}
         </SidebarInset>
       </div>

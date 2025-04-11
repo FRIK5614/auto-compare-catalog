@@ -11,10 +11,14 @@ import {
   ShoppingCart, 
   BarChart3,
   FileArchive,
-  Package
+  Package,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { SidebarMenuSection, MenuItemType } from './SidebarMenuSection';
 import { MobileSidebarMenu } from './MobileSidebarMenu';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 
 type AdminMenuProps = {
   newOrdersCount: number;
@@ -30,6 +34,7 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   isMobile = false
 }) => {
   const location = useLocation();
+  const { state, toggleSidebar } = useSidebar();
 
   const isActive = (path: string) => {
     return location.pathname === path || 
@@ -73,16 +78,30 @@ export const AdminSidebarMenu: React.FC<AdminMenuProps> = ({
   }
 
   return (
-    <SidebarMenu className="overflow-hidden">
-      {menuSections.flatMap(section => (
-        <SidebarMenuSection
-          key={section.title}
-          title={section.title}
-          items={section.items}
-          onItemClick={onItemClick}
-          isActive={isActive}
-        />
-      ))}
-    </SidebarMenu>
+    <div className="flex flex-col h-full">
+      <SidebarMenu className="overflow-y-auto flex-1">
+        {menuSections.flatMap(section => (
+          <SidebarMenuSection
+            key={section.title}
+            title={section.title}
+            items={section.items}
+            onItemClick={onItemClick}
+            isActive={isActive}
+          />
+        ))}
+      </SidebarMenu>
+      
+      <div className="mt-auto p-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleSidebar}
+          className="w-full flex items-center justify-center mb-2"
+        >
+          {state === "expanded" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {state === "expanded" && <span className="ml-2">Свернуть</span>}
+        </Button>
+      </div>
+    </div>
   );
 };

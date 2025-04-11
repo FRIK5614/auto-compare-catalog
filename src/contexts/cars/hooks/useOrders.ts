@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Order } from "@/types/car";
 import { useToast } from "@/hooks/use-toast";
 import { processOrder as processOrderAction } from "../orderActions";
@@ -9,11 +9,16 @@ export const useOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const loadingRef = useRef(false);
 
   // Load orders on initialization
   useEffect(() => {
     const fetchOrders = async () => {
+      if (loadingRef.current) return;
+      
+      loadingRef.current = true;
       setLoading(true);
+      
       try {
         const ordersData = await loadOrders();
         console.log("Loaded orders from API:", ordersData);
@@ -27,6 +32,7 @@ export const useOrders = () => {
         });
       } finally {
         setLoading(false);
+        loadingRef.current = false;
       }
     };
     
@@ -50,7 +56,11 @@ export const useOrders = () => {
 
   // Reload orders manually
   const reloadOrders = useCallback(async () => {
+    if (loadingRef.current) return;
+    
+    loadingRef.current = true;
     setLoading(true);
+    
     try {
       const ordersData = await loadOrders();
       console.log("Reloaded orders:", ordersData);
@@ -68,6 +78,7 @@ export const useOrders = () => {
       });
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [toast]);
 

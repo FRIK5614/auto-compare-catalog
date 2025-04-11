@@ -27,20 +27,24 @@ export const processOrder = async (
     saveOrdersToLocalStorage(updatedOrders);
     onSuccess(updatedOrders);
     
-    // If this is a new order, notify admins via Telegram
-    if (status === 'new') {
+    // If this is a status change to 'processing' or if we're receiving a new order, notify admins via Telegram
+    const shouldNotify = status === 'processing' || status === 'new';
+    
+    if (shouldNotify) {
       try {
         // Get the order that was just processed
         const orderToNotify = updatedOrders.find(o => o.id === orderId);
         console.log('Sending Telegram notification for order:', orderToNotify);
         
         if (orderToNotify) {
-          // Get the car details for the order
+          // Get admin chat IDs from environment or use defaults
+          const adminChatIds = ["123456789", "987654321"]; // Replace with actual admin chat IDs
+          
+          // Call the Supabase function to send notification
           const { data, error } = await supabase.functions.invoke('telegram-notify', {
             body: { 
               order: orderToNotify,
-              // These would ideally come from admin settings
-              adminChatIds: ["ADMIN_CHAT_ID_1", "ADMIN_CHAT_ID_2"] 
+              adminChatIds: adminChatIds
             }
           });
           
