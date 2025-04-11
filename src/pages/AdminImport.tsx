@@ -37,6 +37,7 @@ const AdminImport = () => {
   const handleExport = () => {
     setIsExporting(true);
     try {
+      // Get the exported data as string
       const data = exportCarsData();
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);

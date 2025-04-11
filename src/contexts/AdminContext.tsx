@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Car, Order } from '../types/car';
 import { useCars as useGlobalCars } from './CarsContext';
@@ -308,8 +307,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [toast]);
 
-  const deleteCar = async (carId: string) => {
-    return globalCars.deleteCar(carId);
+  const deleteCar = async (carId: string): Promise<void> => {
+    await globalCars.deleteCar(carId);
   };
 
   return (

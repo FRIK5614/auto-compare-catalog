@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
@@ -24,6 +23,7 @@ const AdminCars = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importData, setImportData] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -33,21 +33,32 @@ const AdminCars = () => {
   );
   
   const handleExport = () => {
-    const data = exportCarsData();
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "cars-export.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Экспорт выполнен",
-      description: `Экспортировано ${cars.length} автомобилей`
-    });
+    setIsExporting(true);
+    try {
+      const data = exportCarsData();
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "cars-export.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Экспорт выполнен",
+        description: `Экспортировано ${cars.length} автомобилей`
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка экспорта",
+        description: "Неверный формат данных"
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
   
   const handleImport = async () => {

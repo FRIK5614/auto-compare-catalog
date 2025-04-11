@@ -8,6 +8,7 @@ import { useCompare } from "./hooks/useCompare";
 import { useCarsCRUD } from "./hooks/useCarsCRUD";
 import { useOrders } from "./hooks/useOrders";
 import { loadFavoritesFromLocalStorage, loadCompareFromLocalStorage } from "./utils";
+import { Car } from "@/types/car";
 
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
@@ -25,7 +26,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setFavorites: setInitialFavorites, 
     loading, 
     error, 
-    reloadCars 
+    reloadCars: reloadCarsData
   } = useCarsData();
   
   const { filter, setFilter, filteredCars } = useFilters(cars);
@@ -61,7 +62,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setOrders,
     processOrder,
     getOrders,
-    reloadOrders // Make sure reloadOrders is included
+    reloadOrders
   } = useOrders();
 
   // Load initial favorites and compare from localStorage if empty
@@ -94,6 +95,12 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [initialFavorites, favorites, compareCars, initialOrders, orders, setFavorites, setCompareCars, setOrders]);
 
+  // Wrap reloadCarsData to match the expected return type in CarsContextType
+  const reloadCars = async (): Promise<Car[]> => {
+    await reloadCarsData();
+    return cars;
+  };
+
   return (
     <CarsContext.Provider
       value={{
@@ -119,7 +126,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         addCar,
         processOrder,
         getOrders,
-        reloadOrders, // Include reloadOrders in the context
+        reloadOrders,
         exportCarsData,
         importCarsData,
         uploadCarImage

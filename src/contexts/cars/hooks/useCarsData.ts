@@ -9,7 +9,7 @@ export const useCarsData = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
   const { toast } = useToast();
   const dataInitialized = useRef(false);
   const reloadInProgress = useRef(false);
@@ -24,7 +24,7 @@ export const useCarsData = () => {
     const initializeData = async () => {
       try {
         setLoading(true);
-        setError(null);
+        setError("");
         
         console.log("🔄 Initializing cars data - FIRST LOAD");
         
@@ -68,7 +68,7 @@ export const useCarsData = () => {
   }, [toast]);
 
   // Функция для перезагрузки автомобилей с защитой от спама
-  const reloadCars = async () => {
+  const reloadCars = async (): Promise<void> => {
     // Проверка на cooldown период
     const now = Date.now();
     const timeSinceLastReload = now - lastReloadTime.current;
@@ -93,7 +93,7 @@ export const useCarsData = () => {
     
     try {
       setLoading(true);
-      setError(null);
+      setError("");
       console.log("🔄 Starting cars data reload");
       
       const data = await loadCars();

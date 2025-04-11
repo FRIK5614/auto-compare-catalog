@@ -21,7 +21,7 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
   };
 
   // Delete a car
-  const handleDeleteCar = async (carId: string) => {
+  const handleDeleteCar = async (carId: string): Promise<boolean> => {
     const result = await deleteCarAction(
       carId, 
       cars, 
@@ -32,10 +32,11 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
     if (result) {
       toast(result);
     }
+    return !!result;
   };
 
   // Update a car
-  const handleUpdateCar = async (updatedCar: Car) => {
+  const handleUpdateCar = async (updatedCar: Car): Promise<boolean> => {
     const result = await updateCarAction(
       updatedCar, 
       cars, 
@@ -46,10 +47,11 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
     if (result) {
       toast(result);
     }
+    return !!result;
   };
 
   // Add a new car
-  const handleAddCar = async (newCar: Car) => {
+  const handleAddCar = async (newCar: Car): Promise<boolean> => {
     const result = await addCarAction(
       newCar, 
       cars, 
@@ -60,11 +62,14 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
     if (result) {
       toast(result);
     }
+    return !!result;
   };
 
-  // Upload a car image
-  const handleUploadCarImage = async (file: File): Promise<string> => {
+  // Upload a car image - Modified to match the required signature
+  const handleUploadCarImage = async (carId: string, file: File): Promise<string> => {
     try {
+      // We're ignoring carId here since the original implementation doesn't use it
+      // but we need to match the signature in the interface
       const url = await uploadCarImageAction(file);
       toast({
         title: "Изображение загружено",
@@ -82,7 +87,7 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
   };
 
   // Import cars data
-  const handleImportCarsData = async (data: string) => {
+  const handleImportCarsData = async (data: string): Promise<boolean> => {
     return await importCarsDataAction(
       data,
       (parsedData) => {
@@ -96,7 +101,7 @@ export const useCarsCRUD = (initialCars: Car[] = []) => {
     );
   };
 
-  // Export cars data
+  // Export cars data - Modified to return a string
   const exportCarsData = (): string => {
     return JSON.stringify(cars, null, 2);
   };
