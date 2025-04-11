@@ -1,15 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { useCars } from "@/hooks/useCars";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImportTab } from "@/components/admin/import-export/ImportTab";
 import { ExportTab } from "@/components/admin/import-export/ExportTab";
 import { ImportResultsTab } from "@/components/admin/import-export/ImportResultsTab";
-import { useImportExport } from "@/components/admin/import-export/useImportExport";
+import { useExportImport } from "@/hooks/useExportImport";
 
 const AdminImport = () => {
-  const { cars, exportCarsData, importCarsData } = useCars();
+  const { cars } = useCars();
+  const [activeTab, setActiveTab] = useState("import");
   
   const {
     importData,
@@ -17,21 +18,23 @@ const AdminImport = () => {
     isImporting,
     isExporting,
     importResults,
-    setImportResults,
     handleImport,
-    handleExport
-  } = useImportExport(cars, exportCarsData, importCarsData);
+    handleExport,
+    exportCarsData
+  } = useExportImport();
 
   return (
     <AdminLayout>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Импорт/Экспорт данных</h1>
 
-        <Tabs defaultValue="import">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="import">Импорт</TabsTrigger>
             <TabsTrigger value="export">Экспорт</TabsTrigger>
-            {importResults && <TabsTrigger value="results">Результаты импорта</TabsTrigger>}
+            {importResults && importResults.success.length > 0 && 
+              <TabsTrigger value="results">Результаты импорта</TabsTrigger>
+            }
           </TabsList>
 
           <TabsContent value="import">
@@ -51,14 +54,12 @@ const AdminImport = () => {
             />
           </TabsContent>
 
-          {importResults && (
-            <TabsContent value="results">
-              <ImportResultsTab 
-                results={importResults}
-                onClose={() => setImportResults(null)}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="results">
+            <ImportResultsTab 
+              results={importResults}
+              onClose={() => setActiveTab("import")}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </AdminLayout>

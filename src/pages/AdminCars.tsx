@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCars } from "@/hooks/useCars";
-import { Car } from "@/types/car";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { FileUp, FileDown, Plus } from "lucide-react";
@@ -12,24 +11,21 @@ import AdminCarsList from "@/components/AdminCarsList";
 import { useExportImport } from "@/hooks/useExportImport";
 
 const AdminCars = () => {
-  const {
-    cars,
-    deleteCar,
-    exportCarsData,
-    importCarsData
-  } = useCars();
+  const { cars, deleteCar } = useCars();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const {
+    exportCarsData,
+    importCarsData,
     importData,
     setImportData,
     isImporting,
     isExporting,
     handleImport,
     handleExport
-  } = useExportImport(cars, exportCarsData, importCarsData);
+  } = useExportImport();
   
   const handleOpenImportDialog = () => {
     setImportDialogOpen(true);
