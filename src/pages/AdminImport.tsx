@@ -37,9 +37,14 @@ const AdminImport = () => {
   const handleExport = () => {
     setIsExporting(true);
     try {
-      // Get the exported data as string
-      const data = exportCarsData();
-      const blob = new Blob([data], { type: "application/json" });
+      // Get the exported data as string and validate it exists
+      const dataStr = exportCarsData();
+      if (!dataStr) {
+        throw new Error("Не удалось получить данные для экспорта");
+      }
+      
+      // Create and download the blob
+      const blob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
