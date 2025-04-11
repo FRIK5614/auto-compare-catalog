@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useCarDetails } from "./useCarDetails";
 import { useCarFiltering } from "./useCarFiltering";
@@ -7,16 +6,26 @@ import { useCarsState } from "./useCarsState";
 import { useCars as useGlobalCars } from "../contexts/CarsContext";
 
 export const useCars = () => {
-  const { compareCars, clearCompare, processOrder, getOrders, exportCarsData, importCarsData } = useGlobalCars();
+  const { 
+    compareCars, 
+    clearCompare, 
+    processOrder, 
+    getOrders, 
+    exportCarsData, 
+    importCarsData,
+    orders: contextOrders,
+    reloadOrders
+  } = useGlobalCars();
+  
   const carDetails = useCarDetails();
   const carFiltering = useCarFiltering();
   const carActions = useCarActions();
   const carsState = useCarsState();
   
-  // Используем ref для отслеживания первой инициализации
+  // Use ref for tracking first initialization
   const initialFilterApplied = useRef(false);
 
-  // Инициализируем фильтры для домашней страницы только один раз
+  // Initialize filters for home page only once
   useEffect(() => {
     if (!initialFilterApplied.current && carFiltering.filter && !carFiltering.filter.limit && window.location.pathname === '/') {
       initialFilterApplied.current = true;
@@ -27,7 +36,7 @@ export const useCars = () => {
     }
   }, [carFiltering.filter, carFiltering.setFilter]);
 
-  // Объединяем все хуки в единый API
+  // Combine all hooks into a unified API
   return {
     // Car data and state
     cars: carsState.cars,
@@ -66,9 +75,12 @@ export const useCars = () => {
     applySorting: carFiltering.applySorting,
     applyAdvancedFilter: carFiltering.applyAdvancedFilter,
     
-    // Other actions
+    // Order operations
     processOrder,
     getOrders,
+    reloadOrders,
+    
+    // Other actions
     exportCarsData,
     importCarsData,
     uploadCarImage: carDetails.uploadCarImage,

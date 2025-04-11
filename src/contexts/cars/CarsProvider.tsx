@@ -12,10 +12,10 @@ import { loadFavoritesFromLocalStorage, loadCompareFromLocalStorage } from "./ut
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
 export const CarsProvider = ({ children }: { children: ReactNode }) => {
-  // Ref для отслеживания инициализации
+  // Ref for tracking initialization
   const isInitialized = useRef(false);
   
-  // Используем наши кастомные хуки
+  // Use our custom hooks
   const { 
     cars, 
     setCars, 
@@ -60,7 +60,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     orders,
     setOrders,
     processOrder,
-    getOrders
+    getOrders,
+    reloadOrders // Make sure reloadOrders is included
   } = useOrders();
 
   // Load initial favorites and compare from localStorage if empty
@@ -118,6 +119,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         addCar,
         processOrder,
         getOrders,
+        reloadOrders, // Include reloadOrders in the context
         exportCarsData,
         importCarsData,
         uploadCarImage

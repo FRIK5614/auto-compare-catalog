@@ -2,29 +2,45 @@
 import { Car, CarFilter, Order } from "@/types/car";
 
 export interface CarsContextType {
+  // Car data
   cars: Car[];
   filteredCars: Car[];
   favorites: string[];
   compareCars: string[];
   orders: Order[];
   loading: boolean;
-  error: string | null;
+  error: string;
+  
+  // Filtering
   filter: CarFilter;
   setFilter: (filter: CarFilter) => void;
-  addToFavorites: (carId: string) => Promise<void>;
-  removeFromFavorites: (carId: string) => Promise<void>;
+  
+  // Favorites
+  addToFavorites: (carId: string) => void;
+  removeFromFavorites: (carId: string) => void;
+  
+  // Compare
   addToCompare: (carId: string) => void;
   removeFromCompare: (carId: string) => void;
   clearCompare: () => void;
+  
+  // Car details and CRUD
   getCarById: (id: string) => Car | undefined;
-  reloadCars: () => Promise<void>;
+  reloadCars: () => Promise<Car[]>;
   viewCar: (carId: string) => void;
-  deleteCar: (carId: string) => Promise<void>;
-  updateCar: (car: Car) => Promise<void>;
-  addCar: (car: Car) => Promise<void>;
-  processOrder: (orderId: string, status: Order['status']) => Promise<void>;
+  deleteCar: (carId: string) => Promise<boolean>;
+  updateCar: (car: Car) => Promise<boolean>;
+  addCar: (car: Car) => Promise<boolean>;
+  
+  // Orders
+  processOrder: (orderId: string, status: Order['status']) => Promise<any>;
   getOrders: () => Order[];
-  exportCarsData: () => string;
-  importCarsData: (data: string) => Promise<boolean>;
-  uploadCarImage: (file: File) => Promise<string>;
+  reloadOrders: () => Promise<void>; // Add this to fix the error
+  
+  // Import/Export
+  exportCarsData: () => void;
+  importCarsData: (jsonData: string) => Promise<boolean>;
+  
+  // Image handling
+  uploadCarImage: (carId: string, file: File) => Promise<string>;
 }
