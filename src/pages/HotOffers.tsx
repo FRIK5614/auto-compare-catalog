@@ -10,6 +10,7 @@ import {
 import { useTelegramFeed } from "@/hooks/useTelegramFeed";
 
 const POSTS_PER_PAGE = 12;
+const TELEGRAM_CHANNEL = "VoeAVTO";
 
 const HotOffers = () => {
   const { 
@@ -20,7 +21,8 @@ const HotOffers = () => {
     hasMore,
     loadMorePosts
   } = useTelegramFeed({
-    postsPerPage: POSTS_PER_PAGE
+    postsPerPage: POSTS_PER_PAGE,
+    channelName: TELEGRAM_CHANNEL
   });
   
   return (
@@ -32,7 +34,7 @@ const HotOffers = () => {
           title="Горячие предложения"
           description="Следите за обновлениями в нашей Telegram группе!"
           buttonText="Перейти в группу Telegram"
-          telegramUrl="https://t.me/VoeAVTO"
+          telegramUrl={`https://t.me/${TELEGRAM_CHANNEL}`}
         />
         
         <div className="grid gap-6 pt-4">

@@ -85,8 +85,8 @@ export const loadOrders = async (): Promise<Order[]> => {
         customerName: order.customer_name,
         customerPhone: order.customer_phone,
         customerEmail: order.customer_email,
-        message: order.message,
-        status: order.status,
+        message: order.message || '',
+        status: (order.status || 'new') as Order['status'],
         createdAt: order.created_at,
         car: order.vehicles ? {
           id: order.vehicles.id,

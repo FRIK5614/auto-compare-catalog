@@ -1,130 +1,86 @@
 
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { CarImage } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
+import { CarImage } from '@/types/car';
+import { useToast } from '@/hooks/use-toast';
 
 export const useImageStorage = () => {
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
-  // Upload physical files to Supabase Storage
-  const uploadImageFiles = async (carId: string, images: CarImage[]) => {
-    const uploadResults = [];
-    
-    // Filter images that have a file property (meaning they are local files)
-    const localImages = images.filter(img => img.file);
-    
-    if (localImages.length === 0) {
-      console.log("No local images to upload to storage");
-      return images; // Return original images if no local files to upload
-    }
-    
-    console.log(`Uploading ${localImages.length} images to Supabase Storage`);
-    toast({
-      title: "Загрузка изображений",
-      description: `Загрузка ${localImages.length} изображений на сервер...`
-    });
-    
+  // Upload multiple image files to Supabase storage
+  const uploadImageFiles = async (carId: string, images: CarImage[] = []): Promise<CarImage[]> => {
+    setUploading(true);
+    const updatedImages: CarImage[] = [...images];
+    let uploadErrors = 0;
+
     try {
-      // Check if bucket exists and create it if it doesn't
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(bucket => bucket.name === 'car-images');
-      
-      if (!bucketExists) {
-        try {
-          // Create bucket if it doesn't exist
-          const { data, error } = await supabase.storage.createBucket('car-images', {
-            public: true
-          });
-          
-          if (error) {
-            console.error("Error creating car-images bucket:", error);
-          } else {
-            console.log("Created 'car-images' bucket:", data);
+      // Process each image that has a file
+      for (let i = 0; i < updatedImages.length; i++) {
+        const image = updatedImages[i];
+        
+        if (image.file) {
+          try {
+            console.log(`Uploading image ${i + 1} for car ${carId}`);
+            
+            // Generate a unique filename
+            const fileExt = image.file.name.split('.').pop();
+            const fileName = `${carId}/${Date.now()}-${uuidv4()}.${fileExt}`;
+            
+            // Upload to Supabase storage
+            const { data, error } = await supabase.storage
+              .from('car-images')
+              .upload(fileName, image.file);
+            
+            if (error) {
+              throw error;
+            }
+            
+            // Get the public URL
+            const { data: urlData } = supabase.storage
+              .from('car-images')
+              .getPublicUrl(fileName);
+            
+            // Update the image URL with the public URL
+            updatedImages[i] = {
+              ...image,
+              url: urlData.publicUrl,
+              file: undefined // Remove the file reference after upload
+            };
+            
+            console.log(`Successfully uploaded image ${i + 1} to ${urlData.publicUrl}`);
+          } catch (err) {
+            console.error(`Error uploading image ${i + 1}:`, err);
+            uploadErrors++;
           }
-        } catch (bucketError) {
-          console.warn("Error creating car-images bucket:", bucketError);
         }
       }
-    } catch (error) {
-      console.warn("Error checking buckets:", error);
-      // Continue anyway, will fail on upload if bucket doesn't exist
-    }
-    
-    // Upload each file in the images array
-    for (const image of localImages) {
-      if (!image.file) continue;
       
-      const file = image.file;
-      const fileExt = file.name.split('.').pop() || 'jpg';
-      const fileName = `${carId}/${uuidv4()}.${fileExt}`;
-      
-      try {
-        console.log(`Uploading file ${fileName} to car-images bucket`);
-        
-        const { data, error } = await supabase.storage
-          .from('car-images')
-          .upload(fileName, file, {
-            upsert: true,
-            cacheControl: '3600',
-            contentType: file.type
-          });
-        
-        if (error) {
-          console.error('Error uploading file:', error);
-          toast({
-            variant: "destructive",
-            title: "Ошибка загрузки",
-            description: `Не удалось загрузить файл: ${error.message}`
-          });
-          
-          // Keep the original image with the local preview
-          uploadResults.push(image);
-        } else {
-          console.log('Successfully uploaded file:', fileName, data);
-          
-          // Get public URL for the uploaded file
-          const { data: { publicUrl } } = supabase.storage
-            .from('car-images')
-            .getPublicUrl(fileName);
-          
-          // Create updated image object with remote URL
-          uploadResults.push({
-            id: image.id,
-            url: publicUrl,
-            alt: image.alt
-          });
-          
-          console.log('Image stored at public URL:', publicUrl);
-        }
-      } catch (uploadError) {
-        console.error('Unexpected upload error:', uploadError);
+      if (uploadErrors > 0) {
         toast({
           variant: "destructive",
-          title: "Ошибка загрузки",
-          description: "Непредвиденная ошибка при загрузке файла"
+          title: `${uploadErrors} image(s) failed to upload`,
+          description: "Some images could not be uploaded. You may try again later."
         });
-        uploadResults.push(image);
       }
+      
+      return updatedImages;
+    } catch (error) {
+      console.error("Error in uploadImageFiles:", error);
+      toast({
+        variant: "destructive",
+        title: "Error uploading images",
+        description: "There was a problem uploading images to storage."
+      });
+      return images; // Return original images on failure
+    } finally {
+      setUploading(false);
     }
-    
-    // Get the list of all images that didn't have files to upload (external URLs)
-    const externalImages = images.filter(img => !img.file);
-    console.log("External images (URLs only):", externalImages.length);
-    
-    // Combine uploaded images with external URL images
-    const allImages = [...uploadResults, ...externalImages];
-    console.log("Total images after upload:", allImages.length);
-    
-    toast({
-      title: "Загрузка завершена",
-      description: `Загружено ${uploadResults.length} изображений`
-    });
-    
-    return allImages;
   };
 
   return {
+    uploading,
     uploadImageFiles
   };
 };

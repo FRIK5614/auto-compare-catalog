@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,10 +36,8 @@ const ImprovedCarFormContainer: React.FC = () => {
   const [showUrlFetcher, setShowUrlFetcher] = useState(isNewCar);
   const [fetchLoading, setFetchLoading] = useState(false);
 
-  // Load car data directly from Supabase
   useEffect(() => {
     if (isNewCar) {
-      // Create a new car template
       const newCar: Car = {
         id: uuidv4(),
         brand: "",
@@ -120,12 +117,10 @@ const ImprovedCarFormContainer: React.FC = () => {
           return;
         }
         
-        // Transform data from Supabase to Car type
         const carData = transformVehicleFromSupabase(data);
         console.log("Loaded car data:", carData);
         setCar(carData);
         
-        // Initialize images
         if (carData.images) {
           initializeImagesFromCar(carData);
         }
@@ -179,7 +174,6 @@ const ImprovedCarFormContainer: React.FC = () => {
     setFetchLoading(true);
     
     try {
-      // You can implement external car data fetching here
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -192,7 +186,6 @@ const ImprovedCarFormContainer: React.FC = () => {
         throw new Error("No data received");
       }
       
-      // Process the data and create a car object
       const newCar: Car = {
         id: uuidv4(),
         brand: data.brand || "",
@@ -277,15 +270,12 @@ const ImprovedCarFormContainer: React.FC = () => {
     try {
       console.log("Saving car with images:", images?.length || 0, "images");
       
-      // Ensure images are properly attached
       updatedCar.images = images;
       
-      // Make sure main image is set
       if (images.length > 0) {
         updatedCar.image_url = images[0].url;
       }
       
-      // Check if we have local images that need uploading
       if (images.some(img => img.file)) {
         console.log("Uploading local images to storage...");
         toast({
@@ -294,7 +284,7 @@ const ImprovedCarFormContainer: React.FC = () => {
         });
         
         try {
-          const uploadedImages = await uploadImageFiles(updatedCar.id);
+          const uploadedImages = await uploadImageFiles(updatedCar.id, images);
           updatedCar.images = uploadedImages;
           
           if (uploadedImages.length > 0) {
@@ -311,11 +301,9 @@ const ImprovedCarFormContainer: React.FC = () => {
         }
       }
       
-      // Transform car object to Supabase format
       const vehicleData = transformVehicleForSupabase(updatedCar);
       
       if (isNewCar) {
-        // Insert new car
         const { data, error } = await supabase
           .from('vehicles')
           .insert(vehicleData)
@@ -334,7 +322,6 @@ const ImprovedCarFormContainer: React.FC = () => {
         
         navigate("/admin/cars");
       } else {
-        // Update existing car
         const { data, error } = await supabase
           .from('vehicles')
           .update(vehicleData)

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,11 +12,13 @@ interface TelegramPost {
 interface UseTelegramFeedProps {
   postsPerPage?: number;
   initialOffset?: number;
+  channelName?: string;
 }
 
 export const useTelegramFeed = ({
   postsPerPage = 6,
-  initialOffset = 0
+  initialOffset = 0,
+  channelName = "VoeAVTO"
 }: UseTelegramFeedProps = {}) => {
   const [posts, setPosts] = useState<TelegramPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,11 +32,14 @@ export const useTelegramFeed = ({
     setError(null);
     
     try {
+      console.log(`Fetching Telegram posts from ${channelName}, offset: ${currentOffset}, limit: ${postsPerPage}`);
+      
       // Call our Supabase edge function
       const { data, error } = await supabase.functions.invoke("telegram-feed", {
-        body: { 
-          limit: postsPerPage,
-          offset: currentOffset
+        query: { 
+          channel: channelName,
+          limit: postsPerPage.toString(),
+          offset: currentOffset.toString()
         }
       });
       
@@ -43,37 +47,25 @@ export const useTelegramFeed = ({
         throw new Error(error.message);
       }
       
-      // If we don't have real data, use mock data for development
-      if (!data.success || data.posts.length === 0) {
-        console.warn("Falling back to mock telegram posts data");
-        // Generate mock data (same as before)
-        const mockPosts: TelegramPost[] = Array.from({ length: postsPerPage }).map((_, i) => ({
-          id: i + 1 + currentOffset,
-          text: `Горячее предложение #${i + 1 + currentOffset}: Скидка на автомобили Toyota до конца месяца!`,
-          photos: [
-            `https://picsum.photos/id/${((i + currentOffset) * 10) % 100}/800/600`
-          ],
-          date: new Date(Date.now() - (i + currentOffset) * 86400000).toISOString(),
-          link: `https://t.me/VoeAVTO/${i + 100 + currentOffset}`
-        }));
-        
-        return {
-          posts: mockPosts,
-          hasMore: currentOffset + postsPerPage < 30 // Limit mock data to 30 posts
-        };
+      console.log("Telegram feed response:", data);
+      
+      // Check if we got valid data
+      if (!data || !data.success || !data.posts || data.posts.length === 0) {
+        console.warn("No valid telegram posts data received");
+        throw new Error(data?.error || "No posts received from Telegram");
       }
       
       return {
         posts: data.posts,
-        hasMore: data.posts.length === postsPerPage // Assume there are more if we got the requested number
+        hasMore: data.posts.length >= postsPerPage // Assume there are more if we got at least the requested amount
       };
     } catch (err) {
       console.error('Error fetching Telegram posts:', err);
-      throw new Error('Не удалось загрузить посты из Telegram');
+      throw new Error(err instanceof Error ? err.message : 'Не удалось загрузить посты из Telegram');
     } finally {
       setLoading(false);
     }
-  }, [postsPerPage]);
+  }, [postsPerPage, channelName]);
   
   // Load initial posts
   useEffect(() => {
@@ -83,7 +75,10 @@ export const useTelegramFeed = ({
         setPosts(result.posts);
         setHasMore(result.hasMore);
       } catch (err) {
-        setError((err as Error).message);
+        console.error("Error loading initial posts:", err);
+        setError(err instanceof Error ? err.message : "Ошибка загрузки постов");
+        
+        // Show error toast or other UI notification here
       }
     };
     
@@ -108,7 +103,7 @@ export const useTelegramFeed = ({
       setOffset(currentOffset);
       setHasMore(result.hasMore);
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof Error ? err.message : "Ошибка загрузки постов");
     }
   }, [fetchPosts, offset, postsPerPage]);
   

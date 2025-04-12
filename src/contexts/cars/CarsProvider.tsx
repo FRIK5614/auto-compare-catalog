@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { CarsContextType, FilterOptions } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
@@ -81,7 +82,9 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       
       // Синхронизируем данные при загрузке, если мы онлайн
       if (initialOnlineStatus) {
-        refreshFavorites?.();
+        if (refreshFavorites) {
+          refreshFavorites();
+        }
         reloadOrders();
       }
     }
@@ -153,7 +156,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
-    const imageUrl = await uploadCarImage(carId, file);
+    const imageUrl = await uploadCarImage(file);
     return {
       id: `img-${Date.now()}`,
       url: imageUrl,
