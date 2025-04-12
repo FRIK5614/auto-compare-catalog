@@ -82,7 +82,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       
       // Синхронизируем данные при загрузке, если мы онлайн
       if (initialOnlineStatus) {
-        // Call refreshFavorites without checking truthiness
+        // Fix: Call refreshFavorites without checking it
         refreshFavorites();
         
         // Always reload orders
@@ -158,7 +158,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
     try {
-      // Pass only the file parameter to uploadCarImage as it now expects just one parameter
+      // Fix: Pass only the file parameter to uploadCarImage
       const imageUrl = await uploadCarImage(file);
       return {
         id: `img-${Date.now()}`,
