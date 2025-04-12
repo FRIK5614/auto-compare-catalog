@@ -85,7 +85,7 @@ export const transformOrder = (orderData: any): Order => {
     status: orderData.status || 'new',
     message: orderData.message || '',
     createdAt: orderData.created_at,
-    updatedAt: orderData.updated_at,
+    updatedAt: orderData.updated_at || orderData.created_at, // Ensure updatedAt is always provided
     car: vehicle ? {
       id: vehicle.id,
       brand: vehicle.brand,

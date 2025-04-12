@@ -92,6 +92,7 @@ export const loadOrders = async (): Promise<Order[]> => {
         message: (order as any).message || '',
         status: (order.status || 'new') as Order['status'],
         createdAt: order.created_at,
+        updatedAt: order.updated_at || order.created_at, // Ensure updatedAt is always provided
         car: order.vehicles ? {
           id: order.vehicles.id,
           brand: order.vehicles.brand,

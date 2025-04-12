@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { useCars } from "@/hooks/useCars";
@@ -61,7 +60,6 @@ import {
 
 type OrderStatus = "new" | "processing" | "completed" | "canceled";
 
-// Extended Order type with comments
 interface ExtendedOrder extends Order {
   comments?: string;
   adminNotes?: string;
@@ -86,7 +84,6 @@ const AdminOrders = () => {
   const { siteConfig } = useAdmin();
   const { toast } = useToast();
   
-  // State
   const [orders, setOrders] = useState<ExtendedOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<ExtendedOrder | null>(null);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
@@ -99,18 +96,15 @@ const AdminOrders = () => {
   const [adminNote, setAdminNote] = useState("");
   const [sendNotification, setSendNotification] = useState(true);
   
-  // Initialize orders from context
   useEffect(() => {
     if (initialOrders && initialOrders.length > 0) {
-      // Convert base orders to extended orders
       const extendedOrders = initialOrders.map(order => ({
         ...order,
-        comments: "",  // Default empty comment
-        adminNotes: "" // Default empty admin notes
+        comments: "",
+        adminNotes: ""
       }));
       setOrders(extendedOrders);
     } else {
-      // Load from local storage as fallback
       const storedOrders = localStorage.getItem("tmcavto_admin_orders");
       if (storedOrders) {
         try {
@@ -122,22 +116,18 @@ const AdminOrders = () => {
     }
   }, [initialOrders]);
   
-  // Save extended orders to local storage when they change
   useEffect(() => {
     if (orders.length > 0) {
       localStorage.setItem("tmcavto_admin_orders", JSON.stringify(orders));
     }
   }, [orders]);
   
-  // Filter and sort orders
   const filteredOrders = orders
     .filter(order => {
-      // Filter by status
       if (filter !== "all" && order.status !== filter) {
         return false;
       }
       
-      // Filter by search term
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
@@ -157,7 +147,6 @@ const AdminOrders = () => {
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
   
-  // Count orders by status
   const orderCounts = {
     all: orders.length,
     new: orders.filter(order => order.status === "new").length,
@@ -166,19 +155,16 @@ const AdminOrders = () => {
     canceled: orders.filter(order => order.status === "canceled").length,
   };
   
-  // Handle viewing an order
   const handleViewOrder = (order: ExtendedOrder) => {
     setSelectedOrder(order);
     setIsOrderDialogOpen(true);
     setIsEditMode(false);
     
-    // If this is a new order, mark it as seen by changing to processing
     if (order.status === "new") {
       handleUpdateOrderStatus(order, "processing");
     }
   };
   
-  // Handle editing an order
   const handleEditOrder = (order: ExtendedOrder) => {
     setSelectedOrder({...order});
     setIsOrderDialogOpen(true);
@@ -186,13 +172,11 @@ const AdminOrders = () => {
     setAdminNote(order.adminNotes || "");
   };
   
-  // Handle deleting an order
   const handleDeleteOrder = (order: ExtendedOrder) => {
     setSelectedOrder(order);
     setIsDeleteDialogOpen(true);
   };
   
-  // Confirm order deletion
   const confirmDeleteOrder = () => {
     if (!selectedOrder) return;
     
@@ -208,7 +192,6 @@ const AdminOrders = () => {
     setSelectedOrder(null);
   };
   
-  // Save order changes
   const saveOrderChanges = () => {
     if (!selectedOrder) return;
     
@@ -241,26 +224,22 @@ const AdminOrders = () => {
     }
   };
   
-  // Update order status
   const handleUpdateOrderStatus = async (order: ExtendedOrder, newStatus: OrderStatus) => {
     setProcessing(true);
     
     try {
       await processOrder(order.id, newStatus);
       
-      // Update local state
       const updatedOrders = orders.map(o => 
         o.id === order.id ? {...o, status: newStatus} : o
       );
       
       setOrders(updatedOrders);
       
-      // If we're updating the selected order in the dialog
       if (selectedOrder && selectedOrder.id === order.id) {
         setSelectedOrder({...selectedOrder, status: newStatus});
       }
       
-      // Send notification if enabled
       if (sendNotification && 
           siteConfig.telegram?.notifyOnNewOrder && 
           siteConfig.telegram?.adminChatId) {
@@ -269,7 +248,6 @@ const AdminOrders = () => {
           const carName = getCarById(order.carId)?.brand + " " + getCarById(order.carId)?.model;
           const statusText = statusLabels[newStatus];
           
-          // Here you would implement the actual notification logic
           console.log(`Notification would be sent to ${siteConfig.telegram.adminChatId} about order status change to ${statusText} for ${carName}`);
           
           toast({
@@ -297,7 +275,6 @@ const AdminOrders = () => {
     }
   };
   
-  // Create a new order manually
   const createManualOrder = () => {
     if (cars.length === 0) {
       toast({
@@ -308,6 +285,7 @@ const AdminOrders = () => {
       return;
     }
     
+    const now = new Date().toISOString();
     const newOrder: ExtendedOrder = {
       id: uuidv4(),
       carId: cars[0].id,
@@ -315,7 +293,8 @@ const AdminOrders = () => {
       customerEmail: "",
       customerPhone: "",
       status: "new",
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       comments: "",
       adminNotes: "Заказ создан вручную администратором"
     };
@@ -579,7 +558,6 @@ const AdminOrders = () => {
         </Tabs>
       </div>
       
-      {/* Order Dialog */}
       {selectedOrder && (
         <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
           <DialogContent className="max-w-3xl">
@@ -867,7 +845,6 @@ const AdminOrders = () => {
         </Dialog>
       )}
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -905,7 +882,6 @@ const AdminOrders = () => {
   );
 };
 
-// SVG components for icons
 const CheckIcon = (props: any) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
