@@ -100,7 +100,18 @@ export const updateCar = async (
   onError: (message: string) => void
 ) => {
   try {
-    await apiUpdateCar(updatedCar);
+    // Update car in database
+    const vehicle = transformVehicleForSupabase(updatedCar);
+    
+    // Update in Supabase
+    const { error } = await supabase
+      .from('vehicles')
+      .update(vehicle)
+      .eq('id', updatedCar.id);
+    
+    if (error) {
+      throw error;
+    }
     
     const updatedCars = cars.map(car => 
       car.id === updatedCar.id ? updatedCar : car
@@ -136,8 +147,21 @@ export const addCar = async (
   onError: (message: string) => void
 ) => {
   try {
-    const savedCar = await saveCar(newCar);
+    // Prepare car for saving
+    const vehicle = transformVehicleForSupabase(newCar);
     
+    // Save to Supabase
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert(vehicle)
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    const savedCar = newCar; // Use the car that was passed in
     const updatedCars = [...cars, savedCar];
     onSuccess(updatedCars);
     

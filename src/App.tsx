@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -24,6 +25,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminCars from "./pages/AdminCars";
 import AdminCarEdit from "./pages/AdminCarEdit";
 import { supabase } from "./integrations/supabase/client";
+import { initializeSupabase } from "./integrations/supabase/init";
 import 'swiper/css';
 
 // Create a new query client instance with default options

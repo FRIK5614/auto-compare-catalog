@@ -14,5 +14,19 @@ export const supabaseProvider: DatabaseProvider = {
   // Brands
   ...brandProvider,
   // Favorites
-  ...favoriteProvider
+  ...favoriteProvider,
+  
+  // Add missing submitPurchaseRequest method
+  submitPurchaseRequest: async (formData: Record<string, any>) => {
+    try {
+      // Use orderProvider's implementation
+      return await orderProvider.submitPurchaseRequest(formData);
+    } catch (error) {
+      console.error("Error submitting purchase request:", error);
+      return { 
+        success: false, 
+        message: "Failed to submit purchase request. Please try again." 
+      };
+    }
+  }
 };
