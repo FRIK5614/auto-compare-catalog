@@ -53,13 +53,13 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   
-  // Wrap addToCompare to ensure it returns boolean
+  // Fix: Wrap addToCompare to ensure it returns boolean
   const handleAddToCompare = (carId: string): boolean => {
     addToCompare(carId);
     return true;
   };
   
-  // Wrap removeFromCompare to ensure it returns boolean
+  // Fix: Wrap removeFromCompare to ensure it returns boolean
   const handleRemoveFromCompare = (carId: string): boolean => {
     removeFromCompare(carId);
     return true;
