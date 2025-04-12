@@ -64,22 +64,32 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Fix: Ensure addToCompare returns boolean as expected by the type
+  // Modified to ensure it always returns a boolean value regardless of originalAddToCompare's return
   const handleAddToCompare = (carId: string): boolean => {
-    if (originalAddToCompare) {
-      originalAddToCompare(carId);
-      return true;
+    try {
+      if (typeof originalAddToCompare === 'function') {
+        originalAddToCompare(carId);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error adding car to compare:", error);
+      return false;
     }
-    return false;
   };
   
-  // Fix: Ensure removeFromCompare returns boolean as expected by the type
+  // Modified to ensure it always returns a boolean value regardless of originalRemoveFromCompare's return
   const handleRemoveFromCompare = (carId: string): boolean => {
-    if (originalRemoveFromCompare) {
-      originalRemoveFromCompare(carId);
-      return true;
+    try {
+      if (typeof originalRemoveFromCompare === 'function') {
+        originalRemoveFromCompare(carId);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error removing car from compare:", error);
+      return false;
     }
-    return false;
   };
   
   // Create proper adapter for uploadCarImage
