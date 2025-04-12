@@ -35,12 +35,14 @@ export const useCarSave = () => {
       car.images = car.images.map(img => ({
         id: img.id,
         url: img.url,
-        alt: img.alt
+        alt: img.alt || `${car.brand} ${car.model}`
       }));
       
-      console.log("Prepared images for saving:", car.images.length, "images");
+      console.log("Prepared images for saving:", car.images.length, "images", car.images);
     } else {
       console.warn("No images to save for this car");
+      // Если изображения отсутствуют, инициализируем пустым массивом
+      car.images = [];
     }
     
     try {

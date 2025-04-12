@@ -44,8 +44,13 @@ const CarDetailsContent: React.FC = () => {
       viewCar(car.id);
       viewRegistered.current = true;
     }
-  }, [car, viewCar]);
 
+    // Проверка наличия изображений
+    if (car && car.images) {
+      console.log("CarDetailsContent: Загружено автомобиль с изображениями:", car.images.length);
+    }
+  }, [car, viewCar]);
+  
   // Show loading state
   if (loading) {
     return (
@@ -130,7 +135,11 @@ const CarDetailsContent: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <CarImageGallery images={car.images} isNew={car.isNew} />
+            {/* Проверяем, что у автомобиля есть изображения и передаем их в галерею */}
+            <CarImageGallery 
+              images={car.images || []} 
+              isNew={car.isNew} 
+            />
             <CarTabs car={car} />
           </div>
           

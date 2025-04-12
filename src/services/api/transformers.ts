@@ -1,5 +1,5 @@
 
-import { Car } from '@/types/car';
+import { Car, CarImage } from '@/types/car';
 
 /**
  * Функция для преобразования объекта из таблицы vehicles в формат Car
@@ -22,6 +22,35 @@ export const transformVehicleToCar = (vehicle: any): Car => {
   } catch (error) {
     console.warn(`Ошибка при парсинге features для автомобиля ${vehicle.id}:`, error);
     featuresData = []; // В случае ошибки используем пустой массив
+  }
+
+  // Обработка изображений
+  let imagesData: CarImage[] = [];
+  try {
+    // Пробуем проверить, есть ли у vehicle поле images
+    if (vehicle.images) {
+      // Если изображения хранятся как строка JSON
+      if (typeof vehicle.images === 'string') {
+        imagesData = JSON.parse(vehicle.images);
+      }
+      // Если изображения уже в формате массива
+      else if (Array.isArray(vehicle.images)) {
+        imagesData = vehicle.images;
+      }
+    }
+  } catch (error) {
+    console.warn(`Ошибка при парсинге images для автомобиля ${vehicle.id}:`, error);
+  }
+
+  // Если изображений нет или произошла ошибка, используем основное изображение
+  if (imagesData.length === 0 && vehicle.image_url) {
+    imagesData = [
+      {
+        id: `img-${vehicle.id}-1`,
+        url: vehicle.image_url,
+        alt: `${vehicle.brand} ${vehicle.model}`
+      }
+    ];
   }
 
   // Создаем базовый объект Car
@@ -66,17 +95,12 @@ export const transformVehicleToCar = (vehicle: any): Car => {
       }
     },
     features: featuresData,
-    images: [
-      {
-        id: `img-${vehicle.id}-1`,
-        url: vehicle.image_url || '/placeholder.svg',
-        alt: `${vehicle.brand} ${vehicle.model}`
-      }
-    ],
+    images: imagesData,
     description: vehicle.description || `${vehicle.brand} ${vehicle.model} ${vehicle.year} года`,
     isNew: vehicle.is_new !== undefined ? vehicle.is_new : true,
     country: vehicle.country || 'Не указана',
-    viewCount: vehicle.view_count || 0
+    viewCount: vehicle.view_count || 0,
+    image_url: vehicle.image_url || (imagesData.length > 0 ? imagesData[0].url : '/placeholder.svg')
   };
   
   return car;
@@ -86,6 +110,11 @@ export const transformVehicleToCar = (vehicle: any): Car => {
  * Функция для преобразования объекта Car в формат для сохранения в таблице vehicles
  */
 export const transformCarToVehicle = (car: Car): any => {
+  // Преобразование массива изображений в JSON строку, если он существует
+  const imagesJson = car.images && car.images.length > 0 
+    ? JSON.stringify(car.images) 
+    : null;
+
   return {
     id: car.id,
     brand: car.brand,
@@ -106,7 +135,8 @@ export const transformCarToVehicle = (car: Car): any => {
     dimensions: car.dimensions,
     performance: car.performance,
     features: car.features,
-    image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
+    image_url: car.image_url || (car.images && car.images.length > 0 ? car.images[0].url : null),
+    images: imagesJson, // Сохраняем массив изображений как JSON
     description: car.description,
     is_new: car.isNew,
     country: car.country,
