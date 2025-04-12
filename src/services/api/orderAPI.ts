@@ -98,7 +98,8 @@ export const fetchOrders = async (): Promise<Order[]> => {
         customerEmail: order.customer_email,
         status: typedStatus,
         createdAt: order.created_at,
-        comments: order.comments,
+        // Safely access comments if it exists, otherwise set to undefined
+        comments: 'comments' in order ? order.comments : undefined,
         // Add car details if available
         car: order.vehicles ? {
           id: order.vehicles.id,
