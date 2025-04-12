@@ -24,19 +24,26 @@ export const useImageStorage = () => {
       description: `Загрузка ${localImages.length} изображений на сервер...`
     });
     
-    // Create storage bucket if it doesn't exist (will be ignored if it exists)
     try {
-      const { data: bucketExists } = await supabase.storage.getBucket('car-images');
+      // Check if bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'car-images');
+      
       if (!bucketExists) {
-        await supabase.storage.createBucket('car-images', {
-          public: true,
-          fileSizeLimit: 10485760, // 10MB
-        });
-        console.log("Created 'car-images' bucket");
+        try {
+          // Create bucket if it doesn't exist
+          await supabase.storage.createBucket('car-images', {
+            public: true
+          });
+          console.log("Created 'car-images' bucket");
+        } catch (bucketError: any) {
+          // If bucket creation fails due to RLS, continue anyway as it might already exist
+          console.warn("Error creating car-images bucket:", bucketError);
+        }
       }
     } catch (error) {
-      console.warn("Error checking/creating bucket:", error);
-      // Continue anyway, as the bucket might exist
+      console.warn("Error checking buckets:", error);
+      // Continue anyway
     }
     
     // Upload each file in the images array

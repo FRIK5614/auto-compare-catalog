@@ -9,7 +9,7 @@ export const useImagePreview = () => {
   const { toast } = useToast();
 
   // Handle image URL change
-  const handleImageUrlChange = (url: string, car: Car | null) => {
+  const handleImageUrlChange = (url: string, car: Car) => {
     if (!car) return null;
     
     const updatedCar = {...car};
@@ -77,10 +77,12 @@ export const useImagePreview = () => {
 
   // Handle removing an image
   const removeImage = (index: number, car: Car, images: CarImage[]) => {
-    if (!car || !images) return null;
+    if (!car) return null;
     
-    const updatedImages = [...images];
-    updatedImages.splice(index, 1);
+    const updatedImages = [...(images || [])];
+    if (index >= 0 && index < updatedImages.length) {
+      updatedImages.splice(index, 1);
+    }
     
     // Update car object
     const updatedCar = {...car};

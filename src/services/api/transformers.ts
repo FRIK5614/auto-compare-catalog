@@ -1,3 +1,4 @@
+
 import { Car, CarImage, Order } from '@/types/car';
 
 /**
@@ -111,7 +112,11 @@ export const transformVehicleToCar = (vehicle: any): Car => {
 export const transformCarToVehicle = (car: Car): any => {
   // Преобразование массива изображений в JSON строку, если он существует
   const imagesJson = car.images && car.images.length > 0 
-    ? JSON.stringify(car.images) 
+    ? JSON.stringify(car.images.map(img => ({
+        id: img.id,
+        url: img.url,
+        alt: img.alt
+      }))) 
     : null;
 
   return {
