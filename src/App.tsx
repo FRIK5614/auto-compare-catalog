@@ -26,9 +26,10 @@ import AdminCars from "./pages/AdminCars";
 import AdminCarEdit from "./pages/AdminCarEdit";
 import { supabase } from "./integrations/supabase/client";
 import { initializeSupabase } from "./integrations/supabase/init";
+import NetworkStatus from "./components/NetworkStatus";
 import 'swiper/css';
 
-// Create a new query client instance with default options
+// Создаем новый экземпляр query client с дефолтными опциями
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -43,11 +44,11 @@ initializeSupabase().catch(error => {
   console.error("Failed to initialize Supabase:", error);
 });
 
-// AppContent component to handle routes
+// AppContent компонент для обработки маршрутов
 const AppContent = () => {
   const location = useLocation();
 
-  // Create storage bucket for car images if it doesn't exist
+  // Создаем storage bucket для изображений автомобилей, если он не существует
   useEffect(() => {
     const setupStorage = async () => {
       try {
@@ -92,7 +93,7 @@ const AppContent = () => {
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/hot-offers" element={<HotOffers />} />
           
-          {/* Admin routes */}
+          {/* Маршруты админ-панели */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
@@ -106,18 +107,21 @@ const AppContent = () => {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
-          {/* Redirect old route to admin panel */}
+          {/* Редирект со старого маршрута на админ-панель */}
           <Route path="/tmcavto-catalog" element={<AdminLogin />} />
           
-          {/* Catch-all route */}
+          {/* Маршрут для всех несуществующих страниц */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        
+        {/* Компонент для отображения статуса сети */}
+        <NetworkStatus />
       </TooltipProvider>
     </>
   );
 };
 
-// Main App component
+// Основной компонент App
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>

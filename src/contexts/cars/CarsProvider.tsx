@@ -13,10 +13,11 @@ import { Car } from "@/types/car";
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
 export const CarsProvider = ({ children }: { children: ReactNode }) => {
-  // Ref for tracking initialization
+  // Ref для отслеживания инициализации
   const isInitialized = useRef(false);
+  const networkStatusChecked = useRef(false);
   
-  // Use our custom hooks
+  // Используем наши кастомные хуки
   const { 
     cars, 
     setCars, 
@@ -26,7 +27,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setFavorites: setInitialFavorites, 
     loading, 
     error, 
-    reloadCars: reloadCarsData
+    reloadCars: reloadCarsData,
+    isOnline: dataIsOnline
   } = useCarsData();
   
   const { filter, setFilter, filteredCars } = useFilters(cars);
@@ -35,7 +37,9 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     favorites,
     setFavorites,
     addToFavorites,
-    removeFromFavorites
+    removeFromFavorites,
+    isOnline: favoritesIsOnline,
+    refreshFavorites
   } = useFavorites();
   
   const { 
@@ -43,7 +47,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setCompareCars,
     addToCompare,
     removeFromCompare,
-    clearCompare
+    clearCompare,
+    isOnline: compareIsOnline
   } = useCompare();
   
   const {
@@ -62,13 +67,31 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     setOrders,
     processOrder,
     getOrders,
-    reloadOrders
+    reloadOrders,
+    isOnline: ordersIsOnline
   } = useOrders();
 
-  // Load initial favorites and compare from localStorage if empty
+  // Проверка сетевого статуса и обработка событий онлайн/офлайн
+  useEffect(() => {
+    if (!networkStatusChecked.current) {
+      networkStatusChecked.current = true;
+      
+      // Проверяем начальный статус сети
+      const initialOnlineStatus = navigator.onLine;
+      console.log(`Начальный статус сети: ${initialOnlineStatus ? 'онлайн' : 'офлайн'}`);
+      
+      // Синхронизируем данные при загрузке, если мы онлайн
+      if (initialOnlineStatus) {
+        refreshFavorites();
+        reloadOrders();
+      }
+    }
+  }, [refreshFavorites, reloadOrders]);
+
+  // Загружаем избранное и сравнение из localStorage если пусто
   useEffect(() => {
     if (!isInitialized.current) {
-      // Sync favorites
+      // Синхронизируем избранное
       if (initialFavorites.length > 0 && favorites.length === 0) {
         setFavorites(initialFavorites);
       } else if (favorites.length === 0) {
@@ -78,7 +101,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
-      // Sync compare
+      // Синхронизируем сравнение
       if (compareCars.length === 0) {
         const localCompare = loadCompareFromLocalStorage();
         if (localCompare.length > 0) {
@@ -86,7 +109,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       
-      // Sync orders
+      // Синхронизируем заказы
       if (initialOrders.length > 0 && orders.length === 0) {
         setOrders(initialOrders);
       }
@@ -95,11 +118,14 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [initialFavorites, favorites, compareCars, initialOrders, orders, setFavorites, setCompareCars, setOrders]);
 
-  // Wrap reloadCarsData to match the expected return type in CarsContextType
+  // Оборачиваем reloadCarsData чтобы соответствовать ожидаемому типу в CarsContextType
   const reloadCars = async (): Promise<Car[]> => {
     await reloadCarsData();
     return cars;
   };
+
+  // Определяем общий статус сетевого подключения
+  const isOnline = favoritesIsOnline && ordersIsOnline && compareIsOnline && dataIsOnline;
 
   return (
     <CarsContext.Provider
@@ -111,6 +137,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         orders,
         loading,
         error,
+        isOnline,
         filter,
         setFilter,
         addToFavorites,
@@ -129,7 +156,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         reloadOrders,
         exportCarsData,
         importCarsData,
-        uploadCarImage
+        uploadCarImage,
+        refreshFavorites
       }}
     >
       {children}

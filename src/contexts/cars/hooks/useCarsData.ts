@@ -1,142 +1,106 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Car, Order } from "@/types/car";
-import { useToast } from "@/hooks/use-toast";
-import { loadCars, loadFavorites, loadOrders } from "../dataLoaders";
+import { loadCars, loadOrders, loadFavorites } from "../dataLoaders";
+import { loadFavoritesFromLocalStorage, loadOrdersFromLocalStorage } from "../utils";
 
 export const useCarsData = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-  const { toast } = useToast();
-  const dataInitialized = useRef(false);
-  const reloadInProgress = useRef(false);
-  const lastReloadTime = useRef(0);
-  const RELOAD_COOLDOWN = 2000; // 2 seconds cooldown between reloads
+  const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const loadingRef = useRef(false);
 
-  // Инициализируем данные
+  // Следим за статусом сети
   useEffect(() => {
-    if (dataInitialized.current) return;
-    dataInitialized.current = true;
-    
-    const initializeData = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        
-        console.log("🔄 Initializing cars data - FIRST LOAD");
-        
-        // Загружаем автомобили
-        const carsData = await loadCars();
-        setCars(carsData);
-        
-        // Загружаем заказы
-        const ordersData = await loadOrders();
-        console.log("Loaded orders from API:", ordersData);
-        setOrders(ordersData);
-        
-        // Загружаем избранное
-        const favoritesData = await loadFavorites();
-        setFavorites(favoritesData);
-        
-        setLoading(false);
-        lastReloadTime.current = Date.now();
-        
-        // Silent notification for initial load
-        if (carsData.length === 0) {
-          toast({
-            variant: "destructive",
-            title: "База данных пуста",
-            description: "В базе данных нет автомобилей. Добавьте автомобили через панель администратора."
-          });
-        }
-      } catch (err) {
-        console.error("Failed to initialize data:", err);
-        const errorMessage = err instanceof Error ? err.message : "Не удалось загрузить данные";
-        setError(errorMessage);
-        setLoading(false);
-        toast({
-          variant: "destructive",
-          title: "Ошибка загрузки",
-          description: errorMessage
-        });
+    const handleOnline = () => {
+      setIsOnline(true);
+      // При восстановлении соединения обновляем данные
+      if (!loadingRef.current) {
+        reloadCars();
       }
     };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
-    initializeData();
-  }, [toast]);
+  // Загружаем данные при монтировании компонента
+  useEffect(() => {
+    const loadData = async () => {
+      if (loadingRef.current) return;
+      
+      loadingRef.current = true;
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Параллельно загружаем автомобили и заказы
+        const [carsData, ordersData, favoritesData] = await Promise.all([
+          loadCars(),
+          loadOrders(),
+          loadFavorites()
+        ]);
+        
+        setCars(carsData);
+        setOrders(ordersData);
+        setFavorites(favoritesData);
+      } catch (err) {
+        console.error("Ошибка при загрузке данных:", err);
+        setError("Не удалось загрузить данные. Пожалуйста, попробуйте позже.");
+        
+        // Если произошла ошибка, попробуем загрузить из localStorage
+        const localOrders = loadOrdersFromLocalStorage();
+        const localFavorites = loadFavoritesFromLocalStorage();
+        
+        if (localOrders.length > 0) {
+          setOrders(localOrders);
+        }
+        
+        if (localFavorites.length > 0) {
+          setFavorites(localFavorites);
+        }
+      } finally {
+        setLoading(false);
+        loadingRef.current = false;
+      }
+    };
+    
+    loadData();
+  }, []);
 
-  // Функция для перезагрузки автомобилей с защитой от спама
-  const reloadCars = async (): Promise<void> => {
-    // Проверка на cooldown период
-    const now = Date.now();
-    const timeSinceLastReload = now - lastReloadTime.current;
+  // Функция для перезагрузки данных
+  const reloadCars = useCallback(async () => {
+    if (loadingRef.current || !isOnline) return;
     
-    if (timeSinceLastReload < RELOAD_COOLDOWN) {
-      console.log(`⏱️ Reload requested too soon (${timeSinceLastReload}ms since last reload)`);
-      return;
-    }
-    
-    // Предотвращаем параллельные вызовы reloadCars
-    if (reloadInProgress.current) {
-      console.log("🔄 Reload already in progress, skipping");
-      toast({
-        title: "Обновление данных",
-        description: "Обновление данных уже выполняется, пожалуйста подождите"
-      });
-      return;
-    }
-    
-    reloadInProgress.current = true;
-    lastReloadTime.current = now;
+    loadingRef.current = true;
+    setLoading(true);
+    setError(null);
     
     try {
-      setLoading(true);
-      setError("");
-      console.log("🔄 Starting cars data reload");
-      
-      const data = await loadCars();
-      setCars(data);
-      
-      // Также обновляем заказы при перезагрузке данных
-      const ordersData = await loadOrders();
-      console.log("Reloaded orders:", ordersData);
-      setOrders(ordersData);
-      
-      if (data.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "База данных пуста",
-          description: "База данных пуста. Добавьте автомобили через панель администратора."
-        });
-      } else {
-        toast({
-          title: "Данные обновлены",
-          description: `Загружено ${data.length} автомобилей и ${ordersData.length} заказов из базы данных`
-        });
-      }
-      
-      setLoading(false);
-      console.log("✅ Data reload complete");
+      const carsData = await loadCars();
+      setCars(carsData);
+      return carsData;
     } catch (err) {
-      console.error("Failed to reload data:", err);
-      const errorMessage = err instanceof Error ? err.message : "Не удалось перезагрузить данные";
-      setError(errorMessage);
-      setLoading(false);
-      toast({
-        variant: "destructive",
-        title: "Ошибка обновления",
-        description: errorMessage
-      });
+      console.error("Ошибка при обновлении данных:", err);
+      setError("Не удалось обновить данные. Пожалуйста, попробуйте позже.");
+      return [];
     } finally {
-      // Добавляем небольшую задержку перед сбросом флага, чтобы избежать проблем с быстрыми множественными нажатиями
-      setTimeout(() => {
-        reloadInProgress.current = false;
-      }, 300);
+      setLoading(false);
+      loadingRef.current = false;
     }
-  };
+  }, [isOnline]);
 
   return {
     cars,
@@ -147,6 +111,7 @@ export const useCarsData = () => {
     setFavorites,
     loading,
     error,
+    isOnline,
     reloadCars
   };
 };
