@@ -112,6 +112,10 @@ export const transformVehicleForSupabase = (car: Car) => {
   }
 };
 
+// Create aliases for backward compatibility
+export const transformVehicleToCar = transformVehicleFromSupabase;
+export const transformCarToVehicle = transformVehicleForSupabase;
+
 // Transform order data from Supabase
 export const transformOrder = (orderData: any) => {
   return {

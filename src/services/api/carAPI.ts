@@ -1,6 +1,6 @@
 import { Car } from '@/types/car';
 import { supabase } from '@/integrations/supabase/client';
-import { transformVehicleToCar, transformCarToVehicle } from './transformers';
+import { transformVehicleFromSupabase, transformVehicleForSupabase } from './transformers';
 import { generateMockCarsForChina } from './mockData';
 
 /**
@@ -27,7 +27,7 @@ export const fetchAllCars = async (): Promise<Car[]> => {
     }
     
     // Преобразуем данные из формата Supabase в формат Car
-    const cars: Car[] = data.map(vehicle => transformVehicleToCar(vehicle));
+    const cars: Car[] = data.map(vehicle => transformVehicleFromSupabase(vehicle));
     
     console.log(`[API] Получено ${cars.length} автомобилей из Supabase`);
     return cars;
@@ -64,7 +64,7 @@ export const fetchCarById = async (id: string): Promise<Car | null> => {
     }
     
     // Преобразуем данные из формата Supabase в формат Car
-    const car = transformVehicleToCar(data);
+    const car = transformVehicleFromSupabase(data);
     
     console.log(`[API] Получены данные об автомобиле: ${car.brand} ${car.model}`);
     return car;
@@ -128,7 +128,7 @@ export const searchCars = async (searchParams: Record<string, any>): Promise<Car
     }
     
     // Преобразуем данные из формата Supabase в формат Car
-    const cars: Car[] = data.map(vehicle => transformVehicleToCar(vehicle));
+    const cars: Car[] = data.map(vehicle => transformVehicleFromSupabase(vehicle));
     
     console.log(`[API] Найдено ${cars.length} автомобилей в Supabase`);
     return cars;
@@ -145,7 +145,7 @@ export const saveCar = async (car: Car): Promise<Car> => {
   try {
     console.log(`[API] Сохранение автомобиля в Supabase:`, car);
     
-    const vehicle = transformCarToVehicle(car);
+    const vehicle = transformVehicleForSupabase(car);
     
     const { data, error } = await supabase
       .from('vehicles')
@@ -158,7 +158,7 @@ export const saveCar = async (car: Car): Promise<Car> => {
     }
     
     console.log(`[API] Автомобиль успешно сохранен в Supabase`);
-    return transformVehicleToCar(data);
+    return transformVehicleFromSupabase(data);
   } catch (error) {
     console.error("Ошибка при сохранении автомобиля:", error);
     throw new Error("Не удалось сохранить автомобиль");
@@ -172,7 +172,7 @@ export const updateCar = async (car: Car): Promise<Car> => {
   try {
     console.log(`[API] Обновление автомобиля в Supabase:`, car);
     
-    const vehicle = transformCarToVehicle(car);
+    const vehicle = transformVehicleForSupabase(car);
     
     const { data, error } = await supabase
       .from('vehicles')
@@ -186,7 +186,7 @@ export const updateCar = async (car: Car): Promise<Car> => {
     }
     
     console.log(`[API] Автомобиль успешно обновлен в Supabase`);
-    return transformVehicleToCar(data);
+    return transformVehicleFromSupabase(data);
   } catch (error) {
     console.error("Ошибка при обновлении автомобиля:", error);
     throw new Error("Не удалось обновить автомобиль");
@@ -282,7 +282,7 @@ export const fetchCarsByCountryWithFallback = async (country: string): Promise<C
     }
     
     // Преобразуем данные из формата Supabase в формат Car
-    const cars: Car[] = data.map(vehicle => transformVehicleToCar(vehicle));
+    const cars: Car[] = data.map(vehicle => transformVehicleFromSupabase(vehicle));
     
     console.log(`[API] Получено ${cars.length} автомобилей из ${country} через Supabase`);
     return cars;
