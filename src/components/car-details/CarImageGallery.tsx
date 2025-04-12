@@ -10,7 +10,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 interface CarImageGalleryProps {
-  images: CarImage[];
+  images: CarImage[] | null | undefined;
   isNew?: boolean;
 }
 
@@ -18,11 +18,13 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Ensure we have images to display
-  const displayImages = images && images.length > 0 ? images : [{ 
-    id: "default", 
-    url: "/placeholder.svg", 
-    alt: "Изображение автомобиля" 
-  }];
+  const displayImages = images && Array.isArray(images) && images.length > 0 
+    ? images 
+    : [{ 
+        id: "default", 
+        url: "/placeholder.svg", 
+        alt: "Изображение автомобиля" 
+      }];
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);
 

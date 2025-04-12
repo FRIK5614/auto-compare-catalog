@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,7 +21,7 @@ const CarDetails = () => {
                       
   // Redirect to correct URL if parameters don't match
   if (!loading && car && !urlIsCorrect) {
-    return <Navigate to={`/cars/${car.brand}/${car.model}/${car.id}`} replace />;
+    return <Navigate to={`/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} replace />;
   }
 
   return (
@@ -33,10 +33,10 @@ const CarDetails = () => {
             name="description" 
             content={`${car.brand} ${car.model} ${car.year} - ${car.engine.type} ${car.engine.displacement}л, ${car.engine.power} л.с., ${car.transmission.type}. Подробная информация, фото и технические характеристики.`} 
           />
-          <link rel="canonical" href={`${window.location.origin}/cars/${car.brand}/${car.model}/${car.id}`} />
+          <link rel="canonical" href={`${window.location.origin}/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} />
           <meta property="og:title" content={`${car.brand} ${car.model} ${car.year}`} />
           <meta property="og:type" content="website" />
-          <meta property="og:url" content={`${window.location.origin}/cars/${car.brand}/${car.model}/${car.id}`} />
+          <meta property="og:url" content={`${window.location.origin}/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} />
           {car.image_url && <meta property="og:image" content={car.image_url} />}
           <meta property="og:description" content={car.description?.substring(0, 160) || `${car.brand} ${car.model} ${car.year} - подробная информация`} />
         </Helmet>

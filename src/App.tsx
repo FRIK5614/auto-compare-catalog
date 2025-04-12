@@ -62,6 +62,7 @@ const AppContent = () => {
           const carImagesBucketExists = buckets.some(bucket => bucket.name === 'car-images');
           
           if (!carImagesBucketExists) {
+            console.log("Creating car-images bucket...");
             // Bucket doesn't exist, create it
             const { data, error: createError } = await supabase.storage.createBucket('car-images', {
               public: true, // Make it publicly accessible
@@ -90,11 +91,17 @@ const AppContent = () => {
         <Sonner />
         <Routes>
           <Route path="/" element={<Index />} />
+          {/* Support for both old and new URL patterns */}
           <Route path="/car/:id" element={<CarDetails />} />
+          <Route path="/cars/:brand/:model/:id" element={<CarDetails />} />
           <Route path="/compare" element={<CompareCars />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/cars" element={<Catalog />} />
+          <Route path="/cars/:brand" element={<BrandCatalog />} />
+          <Route path="/cars/type/:bodyType" element={<BodyTypeCatalog />} />
           <Route path="/hot-offers" element={<HotOffers />} />
+          <Route path="/special-offers" element={<HotOffers />} />
           
           {/* Маршруты админ-панели */}
           <Route path="/admin/login" element={<AdminLogin />} />
