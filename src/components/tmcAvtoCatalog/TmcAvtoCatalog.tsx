@@ -7,6 +7,7 @@ import { CatalogCard } from './CatalogCard';
 import { ImportPanel } from './ImportPanel';
 import { CarTabs } from './CarTabs';
 import { AlertsPanel } from './AlertsPanel';
+import { EmptyCatalog } from './EmptyCatalog';
 
 const TmcAvtoCatalog = () => {
   const [url, setUrl] = useState('/cars/japan');
