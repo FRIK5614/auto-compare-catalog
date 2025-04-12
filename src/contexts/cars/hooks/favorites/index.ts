@@ -1,66 +1,26 @@
 
-import { useRef, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { useFavoritesState } from "./useFavoritesState";
+import { useFavoritesActions } from "./useFavoritesActions";
 import { useLocalStorage } from "./useLocalStorage";
 import { useSupabaseSync } from "./useSupabaseSync";
-import { useFavoritesActions } from "./useFavoritesActions";
 import { UseFavoritesReturn } from "./types";
 
 export const useFavorites = (): UseFavoritesReturn => {
-  const loadedRef = useRef(false);
-  const { toast } = useToast();
+  // Get state
+  const state = useFavoritesState();
   
-  // Get favorites state
-  const { favorites, loading, isOnline, setFavorites, setLoading } = useFavoritesState();
+  // Sync with localStorage
+  useLocalStorage(state.favorites, state.setFavorites);
   
-  // Local storage operations
-  const { loadFromLocalStorage } = useLocalStorage(favorites, setFavorites, loadedRef);
+  // Sync with Supabase
+  useSupabaseSync(state);
   
-  // Supabase sync operations
-  const { loadFromDatabase, syncWithDatabase } = useSupabaseSync(favorites, setFavorites, isOnline);
+  // Get actions
+  const actions = useFavoritesActions(state);
   
-  // Favorites actions
-  const { addToFavorites, removeFromFavorites, refreshFavorites } = useFavoritesActions(
-    favorites,
-    setFavorites,
-    isOnline,
-    setLoading,
-    loadFromDatabase,
-    syncWithDatabase,
-    loadFromLocalStorage
-  );
-
-  // Show offline notification when network status changes
-  useEffect(() => {
-    const handleOffline = () => {
-      toast({
-        title: "Офлайн режим",
-        description: "Избранное будет сохранено локально и синхронизировано, когда появится подключение к интернету",
-      });
-    };
-    
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [toast]);
-
-  // Load favorites from DB on initial load
-  useEffect(() => {
-    if (!loadedRef.current) {
-      refreshFavorites();
-      loadedRef.current = true;
-    }
-  }, [refreshFavorites]);
-
+  // Combine state and actions
   return {
-    favorites,
-    loading,
-    isOnline,
-    setFavorites,
-    addToFavorites,
-    removeFromFavorites,
-    refreshFavorites
+    ...state,
+    ...actions
   };
 };

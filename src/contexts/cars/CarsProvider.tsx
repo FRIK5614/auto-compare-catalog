@@ -53,7 +53,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   
-  // Fix: Correct the adapter for uploadCarImage to match expected signature
+  // Fix: Pass only the file parameter to the uploadCarImage adapter
   const handleUploadCarImage = createUploadCarImageAdapter(uploadCarImage);
 
   return (
@@ -86,7 +86,6 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         exportCarsData: handleExportCarsData,
         importCarsData: handleImportCarsData,
         uploadCarImage: handleUploadCarImage,
-        // Fix: Pass refreshFavorites directly without checking for truthiness
         refreshFavorites
       }}
     >

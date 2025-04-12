@@ -1,7 +1,7 @@
 
 import { useCarsData } from "./useCarsData";
 import { useFilters } from "./useFilters";
-import { useCompare } from "./useCompare";
+import { useCompare } from "./compare";
 import { useFavorites } from "./favorites";
 import { useOrders } from "./orders";
 import { useCarsCRUD } from "./useCarsCRUD";
