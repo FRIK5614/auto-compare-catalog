@@ -59,11 +59,13 @@ export const createImportCarsDataAdapter = (
 
 // Adapter for uploadCarImage to ensure it takes a single file parameter and returns a CarImage promise
 export const createUploadCarImageAdapter = (
-  uploadCarImageAction: (file: File) => Promise<string>
+  uploadCarImageAction: (carId: string, file: File) => Promise<string>
 ) => {
   return async (file: File): Promise<CarImage> => {
     try {
-      const imageUrl = await uploadCarImageAction(file);
+      // We need to provide a dummy carId since the adapter expects only one parameter (file)
+      // but the underlying function needs two parameters
+      const imageUrl = await uploadCarImageAction('temp', file);
       return {
         id: `img-${Date.now()}`,
         url: imageUrl,

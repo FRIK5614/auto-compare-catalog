@@ -54,19 +54,19 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   
   // Fix: Wrap addToCompare to ensure it returns boolean
-  const handleAddToCompare = (carId: string): boolean => {
+  const handleAddToCompare = (carId: string): boolean | Promise<boolean> => {
     addToCompare(carId);
     return true;
   };
   
   // Fix: Wrap removeFromCompare to ensure it returns boolean
-  const handleRemoveFromCompare = (carId: string): boolean => {
+  const handleRemoveFromCompare = (carId: string): boolean | Promise<boolean> => {
     removeFromCompare(carId);
     return true;
   };
   
   // Create proper adapter for uploadCarImage
-  // We need to adapt the function signature to match the expected interface
+  // We need to make sure the adapter handles the single parameter format
   const handleUploadCarImage = createUploadCarImageAdapter(uploadCarImage);
 
   return (
