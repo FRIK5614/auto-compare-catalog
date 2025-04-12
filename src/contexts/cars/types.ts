@@ -5,9 +5,10 @@ export type FilterOptions = {
   limit?: number;
   search?: string;
   brands?: string[];
+  models?: string[]; // Adding this missing property
   bodyTypes?: string[];
-  priceRange?: { min: number; max: number };
-  yearRange?: { min: number; max: number };
+  priceRange?: { min: number; max: number; };
+  yearRange?: { min: number; max: number; };
   fuelTypes?: string[];
   transmissionTypes?: string[];
   isNew?: boolean;

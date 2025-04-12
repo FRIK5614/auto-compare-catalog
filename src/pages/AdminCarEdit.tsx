@@ -1,13 +1,13 @@
 
 import React from "react";
 import AdminLayout from "@/components/AdminLayout";
-import CarFormContainer from "@/components/admin/car-form/CarFormContainer";
+import ImprovedCarFormContainer from "@/components/admin/car-form/ImprovedCarFormContainer";
 import { Toaster } from "@/components/ui/toaster";
 
 const AdminCarEdit = () => {
   return (
     <AdminLayout>
-      <CarFormContainer />
+      <ImprovedCarFormContainer />
       <Toaster />
     </AdminLayout>
   );

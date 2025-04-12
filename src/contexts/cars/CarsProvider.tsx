@@ -1,4 +1,3 @@
-
 import { createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { CarsContextType, FilterOptions } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
@@ -127,6 +126,12 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const isOnline = favoritesIsOnline && ordersIsOnline && compareIsOnline && dataIsOnline;
 
   // Adapter functions to ensure type compatibility
+  const handleViewCar = async (id: string): Promise<Car | undefined> => {
+    // Implement proper viewCar functionality that returns a Car promise
+    const result = await viewCar(id);
+    return result ? cars.find(car => car.id === id) : undefined;
+  };
+
   const handleUpdateCar = async (car: Car): Promise<Car> => {
     const success = await updateCar(car);
     return success ? car : Promise.reject("Failed to update car");
@@ -176,7 +181,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         clearCompare,
         getCarById,
         reloadCars,
-        viewCar,
+        viewCar: handleViewCar,
         deleteCar,
         updateCar: handleUpdateCar,
         addCar: handleAddCar,

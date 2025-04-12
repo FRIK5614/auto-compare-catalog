@@ -1,4 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TelegramPost {
   id: number;
@@ -23,35 +25,47 @@ export const useTelegramFeed = ({
   const [offset, setOffset] = useState(initialOffset);
   const [hasMore, setHasMore] = useState(true);
   
-  // Mock data for development
-  const mockPosts: TelegramPost[] = Array.from({ length: 30 }).map((_, i) => ({
-    id: i + 1,
-    text: `Горячее предложение #${i + 1}: Скидка на автомобили Toyota до конца месяца!`,
-    photos: [
-      `https://picsum.photos/id/${(i * 10) % 100}/800/600`,
-      `https://picsum.photos/id/${(i * 10 + 5) % 100}/800/600`
-    ],
-    date: new Date(Date.now() - i * 86400000).toISOString(),
-    link: `https://t.me/VoeAVTO/${i + 100}`
-  }));
-  
+  // Function to fetch real Telegram posts from our edge function
   const fetchPosts = useCallback(async (currentOffset: number) => {
     setLoading(true);
     setError(null);
     
     try {
-      // In a real application, this would be an API call
-      // For now, we'll use our mock data
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
+      // Call our Supabase edge function
+      const { data, error } = await supabase.functions.invoke("telegram-feed", {
+        body: { 
+          limit: postsPerPage,
+          offset: currentOffset
+        }
+      });
       
-      const fetchedPosts = mockPosts.slice(
-        currentOffset, 
-        currentOffset + postsPerPage
-      );
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // If we don't have real data, use mock data for development
+      if (!data.success || data.posts.length === 0) {
+        console.warn("Falling back to mock telegram posts data");
+        // Generate mock data (same as before)
+        const mockPosts: TelegramPost[] = Array.from({ length: postsPerPage }).map((_, i) => ({
+          id: i + 1 + currentOffset,
+          text: `Горячее предложение #${i + 1 + currentOffset}: Скидка на автомобили Toyota до конца месяца!`,
+          photos: [
+            `https://picsum.photos/id/${((i + currentOffset) * 10) % 100}/800/600`
+          ],
+          date: new Date(Date.now() - (i + currentOffset) * 86400000).toISOString(),
+          link: `https://t.me/VoeAVTO/${i + 100 + currentOffset}`
+        }));
+        
+        return {
+          posts: mockPosts,
+          hasMore: currentOffset + postsPerPage < 30 // Limit mock data to 30 posts
+        };
+      }
       
       return {
-        posts: fetchedPosts,
-        hasMore: currentOffset + postsPerPage < mockPosts.length
+        posts: data.posts,
+        hasMore: data.posts.length === postsPerPage // Assume there are more if we got the requested number
       };
     } catch (err) {
       console.error('Error fetching Telegram posts:', err);
@@ -59,7 +73,7 @@ export const useTelegramFeed = ({
     } finally {
       setLoading(false);
     }
-  }, [postsPerPage, mockPosts]);
+  }, [postsPerPage]);
   
   // Load initial posts
   useEffect(() => {
