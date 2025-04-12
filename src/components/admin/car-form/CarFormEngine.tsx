@@ -34,7 +34,7 @@ const CarFormEngine = ({ car }: CarFormEngineProps) => {
           name="engine.displacement" 
           label="Объем (л)" 
           placeholder="2.0"
-          step="0.1"
+          step={0.1}
         />
 
         <SelectFormField 

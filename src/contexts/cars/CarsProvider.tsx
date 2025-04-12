@@ -158,12 +158,17 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
-    const imageUrl = await uploadCarImage(file, carId);
-    return {
-      id: `img-${Date.now()}`,
-      url: imageUrl,
-      alt: 'Uploaded image'
-    };
+    try {
+      const imageUrl = await uploadCarImage(file);
+      return {
+        id: `img-${Date.now()}`,
+        url: imageUrl,
+        alt: 'Uploaded image'
+      };
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return Promise.reject("Failed to upload image");
+    }
   };
 
   return (

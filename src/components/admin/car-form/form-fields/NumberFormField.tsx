@@ -10,7 +10,7 @@ interface NumberFormFieldProps {
   placeholder?: string;
   min?: number;
   max?: number;
-  step?: number;
+  step?: number | string;
   required?: boolean;
 }
 

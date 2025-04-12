@@ -20,13 +20,15 @@ interface SelectFormFieldProps {
   label: string; 
   placeholder: string;
   options: SelectOption[];
+  required?: boolean;
 }
 
 const SelectFormField = ({ 
   name, 
   label, 
   placeholder,
-  options
+  options,
+  required = false
 }: SelectFormFieldProps) => {
   const { control, setValue } = useFormContext();
   
@@ -36,15 +38,15 @@ const SelectFormField = ({
       name={name}
       render={({ field }) => (
         <FormItem className="space-y-1">
-          <FormLabel>{label}</FormLabel>
+          <FormLabel>{label}{required && <span className="text-destructive ml-1">*</span>}</FormLabel>
           <Select 
             onValueChange={(value) => {
               field.onChange(value);
               // Trigger any validation or dependent fields if needed
               console.log(`Selected ${name}: ${value}`);
             }} 
-            defaultValue={field.value || ""}
-            value={field.value || ""}
+            defaultValue={field.value?.toString() || ""}
+            value={field.value?.toString() || ""}
           >
             <FormControl>
               <SelectTrigger className="w-full bg-white focus:bg-white">
