@@ -65,7 +65,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
   
   // Fix: Wrap addToCompare with proper return type that matches the expected signature
-  const handleAddToCompare = (carId: string): boolean | Promise<boolean> => {
+  const handleAddToCompare = (carId: string): boolean => {
     if (originalAddToCompare) {
       originalAddToCompare(carId);
     }
@@ -73,7 +73,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   };
   
   // Fix: Wrap removeFromCompare with proper return type that matches the expected signature 
-  const handleRemoveFromCompare = (carId: string): boolean | Promise<boolean> => {
+  const handleRemoveFromCompare = (carId: string): boolean => {
     if (originalRemoveFromCompare) {
       originalRemoveFromCompare(carId);
     }

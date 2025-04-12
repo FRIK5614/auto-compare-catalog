@@ -1,3 +1,4 @@
+
 import { Car, Order } from "@/types/car";
 
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
@@ -89,7 +90,7 @@ export const transformOrder = (orderData: any): Order => {
       id: vehicle.id,
       brand: vehicle.brand,
       model: vehicle.model,
-      imageUrl: vehicle.image_url
+      image_url: vehicle.image_url
     } : undefined
   };
 };
