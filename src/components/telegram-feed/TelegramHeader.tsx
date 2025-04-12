@@ -1,8 +1,7 @@
 
-import React from "react";
-import { ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 
 interface TelegramHeaderProps {
   title: string;
@@ -11,32 +10,31 @@ interface TelegramHeaderProps {
   telegramUrl: string;
 }
 
-const TelegramHeader = ({
+const TelegramHeader: React.FC<TelegramHeaderProps> = ({
   title,
   description,
   buttonText,
   telegramUrl
-}: TelegramHeaderProps) => {
+}) => {
   return (
-    <div className="mb-8 text-center sticky top-[56px] z-10 bg-white py-6 shadow-md">
-      <h1 className="text-2xl font-bold mb-3 text-auto-blue-700">{title}</h1>
-      <p className="text-gray-600 mb-6">{description}</p>
-      <Button 
-        variant="blue" 
-        size="lg" 
-        className={cn(
-          "font-bold relative overflow-hidden group",
-          "transition-all duration-300 hover:shadow-lg active:scale-95"
-        )}
-        onClick={() => window.open(telegramUrl, '_blank')}
+    <div className="text-center mb-10">
+      <h1 className="text-3xl font-bold mb-4">{title}</h1>
+      <p className="text-gray-600 max-w-2xl mx-auto mb-6">{description}</p>
+      
+      <Button
+        variant="default"
+        asChild
+        className="bg-[#0088cc] hover:bg-[#0077b5]"
       >
-        <span className="relative z-10 flex items-center">
-          <ExternalLink className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-          <span className="group-hover:translate-x-1 transition-transform duration-300">
-            {buttonText}
-          </span>
-        </span>
-        <span className="absolute inset-0 bg-gradient-to-r from-auto-blue-600 to-auto-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <a 
+          href={telegramUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center"
+        >
+          <span className="mr-2">{buttonText}</span>
+          <ExternalLink className="h-4 w-4" />
+        </a>
       </Button>
     </div>
   );

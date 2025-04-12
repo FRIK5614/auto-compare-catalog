@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CarImage } from '@/types/car';
@@ -51,7 +52,7 @@ export const useImageStorage = () => {
       if (!image.file) continue;
       
       const file = image.file;
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'jpg';
       const fileName = `${carId}/${uuidv4()}.${fileExt}`;
       
       try {

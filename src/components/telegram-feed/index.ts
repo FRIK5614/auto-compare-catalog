@@ -1,5 +1,14 @@
 
-export { default as TelegramPostCard } from './TelegramPostCard';
-export { default as PostsGrid } from './PostsGrid';
-export { default as LoadMoreButton } from './LoadMoreButton';
-export { default as TelegramHeader } from './TelegramHeader';
+import PostsGrid from './PostsGrid';
+import LoadMoreButton from './LoadMoreButton';
+import TelegramHeader from './TelegramHeader';
+import TelegramPostCard from './TelegramPostCard';
+import TelegramSkeleton from './TelegramSkeleton';
+
+export {
+  PostsGrid,
+  LoadMoreButton,
+  TelegramHeader,
+  TelegramPostCard,
+  TelegramSkeleton
+};

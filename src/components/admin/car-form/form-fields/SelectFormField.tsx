@@ -40,10 +40,10 @@ const SelectFormField = ({
           <Select 
             onValueChange={field.onChange} 
             defaultValue={field.value}
-            value={field.value}
+            value={field.value || ""}
           >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>

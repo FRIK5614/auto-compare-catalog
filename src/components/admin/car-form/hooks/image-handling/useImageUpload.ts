@@ -14,7 +14,7 @@ export const useImageUpload = (
 
   // Handle multiple image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, car: Car) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+    if (!e.target.files || e.target.files.length === 0) return null;
     
     // Handle multiple files
     const files = Array.from(e.target.files);
@@ -56,7 +56,7 @@ export const useImageUpload = (
       setImages(newImages);
       
       // Set first image as preview if we don't have one
-      if (!imageFile || newImages.length === 1) {
+      if (newImages.length > 0) {
         setImagePreview(newImages[0].url);
       }
       
@@ -72,6 +72,8 @@ export const useImageUpload = (
         description: `Добавлено ${files.length} изображений для обработки`
       });
     });
+    
+    return null;
   };
 
   return {

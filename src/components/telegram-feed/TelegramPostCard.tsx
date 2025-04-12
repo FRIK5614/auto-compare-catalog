@@ -1,52 +1,70 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { ExternalLink } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
-interface TelegramPostProps {
+interface TelegramPost {
   id: number;
-  date: number;
   text: string;
-  photo_url?: string;
+  photos: string[];
+  date: string;
+  link: string;
 }
 
-const TelegramPostCard = ({ post }: { post: TelegramPostProps }) => {
-  // Format the timestamp to a readable date
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('ru-RU', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+interface TelegramPostCardProps {
+  post: TelegramPost;
+}
 
+const TelegramPostCard: React.FC<TelegramPostCardProps> = ({ post }) => {
+  const formattedDate = formatDistanceToNow(new Date(post.date), {
+    addSuffix: true,
+    locale: ru
+  });
+  
+  // Truncate long text
+  const maxLength = 120;
+  const displayText = post.text.length > maxLength
+    ? `${post.text.substring(0, maxLength)}...`
+    : post.text;
+  
   return (
-    <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <CardTitle className="text-lg">Опубликовано {formatDate(post.date)}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Post text with line breaks preserved */}
-        <div className="whitespace-pre-line">{post.text}</div>
-        
-        {/* Display photo if available */}
-        {post.photo_url && (
-          <div className="mt-4">
-            <img 
-              src={post.photo_url} 
-              alt="Изображение из Telegram" 
-              className="rounded-lg max-h-[300px] w-auto mx-auto"
-              loading="lazy"
-              onError={(e) => {
-                // Fallback if image fails to load
-                console.error("Image failed to load:", post.photo_url);
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="relative h-48 overflow-hidden bg-gray-100">
+        {post.photos && post.photos.length > 0 ? (
+          <img
+            src={post.photos[0]}
+            alt={`Фото к посту ${post.id}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+            <span className="text-gray-500">Нет изображения</span>
           </div>
         )}
+        
+        {/* Badge for multiple images */}
+        {post.photos && post.photos.length > 1 && (
+          <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+            +{post.photos.length - 1} фото
+          </div>
+        )}
+      </div>
+      
+      <CardContent className="p-4">
+        <p className="text-sm text-gray-500 mb-2">{formattedDate}</p>
+        <p className="mb-4">{displayText}</p>
+        
+        <a
+          href={post.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          Открыть в Telegram
+          <ExternalLink className="ml-1 h-4 w-4" />
+        </a>
       </CardContent>
     </Card>
   );

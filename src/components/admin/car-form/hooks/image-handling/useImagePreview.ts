@@ -12,24 +12,36 @@ export const useImagePreview = () => {
   const handleImageUrlChange = (url: string, car: Car) => {
     if (!car) return null;
     
-    const updatedCar = {...car};
-    updatedCar.image_url = url;
-    
-    // Also update the first image if it exists
-    if (updatedCar.images && updatedCar.images.length > 0) {
-      updatedCar.images[0].url = url;
-    } else {
-      updatedCar.images = [
-        {
-          id: uuidv4(),
-          url: url,
-          alt: `${updatedCar.brand} ${updatedCar.model}`,
-        }
-      ];
+    try {
+      // Validate URL
+      new URL(url);
+      
+      const updatedCar = {...car};
+      updatedCar.image_url = url;
+      
+      // Also update the first image if it exists
+      if (updatedCar.images && updatedCar.images.length > 0) {
+        updatedCar.images[0].url = url;
+      } else {
+        updatedCar.images = [
+          {
+            id: uuidv4(),
+            url: url,
+            alt: `${updatedCar.brand} ${updatedCar.model}`,
+          }
+        ];
+      }
+      
+      setImagePreview(url);
+      return updatedCar;
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Некорректный формат URL"
+      });
+      return null;
     }
-    
-    setImagePreview(url);
-    return updatedCar;
   };
 
   // Handle adding a new image by URL

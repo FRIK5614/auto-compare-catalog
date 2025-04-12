@@ -1,110 +1,102 @@
-
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useCallback } from 'react';
 
 interface TelegramPost {
   id: number;
-  date: number;
   text: string;
-  photo_url?: string;
+  photos: string[];
+  date: string;
+  link: string;
 }
 
-interface TelegramResponse {
-  posts: TelegramPost[];
-  total: number;
-  hasMore: boolean;
-}
-
-interface UseTelegramFeedOptions {
-  channelName?: string;
+interface UseTelegramFeedProps {
   postsPerPage?: number;
-  initialLoad?: boolean;
+  initialOffset?: number;
 }
 
 export const useTelegramFeed = ({
-  channelName = 'VoeAVTO',
-  postsPerPage = 12,
-  initialLoad = true
-}: UseTelegramFeedOptions = {}) => {
+  postsPerPage = 6,
+  initialOffset = 0
+}: UseTelegramFeedProps = {}) => {
   const [posts, setPosts] = useState<TelegramPost[]>([]);
-  const [loading, setLoading] = useState(initialLoad);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [offset, setOffset] = useState(0);
+  const [offset, setOffset] = useState(initialOffset);
   const [hasMore, setHasMore] = useState(true);
-  const [totalPosts, setTotalPosts] = useState(0);
-  const { toast } = useToast();
   
-  const fetchTelegramPosts = async (newOffset = 0) => {
+  // Mock data for development
+  const mockPosts: TelegramPost[] = Array.from({ length: 30 }).map((_, i) => ({
+    id: i + 1,
+    text: `Горячее предложение #${i + 1}: Скидка на автомобили Toyota до конца месяца!`,
+    photos: [
+      `https://picsum.photos/id/${(i * 10) % 100}/800/600`,
+      `https://picsum.photos/id/${(i * 10 + 5) % 100}/800/600`
+    ],
+    date: new Date(Date.now() - i * 86400000).toISOString(),
+    link: `https://t.me/VoeAVTO/${i + 100}`
+  }));
+  
+  const fetchPosts = useCallback(async (currentOffset: number) => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setLoading(true);
-      setError(null);
+      // In a real application, this would be an API call
+      // For now, we'll use our mock data
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
       
-      console.log(`Fetching Telegram posts with offset ${newOffset}...`);
+      const fetchedPosts = mockPosts.slice(
+        currentOffset, 
+        currentOffset + postsPerPage
+      );
       
-      const { data, error } = await supabase.functions.invoke('telegram-feed', {
-        body: { 
-          channelName,
-          limit: postsPerPage,
-          offset: newOffset
-        }
-      });
-      
-      if (error) {
-        console.error('Error invoking telegram-feed function:', error);
-        throw new Error(error.message);
-      }
-      
-      console.log('Telegram posts received:', data);
-      
-      if (data && typeof data === 'object') {
-        const response = data as TelegramResponse;
-        
-        if (newOffset === 0) {
-          // First page - replace existing posts
-          setPosts(response.posts || []);
-        } else {
-          // Subsequent pages - append to existing posts
-          setPosts(prev => [...prev, ...(response.posts || [])]);
-        }
-        
-        setTotalPosts(response.total || 0);
-        setHasMore(response.hasMore || false);
-        setOffset(newOffset);
-      } else {
-        throw new Error('Received invalid data format');
-      }
-    } catch (err: any) {
+      return {
+        posts: fetchedPosts,
+        hasMore: currentOffset + postsPerPage < mockPosts.length
+      };
+    } catch (err) {
       console.error('Error fetching Telegram posts:', err);
-      setError('Не удалось загрузить ленту Telegram. Пожалуйста, попробуйте позже.');
-      toast({
-        title: "Ошибка",
-        description: "Не удалось загрузить посты из Telegram",
-        variant: "destructive",
-      });
+      throw new Error('Не удалось загрузить посты из Telegram');
     } finally {
       setLoading(false);
     }
-  };
+  }, [postsPerPage, mockPosts]);
   
-  const loadMorePosts = (newOffset?: number) => {
-    const nextOffset = typeof newOffset === 'number' ? newOffset : offset + postsPerPage;
-    
-    // Если загружаем с начала или есть еще посты для загрузки
-    if (nextOffset === 0 || (hasMore && !loading)) {
-      fetchTelegramPosts(nextOffset);
-    }
-  };
-  
-  const refreshPosts = () => {
-    fetchTelegramPosts(0);
-  };
-  
+  // Load initial posts
   useEffect(() => {
-    if (initialLoad) {
-      fetchTelegramPosts(0);
+    const loadInitialPosts = async () => {
+      try {
+        const result = await fetchPosts(initialOffset);
+        setPosts(result.posts);
+        setHasMore(result.hasMore);
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    };
+    
+    loadInitialPosts();
+  }, [fetchPosts, initialOffset]);
+  
+  // Load more posts
+  const loadMorePosts = useCallback(async (newOffset?: number) => {
+    const currentOffset = newOffset !== undefined ? newOffset : offset + postsPerPage;
+    
+    try {
+      const result = await fetchPosts(currentOffset);
+      
+      // If loading from beginning, replace posts
+      if (newOffset === 0) {
+        setPosts(result.posts);
+      } else {
+        // Otherwise append posts
+        setPosts(prevPosts => [...prevPosts, ...result.posts]);
+      }
+      
+      setOffset(currentOffset);
+      setHasMore(result.hasMore);
+    } catch (err) {
+      setError((err as Error).message);
     }
-  }, [channelName]); // Обновлять при изменении канала
+  }, [fetchPosts, offset, postsPerPage]);
   
   return {
     posts,
@@ -112,8 +104,6 @@ export const useTelegramFeed = ({
     error,
     offset,
     hasMore,
-    totalPosts,
-    loadMorePosts,
-    refreshPosts
+    loadMorePosts
   };
 };

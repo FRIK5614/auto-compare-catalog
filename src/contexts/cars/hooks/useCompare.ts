@@ -8,10 +8,19 @@ export const useCompare = () => {
   const [compareCars, setCompareCars] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Initialize compare cars from localStorage
+  // Initialize compare cars from localStorage with a limit
   useEffect(() => {
     const compareData = loadCompareFromLocalStorage();
-    setCompareCars(compareData);
+    // Apply a hard limit of 3 cars to prevent performance issues
+    const limitedCompareData = compareData.slice(0, 3);
+    
+    // If we had to limit the data, save the limited version back to localStorage
+    if (limitedCompareData.length < compareData.length) {
+      saveCompareToLocalStorage(limitedCompareData);
+      console.log(`Limited compare cars from ${compareData.length} to ${limitedCompareData.length}`);
+    }
+    
+    setCompareCars(limitedCompareData);
   }, []);
 
   // Save compare cars to localStorage whenever it changes

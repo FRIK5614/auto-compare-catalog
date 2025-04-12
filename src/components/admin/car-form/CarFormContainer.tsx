@@ -53,7 +53,7 @@ const CarFormContainer: React.FC = () => {
       console.log("Initializing images for car:", car.id, car.images?.length || 0, "images");
       initializeImagesFromCar(car);
     }
-  }, [car?.id]);
+  }, [car?.id, initializeImagesFromCar]);
   
   const handleImageUrlChange = (url: string) => {
     if (!car) return;
@@ -82,7 +82,7 @@ const CarFormContainer: React.FC = () => {
   const handleRemoveImage = (index: number) => {
     if (!car) return;
     console.log("Removing image at index:", index);
-    const updatedCar = removeImage(index, car);
+    const updatedCar = removeImage(index, car, images);
     if (updatedCar) {
       setCar(updatedCar);
     }
