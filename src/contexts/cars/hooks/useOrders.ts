@@ -20,6 +20,7 @@ export const useOrders = () => {
       setLoading(true);
       
       try {
+        console.log("Loading orders from API in useOrders hook");
         const ordersData = await loadOrders();
         console.log("Loaded orders from API:", ordersData);
         setOrders(ordersData);
@@ -62,6 +63,7 @@ export const useOrders = () => {
     setLoading(true);
     
     try {
+      console.log("Reloading orders from API...");
       const ordersData = await loadOrders();
       console.log("Reloaded orders:", ordersData);
       setOrders(ordersData);

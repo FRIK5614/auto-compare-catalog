@@ -2,6 +2,7 @@
 import { Car, Order } from "@/types/car";
 import { fetchAllCars, fetchCarsByCountryWithFallback } from "@/services/api/carAPI";
 import { fetchOrders } from "@/services/api/orderAPI";
+import { loadFavoritesFromLocalStorage } from "./utils";
 
 // Загрузка заказов
 export const loadOrders = async (): Promise<Order[]> => {
@@ -37,4 +38,21 @@ export const loadCarsByCountry = async (country: string): Promise<Car[]> => {
     console.error(`Error loading cars from ${country}:`, error);
     return [];
   }
+};
+
+// Экспортируем функцию загрузки избранного
+export const loadFavorites = async (): Promise<string[]> => {
+  try {
+    // Здесь можно добавить логику загрузки избранного из Supabase
+    // Пока используем локальное хранилище
+    return loadFavoritesFromLocalStorage();
+  } catch (error) {
+    console.error("Error loading favorites:", error);
+    return [];
+  }
+};
+
+// Экспортируем функцию загрузки автомобилей
+export const loadCars = async (): Promise<Car[]> => {
+  return loadAllCars();
 };

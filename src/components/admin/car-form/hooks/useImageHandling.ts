@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Car } from '@/types/car';
 
@@ -53,42 +53,51 @@ export const useImageHandling = (initialCar: Car | null) => {
     return updatedCar;
   };
 
-  // Handle image upload
+  // Handle multiple image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, car: Car) => {
-    if (e.target.files && e.target.files.length > 0) {
-      // Handle multiple files
-      const files = Array.from(e.target.files);
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    // Handle multiple files
+    const files = Array.from(e.target.files);
+    const newImages = [...images]; // Copy current images
+    
+    // Process each file
+    files.forEach((file) => {
+      const reader = new FileReader();
       
-      // Process each file
-      files.forEach((file, index) => {
-        setImageFile(file);
+      reader.onloadend = () => {
+        const preview = reader.result as string;
         
-        // Create preview
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const preview = reader.result as string;
-          
-          // Set the first image as the preview and main image
-          if (index === 0) {
-            setImagePreview(preview);
-            
-            // Update main image
-            if (handleImageUrlChange) {
-              handleImageUrlChange(preview);
-            }
-          } else {
-            // Add additional images
-            if (addImage) {
-              addImage(preview, car);
-            }
-          }
+        // Create a new image object
+        const newImage = {
+          id: uuidv4(),
+          url: preview,
+          alt: `${car.brand} ${car.model} - Image ${newImages.length + 1}`,
+          file: file // Store file reference for later upload
         };
-        reader.readAsDataURL(file);
-      });
+        
+        // Add to images array
+        newImages.push(newImage);
+        
+        // Update state after all files are processed
+        setImages(newImages);
+        
+        // Set first image as preview if we don't have one
+        if (!imagePreview || newImages.length === 1) {
+          setImagePreview(preview);
+        }
+      };
+      
+      reader.readAsDataURL(file);
+    });
+    
+    // Update original file for legacy support
+    if (files.length > 0) {
+      setImageFile(files[0]);
     }
   };
 
-  // Handle adding a new image
+  // Handle adding a new image by URL
   const addImage = (url: string, car: Car) => {
     if (!car) return;
     

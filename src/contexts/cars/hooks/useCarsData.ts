@@ -34,6 +34,7 @@ export const useCarsData = () => {
         
         // Загружаем заказы
         const ordersData = await loadOrders();
+        console.log("Loaded orders from API:", ordersData);
         setOrders(ordersData);
         
         // Загружаем избранное
@@ -99,6 +100,11 @@ export const useCarsData = () => {
       const data = await loadCars();
       setCars(data);
       
+      // Также обновляем заказы при перезагрузке данных
+      const ordersData = await loadOrders();
+      console.log("Reloaded orders:", ordersData);
+      setOrders(ordersData);
+      
       if (data.length === 0) {
         toast({
           variant: "destructive",
@@ -108,14 +114,14 @@ export const useCarsData = () => {
       } else {
         toast({
           title: "Данные обновлены",
-          description: `Загружено ${data.length} автомобилей из базы данных`
+          description: `Загружено ${data.length} автомобилей и ${ordersData.length} заказов из базы данных`
         });
       }
       
       setLoading(false);
-      console.log("✅ Cars data reload complete");
+      console.log("✅ Data reload complete");
     } catch (err) {
-      console.error("Failed to reload cars:", err);
+      console.error("Failed to reload data:", err);
       const errorMessage = err instanceof Error ? err.message : "Не удалось перезагрузить данные";
       setError(errorMessage);
       setLoading(false);

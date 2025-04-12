@@ -16,6 +16,8 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
       status: 'new'
     };
     
+    console.log("[API] Отправляем данные заказа:", order);
+    
     const { data, error } = await supabase
       .from('orders')
       .insert(order)
