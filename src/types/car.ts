@@ -123,6 +123,7 @@ export interface Order {
   message?: string;
   status: 'new' | 'processing' | 'completed' | 'canceled';
   createdAt: string;
+  updatedAt: string;
   car?: {
     id: string;
     brand: string;
