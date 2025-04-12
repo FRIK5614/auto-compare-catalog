@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { Order } from '@/types/car';
 
 /**
  * Отправка заявки на покупку в Supabase
@@ -46,13 +47,13 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
 /**
  * Получение заказов из Supabase
  */
-export const fetchOrders = async (): Promise<any[]> => {
+export const fetchOrders = async (): Promise<Order[]> => {
   try {
     console.log(`[API] Загрузка заказов из Supabase`);
     
     const { data, error } = await supabase
       .from('orders')
-      .select('*, vehicles(brand, model)')
+      .select('*, vehicles(brand, model, id, image_url)')
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -61,7 +62,26 @@ export const fetchOrders = async (): Promise<any[]> => {
     }
     
     console.log(`[API] Получено ${data?.length || 0} заказов из Supabase:`, data);
-    return data || [];
+    
+    // Transform the data to match our Order type
+    const orders: Order[] = (data || []).map(order => ({
+      id: order.id,
+      carId: order.car_id,
+      customerName: order.customer_name,
+      customerPhone: order.customer_phone,
+      customerEmail: order.customer_email,
+      status: order.status,
+      createdAt: order.created_at,
+      // Add car details if available
+      car: order.vehicles ? {
+        id: order.vehicles.id,
+        brand: order.vehicles.brand,
+        model: order.vehicles.model,
+        image_url: order.vehicles.image_url
+      } : undefined
+    }));
+    
+    return orders;
   } catch (error) {
     console.error("Ошибка при получении заказов:", error);
     return [];

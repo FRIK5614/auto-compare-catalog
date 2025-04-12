@@ -7,8 +7,14 @@ import { loadFavoritesFromLocalStorage } from "./utils";
 // Загрузка заказов
 export const loadOrders = async (): Promise<Order[]> => {
   try {
+    console.log("Loading orders from fetchOrders API");
     const orders = await fetchOrders();
     console.log("Loaded orders from fetchOrders:", orders);
+    
+    if (!orders || orders.length === 0) {
+      console.warn("No orders returned from the API");
+    }
+    
     return orders;
   } catch (error) {
     console.error("Error loading orders:", error);

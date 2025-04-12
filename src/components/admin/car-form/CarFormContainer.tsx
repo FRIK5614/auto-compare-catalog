@@ -38,7 +38,8 @@ const CarFormContainer: React.FC = () => {
     handleImageUrlChange: imageUrlChange,
     handleImageUpload: imageUpload,
     handleAddImage: addImage,
-    handleRemoveImage: removeImage
+    handleRemoveImage: removeImage,
+    uploadImageFiles
   } = useImageHandling(car);
   
   // Handle save
@@ -100,7 +101,7 @@ const CarFormContainer: React.FC = () => {
   };
 
   // Save car 
-  const handleSave = async (updatedCar: Car, imageFile?: File) => {
+  const handleSave = async (updatedCar: Car) => {
     if (!car || saveOperationInProgress.current) return;
     
     saveOperationInProgress.current = true;
@@ -111,6 +112,18 @@ const CarFormContainer: React.FC = () => {
       
       // Ensure images array is properly attached to the car
       updatedCar.images = images;
+      
+      // Upload any local images to storage
+      if (images.some(img => img.file)) {
+        console.log("Uploading local images to storage...");
+        const uploadedImages = await uploadImageFiles(updatedCar.id);
+        updatedCar.images = uploadedImages;
+        
+        // Update main image URL if necessary
+        if (uploadedImages.length > 0) {
+          updatedCar.image_url = uploadedImages[0].url;
+        }
+      }
       
       // Call the save function with correct parameters
       const result = await saveCar(updatedCar, isNewCar);

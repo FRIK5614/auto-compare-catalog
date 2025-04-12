@@ -3,6 +3,7 @@ export interface CarImage {
   id: string;
   url: string;
   alt: string;
+  file?: File; // Optional file property for local uploads
 }
 
 export interface CarPrice {
@@ -115,4 +116,10 @@ export interface Order {
   message?: string;
   status: 'new' | 'processing' | 'completed' | 'canceled';
   createdAt: string;
+  car?: {
+    id: string;
+    brand: string;
+    model: string;
+    image_url?: string;
+  };
 }

@@ -23,6 +23,11 @@ export const useOrders = () => {
         console.log("Loading orders from API in useOrders hook");
         const ordersData = await loadOrders();
         console.log("Loaded orders from API:", ordersData);
+        
+        if (!ordersData || ordersData.length === 0) {
+          console.warn("No orders were returned from the API");
+        }
+        
         setOrders(ordersData);
       } catch (error) {
         console.error("Failed to load orders:", error);
@@ -66,6 +71,11 @@ export const useOrders = () => {
       console.log("Reloading orders from API...");
       const ordersData = await loadOrders();
       console.log("Reloaded orders:", ordersData);
+      
+      if (!ordersData || ordersData.length === 0) {
+        console.warn("No orders were returned from the API");
+      }
+      
       setOrders(ordersData);
       toast({
         title: "Заказы обновлены",
