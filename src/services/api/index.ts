@@ -1,6 +1,6 @@
 
 // Export all API functions from the various modules
-export * from './carAPI';
+export * from './car';
 export * from './orderAPI';
 export * from './brandAPI';
 export * from './transformers';
