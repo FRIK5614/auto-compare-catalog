@@ -1,65 +1,64 @@
 
-import React from "react";
+import React, { useEffect } from "react";
+import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { 
-  PostsGrid, 
-  LoadMoreButton,
-  TelegramHeader 
-} from "@/components/telegram-feed";
-import { useTelegramFeed } from "@/hooks/useTelegramFeed";
-
-const POSTS_PER_PAGE = 12;
-const TELEGRAM_CHANNEL = "VoeAVTO";
+import ComparePanel from "@/components/ComparePanel";
+import FeaturedCars from "@/components/FeaturedCars";
+import { useCars } from "@/hooks/useCars";
 
 const HotOffers = () => {
-  const { 
-    posts,
-    loading,
-    error,
-    offset,
-    hasMore,
-    loadMorePosts
-  } = useTelegramFeed({
-    postsPerPage: POSTS_PER_PAGE,
-    channelName: TELEGRAM_CHANNEL
-  });
+  const { cars, loading, error, reloadCars, filter, setFilter } = useCars();
   
+  // Apply discount filter when component mounts
+  useEffect(() => {
+    setFilter({
+      ...filter,
+      discount: true
+    });
+  }, []);
+  
+  // Get cars with discounts
+  const discountCars = cars.filter(car => 
+    car.price && car.price.discount && car.price.discount > 0
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Специальные предложения - Выгодные цены на автомобили</title>
+        <meta 
+          name="description" 
+          content="Автомобили со скидками и специальными предложениями. Выгодные цены на новые и подержанные автомобили различных марок и моделей."
+        />
+        <link rel="canonical" href={`${window.location.origin}/special-offers`} />
+      </Helmet>
+      
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-0">
-        <TelegramHeader 
-          title="Горячие предложения"
-          description="Следите за обновлениями в нашей Telegram группе VoeAVTO!"
-          buttonText="Перейти в группу Telegram"
-          telegramUrl={`https://t.me/${TELEGRAM_CHANNEL}`}
-        />
-        
-        <div className="grid gap-6 pt-4">
-          {/* Posts Grid Component */}
-          <PostsGrid 
-            posts={posts}
+      <main className="flex-grow py-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-6 text-auto-gray-900">
+            Специальные предложения
+          </h1>
+          
+          <p className="text-auto-gray-600 mb-8 max-w-3xl">
+            Ниже представлены автомобили с действующими скидками и специальными предложениями. 
+            Успейте приобрести автомобиль вашей мечты на выгодных условиях!
+          </p>
+          
+          <FeaturedCars 
+            cars={discountCars} 
+            title="Автомобили со скидкой" 
+            subtitle="Специальные цены на ограниченное время"
             loading={loading}
             error={error}
-            offset={offset}
-            onRetry={() => loadMorePosts(0)} // Сбрасываем и загружаем сначала
+            onRetry={reloadCars}
           />
-          
-          {/* Pagination controls */}
-          <div className="mt-8 flex justify-center pb-8">
-            <LoadMoreButton
-              loading={loading}
-              hasMore={hasMore}
-              postsExist={posts.length > 0}
-              offset={offset}
-              onLoadMore={loadMorePosts}
-            />
-          </div>
         </div>
       </main>
       
+      <ComparePanel />
       <Footer />
     </div>
   );

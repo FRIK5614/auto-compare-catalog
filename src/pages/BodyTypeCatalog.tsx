@@ -1,52 +1,60 @@
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SearchFilters from "@/components/SearchFilters";
 import ComparePanel from "@/components/ComparePanel";
 import { useCars } from "@/hooks/useCars";
-import { Filter } from "lucide-react";
-import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CarLoadingAnimation from "@/components/CarLoadingAnimation";
 import { CatalogHeader } from "@/components/catalog/CatalogHeader";
 import { CatalogGrid } from "@/components/catalog/CatalogGrid";
 import { EmptyResults } from "@/components/catalog/EmptyResults";
 import { mapSortOptionFromFilter, mapSortOptionToFilter } from "@/components/catalog/SortOptions";
+import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { Helmet } from "react-helmet";
 
-const Catalog = () => {
-  const { filteredCars, filter, setFilter, loading } = useCars();
+const BodyTypeCatalog = () => {
+  const { bodyType } = useParams<{ bodyType: string }>();
+  const { filteredCars, filter, setFilter, loading, cars } = useCars();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState<string>("default");
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const CARS_PER_PAGE = 12;
-  const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
-
+  
+  // Format body type for display
+  const formattedBodyType = React.useMemo(() => {
+    if (!bodyType) return '';
+    
+    // Format like "sedan" to "Седан" or "suv" to "Внедорожник"
+    const bodyTypeMap: Record<string, string> = {
+      'sedan': 'Седан',
+      'suv': 'Внедорожник', 
+      'hatchback': 'Хэтчбек',
+      'wagon': 'Универсал',
+      'coupe': 'Купе',
+      'convertible': 'Кабриолет',
+      'pickup': 'Пикап',
+      'van': 'Минивэн',
+      'crossover': 'Кроссовер'
+    };
+    
+    return bodyTypeMap[bodyType.toLowerCase()] || bodyType;
+  }, [bodyType]);
+  
   useEffect(() => {
-    const newFilter: any = { ...filter };
+    if (!bodyType) return;
     
-    const bodyType = searchParams.get("bodyType");
-    if (bodyType) {
-      newFilter.bodyType = bodyType;
-      newFilter.bodyTypes = [bodyType];
-    }
+    // Set body type filter when component mounts or bodyType changes
+    const newFilter = { ...filter, bodyType, bodyTypes: [bodyType] };
+    setFilter(newFilter);
     
-    if (searchParams.get("filter") === "new") {
-      newFilter.onlyNew = true;
-      newFilter.isNew = true;
-    }
-    
-    const brand = searchParams.get("brand");
-    if (brand) {
-      newFilter.brand = brand;
-      newFilter.brands = [brand];
-    }
-    
+    // Set page and sort from URL if present
     const pageParam = searchParams.get("page");
     if (pageParam) {
       setCurrentPage(parseInt(pageParam, 10));
@@ -56,20 +64,32 @@ const Catalog = () => {
     if (sortParam) {
       setSortOption(sortParam);
       newFilter.sortBy = mapSortOptionToFilter(sortParam);
-    } else {
-      setSortOption(mapSortOptionFromFilter(newFilter.sortBy));
+      setFilter(newFilter);
     }
-    
-    setFilter(newFilter);
-  }, []);
+  }, [bodyType]);
 
   useEffect(() => {
+    // Update URL when page or sort changes
     const newParams = new URLSearchParams(searchParams);
     newParams.set("page", currentPage.toString());
     newParams.set("sort", sortOption);
     setSearchParams(newParams, { replace: true });
   }, [currentPage, sortOption]);
 
+  // Check if body type exists in our database
+  const bodyTypeExists = React.useMemo(() => {
+    const bodyTypes = [...new Set(cars.map(car => car.bodyType))];
+    return bodyTypes.some(bt => bt.toLowerCase() === bodyType?.toLowerCase());
+  }, [cars, bodyType]);
+
+  // If body type doesn't exist, redirect to main catalog
+  useEffect(() => {
+    if (!loading && cars.length > 0 && !bodyTypeExists && bodyType) {
+      navigate('/cars', { replace: true });
+    }
+  }, [loading, cars, bodyTypeExists, bodyType, navigate]);
+
+  const totalPages = Math.ceil(filteredCars.length / CARS_PER_PAGE);
   const startIndex = (currentPage - 1) * CARS_PER_PAGE;
   const currentPageCars = filteredCars.slice(startIndex, startIndex + CARS_PER_PAGE);
 
@@ -98,15 +118,12 @@ const Catalog = () => {
     setIsFilterModalOpen(false);
   };
 
-  // Build canonical URL without query parameters
-  const canonicalUrl = `${window.location.origin}/cars`;
-
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
-        <title>Каталог автомобилей - выбор моделей и комплектаций</title>
-        <meta name="description" content="Большой выбор автомобилей различных марок, моделей и комплектаций. Подробные характеристики, фото и цены." />
-        <link rel="canonical" href={canonicalUrl} />
+        <title>{formattedBodyType ? `${formattedBodyType} - Каталог` : 'Каталог автомобилей'}</title>
+        <meta name="description" content={`Все ${formattedBodyType.toLowerCase()} в нашем каталоге. Просмотрите доступные модели, цены и характеристики.`} />
+        <link rel="canonical" href={`${window.location.origin}/cars/type/${bodyType}`} />
       </Helmet>
       
       <Header />
@@ -114,7 +131,7 @@ const Catalog = () => {
       <main className="flex-grow">
         <section className="py-6 md:py-10 bg-auto-gray-50">
           <div className="container mx-auto px-4">
-            <h1 className="text-3xl font-bold mb-6">Каталог автомобилей</h1>
+            <h1 className="text-3xl font-bold mb-6">Автомобили типа {formattedBodyType}</h1>
             
             <div className="relative z-30">
               <CatalogHeader 
@@ -166,4 +183,4 @@ const Catalog = () => {
   );
 };
 
-export default Catalog;
+export default BodyTypeCatalog;

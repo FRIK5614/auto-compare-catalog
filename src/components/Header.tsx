@@ -22,8 +22,8 @@ const Header = () => {
   
   const menuItems = [
     { icon: Home, text: "Главная", path: "/" },
-    { icon: BookOpen, text: "Каталог", path: "/catalog" },
-    { icon: Flame, text: "Горячие предложения", path: "/hot-offers" },
+    { icon: BookOpen, text: "Каталог", path: "/cars" },
+    { icon: Flame, text: "Спецпредложения", path: "/special-offers" },
     { icon: ArrowRightLeft, text: "Сравнение", path: "/compare" },
     { icon: Heart, text: "Избранное", path: "/favorites" },
     ...(isAdmin ? [{ icon: User, text: "Админ панель", path: "/admin" }] : []),
