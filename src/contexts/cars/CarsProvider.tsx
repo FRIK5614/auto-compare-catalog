@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useRef, useEffect } from "react";
 import { CarsContextType, FilterOptions } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
@@ -81,7 +82,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       
       // Синхронизируем данные при загрузке, если мы онлайн
       if (initialOnlineStatus) {
-        // Use refreshFavorites directly without the conditional check
+        // Call refreshFavorites without checking truthiness
         refreshFavorites();
         
         // Always reload orders
@@ -157,7 +158,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
     try {
-      // Fix: Pass only the file parameter to uploadCarImage as it now expects just one parameter
+      // Pass only the file parameter to uploadCarImage as it now expects just one parameter
       const imageUrl = await uploadCarImage(file);
       return {
         id: `img-${Date.now()}`,
