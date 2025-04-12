@@ -5,6 +5,7 @@ import { Car, CarFilter } from "@/types/car";
 export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
   let result = [...cars];
 
+  // Handle brands filter as an array
   if (filter.brands && filter.brands.length > 0) {
     result = result.filter(car => filter.brands?.includes(car.brand));
   }
@@ -45,7 +46,7 @@ export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
     result = result.filter(car => car.country && filter.countries?.includes(car.country));
   }
 
-  // Handle simple filters
+  // Handle single brand filter (legacy support)
   if (filter.brand) {
     result = result.filter(car => car.brand === filter.brand);
   }

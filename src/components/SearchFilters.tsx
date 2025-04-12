@@ -1,4 +1,4 @@
 
-import SearchFilters from "./search-filters";
+import { default as SearchFiltersComponent } from "./search-filters";
 
-export default SearchFilters;
+export default SearchFiltersComponent;

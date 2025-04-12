@@ -14,38 +14,37 @@ export const useCarSave = () => {
     console.log("Saving car:", isNewCar ? "new car" : "update car", car);
     console.log("Images to save:", car.images?.length || 0, "images");
     
-    // Ensure basic validation is done
-    if (!car.brand || !car.model) {
-      toast({
-        variant: "destructive",
-        title: "Ошибка валидации",
-        description: "Пожалуйста, заполните обязательные поля (Марка и Модель)",
-      });
-      setSaving(false);
-      return { success: false, message: "Валидация не пройдена" };
-    }
-    
-    // Ensure images are properly formatted before save
-    if (car.images && car.images.length > 0) {
-      // Make sure the main image URL is in sync with the first image
-      car.image_url = car.images[0].url;
-      
-      // Clean up file properties on images before saving to database
-      // We don't want to store file objects in the database
-      car.images = car.images.map(img => ({
-        id: img.id,
-        url: img.url,
-        alt: img.alt || `${car.brand} ${car.model}`
-      }));
-      
-      console.log("Prepared images for saving:", car.images.length, "images", car.images);
-    } else {
-      console.warn("No images to save for this car");
-      // Если изображения отсутствуют, инициализируем пустым массивом
-      car.images = [];
-    }
-    
     try {
+      // Ensure basic validation is done
+      if (!car.brand || !car.model) {
+        toast({
+          variant: "destructive",
+          title: "Ошибка валидации",
+          description: "Пожалуйста, заполните обязательные поля (Марка и Модель)",
+        });
+        return { success: false, message: "Валидация не пройдена" };
+      }
+      
+      // Ensure images are properly formatted before save
+      if (car.images && car.images.length > 0) {
+        // Make sure the main image URL is in sync with the first image
+        car.image_url = car.images[0].url;
+        
+        // Clean up file properties on images before saving to database
+        // We don't want to store file objects in the database
+        car.images = car.images.map(img => ({
+          id: img.id,
+          url: img.url,
+          alt: img.alt || `${car.brand} ${car.model}`
+        }));
+        
+        console.log("Prepared images for saving:", car.images.length, "images", car.images);
+      } else {
+        console.warn("No images to save for this car");
+        // Initialize with empty array if no images
+        car.images = [];
+      }
+      
       // Based on whether it's a new car or updating an existing one
       if (isNewCar) {
         const result = await addCar(car);

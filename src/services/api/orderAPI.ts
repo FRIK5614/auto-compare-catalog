@@ -9,12 +9,22 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
   try {
     console.log(`[API] Отправка заявки на покупку в Supabase:`, formData);
     
+    // Ensure all required fields are present
+    if (!formData.carId || !formData.name || !formData.phone) {
+      console.error("[API] Missing required fields for order submission");
+      return {
+        success: false,
+        message: "Пожалуйста, заполните все обязательные поля."
+      };
+    }
+    
     const order = {
       car_id: formData.carId,
       customer_name: formData.name,
       customer_phone: formData.phone,
-      customer_email: formData.email,
-      status: 'new'
+      customer_email: formData.email || null,
+      status: 'new',
+      comments: formData.comments || null
     };
     
     console.log("[API] Отправляем данные заказа:", order);
@@ -68,8 +78,13 @@ export const fetchOrders = async (): Promise<Order[]> => {
       // Validate status to ensure it matches the expected union type
       let typedStatus: "new" | "processing" | "completed" | "canceled" = "new";
       
-      if (order.status === "processing" || order.status === "completed" || order.status === "canceled") {
-        typedStatus = order.status;
+      if (
+        order.status === "processing" || 
+        order.status === "completed" || 
+        order.status === "canceled" || 
+        order.status === "new"
+      ) {
+        typedStatus = order.status as "new" | "processing" | "completed" | "canceled";
       } else if (order.status && typeof order.status === 'string') {
         // If status exists but doesn't match expected values, default to "new"
         console.warn(`Unexpected order status "${order.status}" defaulting to "new"`);
@@ -83,6 +98,7 @@ export const fetchOrders = async (): Promise<Order[]> => {
         customerEmail: order.customer_email,
         status: typedStatus,
         createdAt: order.created_at,
+        comments: order.comments,
         // Add car details if available
         car: order.vehicles ? {
           id: order.vehicles.id,
