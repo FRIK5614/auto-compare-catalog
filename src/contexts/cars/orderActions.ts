@@ -88,7 +88,7 @@ export const loadOrders = async (): Promise<Order[]> => {
         customerName: order.customer_name,
         customerPhone: order.customer_phone,
         customerEmail: order.customer_email,
-        // Handle missing message field with proper typecasting and null coalescing
+        // Fix: Handle missing message field with proper null coalescing
         message: (order as any).message || '',
         status: (order.status || 'new') as Order['status'],
         createdAt: order.created_at,
