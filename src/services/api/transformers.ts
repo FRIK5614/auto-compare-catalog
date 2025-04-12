@@ -1,3 +1,4 @@
+
 import { Car } from "@/types/car";
 
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
@@ -38,9 +39,9 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
 
 export const transformVehicleForSupabase = (car: Car) => {
   // Remove any properties that don't exist in the database schema
-  const { isPopular, ...carData } = car;
+  const { isPopular, ...carData } = car as any;
   
-  // Convert Car to database format
+  // Convert Car to database format, ensuring complex objects are converted to JSON strings
   return {
     id: carData.id,
     brand: carData.brand,
@@ -57,8 +58,8 @@ export const transformVehicleForSupabase = (car: Car) => {
     transmission_type: carData.transmission.type,
     transmission_gears: carData.transmission.gears,
     drivetrain: carData.drivetrain,
-    dimensions: carData.dimensions,
-    performance: carData.performance,
+    dimensions: typeof carData.dimensions === 'object' ? carData.dimensions : {},
+    performance: typeof carData.performance === 'object' ? carData.performance : {},
     features: carData.features,
     colors: carData.colors,
     color: carData.colors && carData.colors.length > 0 ? carData.colors[0] : null,
@@ -66,6 +67,7 @@ export const transformVehicleForSupabase = (car: Car) => {
     country: carData.country,
     image_url: carData.image_url,
     description: carData.description,
-    view_count: carData.viewCount || 0
+    view_count: carData.viewCount || 0,
+    images: carData.images || []
   };
 };

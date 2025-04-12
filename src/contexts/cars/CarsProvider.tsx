@@ -7,8 +7,7 @@ import {
   createAddCarAdapter,
   createExportCarsDataAdapter,
   createImportCarsDataAdapter,
-  createUploadCarImageAdapter,
-  createDeleteCarAdapter
+  createUploadCarImageAdapter
 } from "./adapters/contextAdapters";
 import { useInitializeHooks } from "./hooks/useInitializeHooks";
 
@@ -53,7 +52,17 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleAddCar = createAddCarAdapter(addCar);
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
-  const handleDeleteCar = createDeleteCarAdapter(deleteCar);
+  
+  // Create a proper wrapper for deleteCar
+  const handleDeleteCar = async (carId: string): Promise<boolean> => {
+    try {
+      await deleteCar(carId);
+      return true;
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      return false;
+    }
+  };
   
   // Fix: Wrap addToCompare with proper return type that matches the expected signature
   const handleAddToCompare = (carId: string): boolean | Promise<boolean> => {

@@ -25,12 +25,6 @@ const HotOffers = () => {
     channelName: TELEGRAM_CHANNEL
   });
   
-  // For debugging
-  React.useEffect(() => {
-    console.log("Posts in HotOffers:", posts.length);
-    console.log("Error in HotOffers:", error);
-  }, [posts, error]);
-  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -38,7 +32,7 @@ const HotOffers = () => {
       <main className="flex-1 container mx-auto px-4 py-0">
         <TelegramHeader 
           title="Горячие предложения"
-          description="Следите за обновлениями в нашей Telegram группе!"
+          description="Следите за обновлениями в нашей Telegram группе VoeAVTO!"
           buttonText="Перейти в группу Telegram"
           telegramUrl={`https://t.me/${TELEGRAM_CHANNEL}`}
         />

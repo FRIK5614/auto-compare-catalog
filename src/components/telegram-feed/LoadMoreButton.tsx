@@ -24,7 +24,7 @@ const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({
         <Button
           variant="outline"
           size="lg"
-          onClick={onRetry}
+          onClick={() => window.open('https://docs.lovable.dev/integrations/telegram-bot/', '_blank')}
           className="min-w-[180px]"
         >
           Настроить бота Telegram
@@ -61,10 +61,6 @@ const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({
       </Button>
     </div>
   );
-  
-  function onRetry() {
-    window.open('https://docs.lovable.dev/integrations/telegram-bot/', '_blank');
-  }
 };
 
 export default LoadMoreButton;

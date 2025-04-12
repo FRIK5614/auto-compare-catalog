@@ -44,6 +44,18 @@ const PostsGrid: React.FC<PostsGridProps> = ({
     );
   }
 
+  // Empty state with guidance
+  if (!loading && posts.length === 0) {
+    return (
+      <div className="col-span-full py-12 text-center">
+        <p className="text-lg text-gray-500">Нет доступных постов из Telegram</p>
+        <p className="text-sm text-gray-400 mt-2">
+          Убедитесь, что бот имеет доступ к каналу VoeAVTO и добавлен как администратор
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Loaded posts */}
@@ -58,16 +70,6 @@ const PostsGrid: React.FC<PostsGridProps> = ({
           <TelegramSkeleton />
           <TelegramSkeleton />
         </>
-      )}
-      
-      {/* Empty state */}
-      {!loading && posts.length === 0 && (
-        <div className="col-span-full py-12 text-center">
-          <p className="text-lg text-gray-500">Нет доступных предложений</p>
-          <p className="text-sm text-gray-400 mt-2">
-            Убедитесь, что бот имеет доступ к каналу и добавлен как администратор
-          </p>
-        </div>
       )}
     </div>
   );
