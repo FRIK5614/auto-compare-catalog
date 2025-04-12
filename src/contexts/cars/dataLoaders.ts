@@ -1,16 +1,16 @@
-// Import the correct orderAPI function
-import { orderAPI } from "@/services/api/orderAPI";
+
+import { fetchAllCars } from "@/services/api";
 import { Car, Order } from "@/types/car";
-import { fetchCars } from "@/services/api";
-import { saveCarsToLocalStorage, saveFavoritesToLocalStorage, saveOrdersToLocalStorage } from "./utils";
+import { orderAPI } from "@/services/api/orderAPI";
+import { saveCompareToLocalStorage, saveFavoritesToLocalStorage, saveOrdersToLocalStorage } from "./utils";
 
 // Load cars
 export const loadCars = async (): Promise<Car[]> => {
   try {
     console.log("Loading cars from API...");
-    const cars = await fetchCars();
+    const cars = await fetchAllCars();
     console.log(`Loaded ${cars.length} cars`);
-    saveCarsToLocalStorage(cars);
+    saveCompareToLocalStorage(cars.map(car => car.id));
     return cars;
   } catch (error) {
     console.error("Error loading cars:", error);
