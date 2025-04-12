@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminNavigation } from './AdminNavigation';
-import { SheetTrigger } from "@/components/ui/sheet";
-import { DrawerTrigger } from "@/components/ui/drawer";
 
 type AdminHeaderProps = {
   newOrdersCount: number;
@@ -45,30 +43,31 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               Выйти
             </Button>
             
-            <SheetTrigger asChild className="md:hidden">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onOpenMenu}
-              >
-                Меню
-                {newOrdersCount > 0 && (
-                  <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-red-500 text-white">
-                    {newOrdersCount}
-                  </span>
-                )}
-              </Button>
-            </SheetTrigger>
+            {/* Replace SheetTrigger with Button */}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onOpenMenu}
+              className="md:hidden"
+            >
+              <Menu className="h-4 w-4 mr-2" />
+              Меню
+              {newOrdersCount > 0 && (
+                <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-red-500 text-white">
+                  {newOrdersCount}
+                </span>
+              )}
+            </Button>
             
-            <DrawerTrigger asChild className="hidden md:flex">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onOpenMenu}
-              >
-                Все разделы
-              </Button>
-            </DrawerTrigger>
+            {/* Replace DrawerTrigger with Button */}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onOpenMenu}
+              className="hidden md:flex"
+            >
+              Все разделы
+            </Button>
           </div>
         </div>
       </div>

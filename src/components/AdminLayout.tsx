@@ -10,6 +10,8 @@ import {
   MobileAdminSidebar, 
   DesktopAdminSidebar 
 } from '@/components/admin/layout';
+import { Sheet } from '@/components/ui/sheet';
+import { Drawer } from '@/components/ui/drawer';
 
 type AdminLayoutProps = {
   children?: React.ReactNode;
@@ -77,23 +79,27 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       />
       
       {isMobile ? (
-        <MobileAdminSidebar 
-          isOpen={isMenuOpen}
-          onOpenChange={setIsMenuOpen}
-          activePath={location.pathname}
-          newOrdersCount={newOrdersCount}
-          onNavigate={handleMenuItemClick}
-          onLogout={handleLogout}
-        />
+        <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <MobileAdminSidebar 
+            isOpen={isMenuOpen}
+            onOpenChange={setIsMenuOpen}
+            activePath={location.pathname}
+            newOrdersCount={newOrdersCount}
+            onNavigate={handleMenuItemClick}
+            onLogout={handleLogout}
+          />
+        </Sheet>
       ) : (
-        <DesktopAdminSidebar 
-          isOpen={isMenuOpen}
-          onOpenChange={setIsMenuOpen}
-          activePath={location.pathname}
-          newOrdersCount={newOrdersCount}
-          onNavigate={handleMenuItemClick}
-          onLogout={handleLogout}
-        />
+        <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <DesktopAdminSidebar 
+            isOpen={isMenuOpen}
+            onOpenChange={setIsMenuOpen}
+            activePath={location.pathname}
+            newOrdersCount={newOrdersCount}
+            onNavigate={handleMenuItemClick}
+            onLogout={handleLogout}
+          />
+        </Drawer>
       )}
       
       <main className="flex-1 overflow-y-auto p-4">
