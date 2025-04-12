@@ -131,7 +131,7 @@ export const transformVehicleToCar = transformVehicleFromSupabase;
 export const transformCarToVehicle = transformVehicleForSupabase;
 
 // Transform order data from Supabase
-export const transformOrder = (orderData: any) => {
+export const transformOrder = (orderData: any): Order => {
   return {
     id: orderData.id,
     carId: orderData.car_id,

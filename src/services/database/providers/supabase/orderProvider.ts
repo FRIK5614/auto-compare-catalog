@@ -1,20 +1,32 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Order } from "@/types/car";
+import { transformOrder } from "@/services/api/transformers";
 
 export const orderProvider = {
   async getOrders(): Promise<Order[]> {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select(`
+          *,
+          vehicles:car_id (
+            id,
+            brand,
+            model,
+            image_url
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
         throw error;
       }
       
-      return data || [];
+      // Transform data to match Order type
+      const transformedOrders: Order[] = data?.map(order => transformOrder(order)) || [];
+      
+      return transformedOrders;
     } catch (error) {
       console.error("Error getting orders:", error);
       return [];
@@ -30,7 +42,10 @@ export const orderProvider = {
           customer_name: formData.name,
           customer_email: formData.email,
           customer_phone: formData.phone,
-          status: 'new'
+          message: formData.message,
+          status: 'new',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
       
       if (error) {
@@ -54,7 +69,10 @@ export const orderProvider = {
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status })
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', orderId);
       
       if (error) {
