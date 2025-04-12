@@ -79,14 +79,17 @@ export const loadOrders = async (): Promise<Order[]> => {
     
     // Transform data to match Order type
     const transformedOrders: Order[] = orders.map(order => {
+      // First, check if Supabase table needs updating
+      console.log('Order data from Supabase:', order);
+      
       return {
         id: order.id,
         carId: order.car_id,
         customerName: order.customer_name,
         customerPhone: order.customer_phone,
         customerEmail: order.customer_email,
-        // Added null coalescing for the message field that was missing
-        message: order.message || '',
+        // Handle missing message field with proper typecasting and null coalescing
+        message: (order as any).message || '',
         status: (order.status || 'new') as Order['status'],
         createdAt: order.created_at,
         car: order.vehicles ? {
