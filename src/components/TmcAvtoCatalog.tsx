@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useTmcAvtoCatalog, Car } from '@/hooks/useTmcAvtoCatalog';
+import { useTmcAvtoCatalog, Car } from '@/hooks/tmcAvtoCatalog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +20,8 @@ const TmcAvtoCatalog = () => {
   const { isAdmin } = useAdmin();
   const location = useLocation();
   
-  // Check if we're in the admin section
   const isAdminPage = location.pathname.includes('/admin');
   
-  // Only allow import functionality in the admin section
   const showImportTab = isAdmin && isAdminPage;
 
   const handleFetch = async () => {
@@ -47,7 +44,6 @@ const TmcAvtoCatalog = () => {
   const koreaCars = getCountryFilter('Корея');
   const chinaCars = getCountryFilter('Китай');
 
-  // Показать заблокированные источники
   const renderBlockedSourcesAlert = () => {
     if (blockedSources.length === 0) return null;
     

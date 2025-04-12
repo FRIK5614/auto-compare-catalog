@@ -1,7 +1,7 @@
-
 import { Car } from '@/types/car';
 import { supabase } from '@/integrations/supabase/client';
 import { transformVehicleToCar, transformCarToVehicle } from './transformers';
+import { generateMockCarsForChina } from './mockData';
 
 /**
  * Получение данных о всех автомобилях из Supabase

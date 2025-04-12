@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { useTmcAvtoCatalog, Car } from '@/hooks/useTmcAvtoCatalog';
+import { useTmcAvtoCatalog, Car } from '@/hooks/tmcAvtoCatalog';
 import { useCars } from '@/hooks/useCars';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
