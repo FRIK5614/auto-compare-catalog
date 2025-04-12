@@ -68,16 +68,18 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleAddToCompare = (carId: string): boolean => {
     if (originalAddToCompare) {
       originalAddToCompare(carId);
+      return true;
     }
-    return true;
+    return false;
   };
   
   // Fix: Ensure removeFromCompare returns boolean as expected by the type
   const handleRemoveFromCompare = (carId: string): boolean => {
     if (originalRemoveFromCompare) {
       originalRemoveFromCompare(carId);
+      return true;
     }
-    return true;
+    return false;
   };
   
   // Create proper adapter for uploadCarImage
