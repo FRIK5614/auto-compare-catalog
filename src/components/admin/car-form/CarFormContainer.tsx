@@ -54,7 +54,7 @@ const CarFormContainer: React.FC = () => {
   // Initialize images when car is loaded
   useEffect(() => {
     if (car && car.id) {
-      console.log("Initializing images for car:", car.id, car.images);
+      console.log("Initializing images for car:", car.id, car.images?.length || 0, "images");
       initializeImagesFromCar(car);
     }
   }, [car?.id]);
@@ -62,6 +62,7 @@ const CarFormContainer: React.FC = () => {
   // Adapter functions for image handlers
   const handleImageUrlChange = (url: string) => {
     if (!car) return;
+    console.log("Changing image URL to:", url);
     const updatedCar = imageUrlChange(url);
     if (updatedCar) {
       setCar(updatedCar);
@@ -70,11 +71,13 @@ const CarFormContainer: React.FC = () => {
   
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
+    console.log("Uploading images:", e.target.files?.length || 0, "files");
     imageUpload(e, car);
   };
   
   const handleAddImage = (url: string) => {
     if (!car) return;
+    console.log("Adding image by URL:", url);
     const updatedCar = addImage(url, car);
     if (updatedCar) {
       setCar(updatedCar);
@@ -83,6 +86,7 @@ const CarFormContainer: React.FC = () => {
   
   const handleRemoveImage = (index: number) => {
     if (!car) return;
+    console.log("Removing image at index:", index);
     const updatedCar = removeImage(index, car);
     if (updatedCar) {
       setCar(updatedCar);
@@ -108,7 +112,8 @@ const CarFormContainer: React.FC = () => {
     setFormLoading(true);
     
     try {
-      console.log("Saving car with images:", updatedCar.images?.length || 0);
+      console.log("Saving car with images:", images?.length || 0, "images");
+      console.log("Images before save:", images);
       
       // Ensure images array is properly attached to the car
       updatedCar.images = images;
@@ -122,6 +127,7 @@ const CarFormContainer: React.FC = () => {
         // Update main image URL if necessary
         if (uploadedImages.length > 0) {
           updatedCar.image_url = uploadedImages[0].url;
+          console.log("Updated main image URL to:", updatedCar.image_url);
         }
       }
       

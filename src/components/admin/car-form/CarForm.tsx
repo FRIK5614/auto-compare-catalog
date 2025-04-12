@@ -46,9 +46,13 @@ const CarForm = ({
 
   // Submit form
   const onSubmit = async (data: CarFormValues) => {
+    console.log("Form submitted with values:", data);
     const updatedCar = mapFormValuesToCar(data, car);
+    console.log("Mapped car data:", updatedCar);
     await onSave(updatedCar);
   };
+  
+  console.log("Rendering car form with images:", car.images?.length || 0, "images");
 
   return (
     <FormProvider {...methods}>

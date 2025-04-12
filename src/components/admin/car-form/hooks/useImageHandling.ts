@@ -1,18 +1,24 @@
+
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Car } from '@/types/car';
+import { Car, CarImage } from '@/types/car';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useImageHandling = (initialCar: Car | null) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [images, setImages] = useState<{ id: string, url: string, alt: string, file?: File }[]>([]);
+  const [images, setImages] = useState<CarImage[]>([]);
 
   // Initialize images from car
   const initializeImagesFromCar = (car: Car) => {
+    console.log("Initializing images from car:", car.id);
+    console.log("Car images:", car.images);
+    console.log("Car image_url:", car.image_url);
+    
     if (car.images && car.images.length > 0) {
       setImages(car.images);
       setImagePreview(car.images[0].url);
+      console.log("Set images from car.images:", car.images.length);
     } else if (car.image_url) {
       setImagePreview(car.image_url);
       
@@ -24,13 +30,14 @@ export const useImageHandling = (initialCar: Car | null) => {
           alt: `${car.brand} ${car.model}`
         };
         setImages([initialImage]);
+        console.log("Set images from car.image_url:", [initialImage]);
       }
     }
   };
 
   // Handle image URL change
   const handleImageUrlChange = (url: string) => {
-    if (!initialCar) return;
+    if (!initialCar) return null;
     
     const updatedCar = {...initialCar};
     updatedCar.image_url = url;
@@ -59,6 +66,8 @@ export const useImageHandling = (initialCar: Car | null) => {
     
     // Handle multiple files
     const files = Array.from(e.target.files);
+    console.log("Processing", files.length, "image files");
+    
     const newImages = [...images]; // Copy current images
     
     // Process each file
@@ -86,6 +95,8 @@ export const useImageHandling = (initialCar: Car | null) => {
         if (!imagePreview || newImages.length === 1) {
           setImagePreview(preview);
         }
+        
+        console.log("Added image from file:", newImage.id);
       };
       
       reader.readAsDataURL(file);
@@ -99,7 +110,7 @@ export const useImageHandling = (initialCar: Car | null) => {
 
   // Handle adding a new image by URL
   const addImage = (url: string, car: Car) => {
-    if (!car) return;
+    if (!car) return null;
     
     const newImage = {
       id: uuidv4(),
@@ -120,12 +131,13 @@ export const useImageHandling = (initialCar: Car | null) => {
       setImagePreview(url);
     }
     
+    console.log("Added image by URL:", newImage.id, "Total images:", updatedImages.length);
     return updatedCar;
   };
 
   // Handle removing an image
   const removeImage = (index: number, car: Car) => {
-    if (!car || !images) return;
+    if (!car || !images) return null;
     
     const updatedImages = [...images];
     updatedImages.splice(index, 1);
@@ -141,6 +153,7 @@ export const useImageHandling = (initialCar: Car | null) => {
       setImagePreview(updatedImages.length > 0 ? updatedImages[0].url : null);
     }
     
+    console.log("Removed image at index:", index, "Total images:", updatedImages.length);
     return updatedCar;
   };
 
@@ -152,6 +165,7 @@ export const useImageHandling = (initialCar: Car | null) => {
     const localImages = images.filter(img => img.file);
     
     if (localImages.length === 0) {
+      console.log("No local images to upload to storage");
       return images; // Return original images if no local files to upload
     }
     
@@ -190,6 +204,8 @@ export const useImageHandling = (initialCar: Car | null) => {
             url: publicUrl,
             alt: image.alt
           });
+          
+          console.log('Image stored at public URL:', publicUrl);
         }
       } catch (uploadError) {
         console.error('Unexpected upload error:', uploadError);
@@ -199,9 +215,11 @@ export const useImageHandling = (initialCar: Car | null) => {
     
     // Get the list of all images that didn't have files to upload (external URLs)
     const externalImages = images.filter(img => !img.file);
+    console.log("External images (URLs only):", externalImages.length);
     
     // Combine uploaded images with external URL images
     const allImages = [...uploadResults, ...externalImages];
+    console.log("Total images after upload:", allImages.length);
     
     // Update the state with the new image URLs
     setImages(allImages);

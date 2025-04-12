@@ -12,6 +12,7 @@ export const useCarSave = () => {
   const saveCar = async (car: Car, isNewCar: boolean): Promise<{ success: boolean, message?: string }> => {
     setSaving(true);
     console.log("Saving car:", isNewCar ? "new car" : "update car", car);
+    console.log("Images to save:", car.images?.length || 0, "images");
     
     // Ensure basic validation is done
     if (!car.brand || !car.model) {
@@ -36,6 +37,10 @@ export const useCarSave = () => {
         url: img.url,
         alt: img.alt
       }));
+      
+      console.log("Prepared images for saving:", car.images.length, "images");
+    } else {
+      console.warn("No images to save for this car");
     }
     
     try {
