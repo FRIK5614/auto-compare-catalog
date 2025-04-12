@@ -2,8 +2,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCars } from "@/hooks/useCars";
-import { X, BarChart2, RefreshCw } from "lucide-react";
+import { X, BarChart2, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const ComparePanel = () => {
   const { 
@@ -14,10 +15,18 @@ const ComparePanel = () => {
     error, 
     reloadCars 
   } = useCars();
+
+  const [expanded, setExpanded] = useState(false);
   
+  // If there are no cars to compare, loading, or error, don't show the panel
   if (loading || error || comparisonCars.length === 0) {
     return null;
   }
+
+  // Limit the number of visible cars in collapsed state
+  const visibleCarsLimit = 3;
+  const visibleCars = expanded ? comparisonCars : comparisonCars.slice(0, visibleCarsLimit);
+  const hasMoreCars = comparisonCars.length > visibleCarsLimit;
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white border-t border-auto-gray-200 shadow-lg z-40">
@@ -29,8 +38,8 @@ const ComparePanel = () => {
               <span className="font-medium">Сравнение: {comparisonCars.length} {comparisonCars.length === 1 ? 'автомобиль' : comparisonCars.length < 5 ? 'автомобиля' : 'автомобилей'}</span>
             </div>
             
-            <div className="hidden md:flex items-center space-x-2 flex-wrap">
-              {comparisonCars.map(car => (
+            <div className="hidden md:flex items-center space-x-2 flex-wrap max-h-20 overflow-y-auto">
+              {visibleCars.map(car => (
                 <div 
                   key={car.id} 
                   className="flex items-center bg-auto-gray-100 px-2 py-1 rounded mb-1"
@@ -44,10 +53,30 @@ const ComparePanel = () => {
                   </button>
                 </div>
               ))}
+              
+              {!expanded && hasMoreCars && (
+                <div className="text-sm text-auto-gray-500">
+                  и еще {comparisonCars.length - visibleCarsLimit}...
+                </div>
+              )}
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
+            {hasMoreCars && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpanded(!expanded)}
+                className="text-auto-gray-700"
+              >
+                {expanded ? 
+                  <><ChevronDown className="h-4 w-4 mr-1" /> Свернуть</> : 
+                  <><ChevronUp className="h-4 w-4 mr-1" /> Показать все</>
+                }
+              </Button>
+            )}
+            
             <Button 
               variant="outline" 
               size="sm" 
