@@ -1,4 +1,4 @@
 
-import TmcAvtoCatalog from './tmcAvtoCatalog';
+import TmcAvtoCatalog from './tmcAvtoCatalog/TmcAvtoCatalog';
 
 export default TmcAvtoCatalog;
