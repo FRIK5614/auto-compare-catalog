@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { Car, Order } from "@/types/car";
 import { useCarsData } from "./useCarsData";
 import { useFilters } from "./useFilters";
-import { useFavorites } from "./useFavorites";
+import { useFavorites } from "./favorites";
 import { useCompare } from "./useCompare";
 import { useCarsCRUD } from "./useCarsCRUD";
 import { useOrders } from "./useOrders";
