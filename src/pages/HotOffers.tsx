@@ -25,6 +25,12 @@ const HotOffers = () => {
     channelName: TELEGRAM_CHANNEL
   });
   
+  // For debugging
+  React.useEffect(() => {
+    console.log("Posts in HotOffers:", posts.length);
+    console.log("Error in HotOffers:", error);
+  }, [posts, error]);
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

@@ -28,28 +28,36 @@ const SelectFormField = ({
   placeholder,
   options
 }: SelectFormFieldProps) => {
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
   
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="space-y-1">
           <FormLabel>{label}</FormLabel>
           <Select 
-            onValueChange={field.onChange} 
-            defaultValue={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              // Trigger any validation or dependent fields if needed
+              console.log(`Selected ${name}: ${value}`);
+            }} 
+            defaultValue={field.value || ""}
             value={field.value || ""}
           >
             <FormControl>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full bg-white focus:bg-white">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {options.map(option => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value}
+                  className="cursor-pointer"
+                >
                   {option.label}
                 </SelectItem>
               ))}

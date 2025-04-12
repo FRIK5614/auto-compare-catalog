@@ -82,9 +82,11 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       
       // Синхронизируем данные при загрузке, если мы онлайн
       if (initialOnlineStatus) {
-        if (refreshFavorites) {
+        // Use conditional to avoid type error when calling refreshFavorites
+        if (typeof refreshFavorites === 'function') {
           refreshFavorites();
         }
+        // Always reload orders
         reloadOrders();
       }
     }
@@ -152,11 +154,11 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleImportCarsData = async (data: string): Promise<Car[]> => {
     const success = await importCarsData(data);
-    return success ? cars : []; // Return current cars if successful
+    return success ? cars : Promise.reject("Failed to import cars");
   };
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
-    const imageUrl = await uploadCarImage(file);
+    const imageUrl = await uploadCarImage(file, carId);
     return {
       id: `img-${Date.now()}`,
       url: imageUrl,

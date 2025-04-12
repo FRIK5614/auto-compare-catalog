@@ -34,12 +34,12 @@ export const useTelegramFeed = ({
     try {
       console.log(`Fetching Telegram posts from ${channelName}, offset: ${currentOffset}, limit: ${postsPerPage}`);
       
-      // Call our Supabase edge function
+      // Call our Supabase edge function with correct parameters format
       const { data, error } = await supabase.functions.invoke("telegram-feed", {
-        query: { 
+        body: { 
           channel: channelName,
-          limit: postsPerPage.toString(),
-          offset: currentOffset.toString()
+          limit: postsPerPage,
+          offset: currentOffset
         }
       });
       
@@ -77,8 +77,6 @@ export const useTelegramFeed = ({
       } catch (err) {
         console.error("Error loading initial posts:", err);
         setError(err instanceof Error ? err.message : "Ошибка загрузки постов");
-        
-        // Show error toast or other UI notification here
       }
     };
     

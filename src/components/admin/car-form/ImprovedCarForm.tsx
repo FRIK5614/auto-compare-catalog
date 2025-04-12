@@ -9,6 +9,7 @@ import { Car } from "@/types/car";
 import { CarFormBasicInfo, CarFormTechnical } from "./index";
 import { CarFormValues, carFormSchema, mapCarToFormValues, mapFormValuesToCar } from "./validation";
 import ImprovedCarFormImage from "./ImprovedCarFormImage";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImprovedCarFormProps {
   car: Car;
@@ -36,6 +37,7 @@ const ImprovedCarForm = ({
   images
 }: ImprovedCarFormProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const methods = useForm<CarFormValues>({
     resolver: zodResolver(carFormSchema),
@@ -43,21 +45,41 @@ const ImprovedCarForm = ({
     defaultValues: mapCarToFormValues(car),
   });
   
-  const { handleSubmit, formState: { isValid, errors } } = methods;
+  const { handleSubmit, formState: { isValid, errors }, reset } = methods;
+
+  // Reset form when car changes
+  React.useEffect(() => {
+    if (car) {
+      const formValues = mapCarToFormValues(car);
+      console.log("Resetting form with values:", formValues);
+      reset(formValues);
+    }
+  }, [car, reset]);
 
   // Submit form
   const onSubmit = async (data: CarFormValues) => {
     console.log("Form submitted with values:", data);
-    const updatedCar = mapFormValuesToCar(data, car);
-    console.log("Mapped car data:", updatedCar);
-    
-    // Make sure images are preserved
-    updatedCar.images = images;
-    
-    await onSave(updatedCar);
+    try {
+      const updatedCar = mapFormValuesToCar(data, car);
+      console.log("Mapped car data:", updatedCar);
+      
+      // Make sure images are preserved
+      updatedCar.images = images;
+      
+      await onSave(updatedCar);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Произошла ошибка при сохранении данных"
+      });
+    }
   };
   
   console.log("Rendering improved car form with images:", images?.length || 0, "images");
+  console.log("Form validation state:", isValid, "errors:", Object.keys(errors).length);
+  console.log("Form errors:", errors);
 
   return (
     <FormProvider {...methods}>
@@ -80,7 +102,7 @@ const ImprovedCarForm = ({
             </div>
             <Button
               type="submit"
-              disabled={loading || !isValid}
+              disabled={loading}
               className="flex items-center"
             >
               <Save className="mr-2 h-4 w-4" />
