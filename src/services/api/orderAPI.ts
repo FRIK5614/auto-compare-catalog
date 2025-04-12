@@ -63,23 +63,35 @@ export const fetchOrders = async (): Promise<Order[]> => {
     
     console.log(`[API] Получено ${data?.length || 0} заказов из Supabase:`, data);
     
-    // Transform the data to match our Order type
-    const orders: Order[] = (data || []).map(order => ({
-      id: order.id,
-      carId: order.car_id,
-      customerName: order.customer_name,
-      customerPhone: order.customer_phone,
-      customerEmail: order.customer_email,
-      status: order.status,
-      createdAt: order.created_at,
-      // Add car details if available
-      car: order.vehicles ? {
-        id: order.vehicles.id,
-        brand: order.vehicles.brand,
-        model: order.vehicles.model,
-        image_url: order.vehicles.image_url
-      } : undefined
-    }));
+    // Transform the data to match our Order type with proper status validation
+    const orders: Order[] = (data || []).map(order => {
+      // Validate status to ensure it matches the expected union type
+      let typedStatus: "new" | "processing" | "completed" | "canceled" = "new";
+      
+      if (order.status === "processing" || order.status === "completed" || order.status === "canceled") {
+        typedStatus = order.status;
+      } else if (order.status && typeof order.status === 'string') {
+        // If status exists but doesn't match expected values, default to "new"
+        console.warn(`Unexpected order status "${order.status}" defaulting to "new"`);
+      }
+      
+      return {
+        id: order.id,
+        carId: order.car_id,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerEmail: order.customer_email,
+        status: typedStatus,
+        createdAt: order.created_at,
+        // Add car details if available
+        car: order.vehicles ? {
+          id: order.vehicles.id,
+          brand: order.vehicles.brand,
+          model: order.vehicles.model,
+          image_url: order.vehicles.image_url
+        } : undefined
+      };
+    });
     
     return orders;
   } catch (error) {
@@ -91,7 +103,7 @@ export const fetchOrders = async (): Promise<Order[]> => {
 /**
  * Обновление статуса заказа в Supabase
  */
-export const updateOrderStatus = async (orderId: string, status: string): Promise<boolean> => {
+export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<boolean> => {
   try {
     console.log(`[API] Обновление статуса заказа ${orderId} в Supabase на ${status}`);
     
