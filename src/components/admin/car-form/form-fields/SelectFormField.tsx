@@ -49,11 +49,11 @@ const SelectFormField = ({
             value={field.value?.toString() || ""}
           >
             <FormControl>
-              <SelectTrigger className="w-full bg-white focus:bg-white">
+              <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-white z-50">
               {options.map(option => (
                 <SelectItem 
                   key={option.value} 

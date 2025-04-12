@@ -30,8 +30,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     addToFavorites,
     removeFromFavorites,
     refreshFavorites,
-    addToCompare,
-    removeFromCompare,
+    addToCompare: originalAddToCompare,
+    removeFromCompare: originalRemoveFromCompare,
     clearCompare,
     getCarById,
     reloadCars,
@@ -55,20 +55,23 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   const handleDeleteCar = createDeleteCarAdapter(deleteCar);
   
-  // Fix: Wrap addToCompare to ensure it returns boolean or Promise<boolean>
+  // Fix: Wrap addToCompare with proper return type that matches the expected signature
   const handleAddToCompare = (carId: string): boolean | Promise<boolean> => {
-    addToCompare(carId);
+    if (originalAddToCompare) {
+      originalAddToCompare(carId);
+    }
     return true;
   };
   
-  // Fix: Wrap removeFromCompare to ensure it returns boolean or Promise<boolean>
+  // Fix: Wrap removeFromCompare with proper return type that matches the expected signature 
   const handleRemoveFromCompare = (carId: string): boolean | Promise<boolean> => {
-    removeFromCompare(carId);
+    if (originalRemoveFromCompare) {
+      originalRemoveFromCompare(carId);
+    }
     return true;
   };
   
   // Create proper adapter for uploadCarImage
-  // We need to make sure the adapter handles the single parameter format
   const handleUploadCarImage = createUploadCarImageAdapter(uploadCarImage);
 
   return (
