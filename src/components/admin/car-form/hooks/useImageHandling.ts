@@ -1,13 +1,14 @@
-
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Car, CarImage } from '@/types/car';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const useImageHandling = (initialCar: Car | null) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [images, setImages] = useState<CarImage[]>([]);
+  const { toast } = useToast();
 
   // Initialize images from car
   const initializeImagesFromCar = (car: Car) => {
@@ -69,70 +70,103 @@ export const useImageHandling = (initialCar: Car | null) => {
     console.log("Processing", files.length, "image files");
     
     const newImages = [...images]; // Copy current images
+    const uploadPromises: Promise<void>[] = [];
     
     // Process each file
     files.forEach((file) => {
-      const reader = new FileReader();
-      
-      reader.onloadend = () => {
-        const preview = reader.result as string;
+      const uploadPromise = new Promise<void>((resolve) => {
+        const reader = new FileReader();
         
-        // Create a new image object
-        const newImage = {
-          id: uuidv4(),
-          url: preview,
-          alt: `${car.brand} ${car.model} - Image ${newImages.length + 1}`,
-          file: file // Store file reference for later upload
+        reader.onloadend = () => {
+          const preview = reader.result as string;
+          
+          // Create a new image object
+          const newImage = {
+            id: uuidv4(),
+            url: preview,
+            alt: `${car.brand} ${car.model} - Image ${newImages.length + 1}`,
+            file: file // Store file reference for later upload
+          };
+          
+          // Add to images array
+          newImages.push(newImage);
+          resolve();
         };
         
-        // Add to images array
-        newImages.push(newImage);
-        
-        // Update state after all files are processed
-        setImages(newImages);
-        
-        // Set first image as preview if we don't have one
-        if (!imagePreview || newImages.length === 1) {
-          setImagePreview(preview);
-        }
-        
-        console.log("Added image from file:", newImage.id);
-      };
+        reader.readAsDataURL(file);
+      });
       
-      reader.readAsDataURL(file);
+      uploadPromises.push(uploadPromise);
     });
     
-    // Update original file for legacy support
-    if (files.length > 0) {
-      setImageFile(files[0]);
-    }
+    // Wait for all files to be processed
+    Promise.all(uploadPromises).then(() => {
+      // Update state after all files are processed
+      setImages(newImages);
+      
+      // Set first image as preview if we don't have one
+      if (!imagePreview || newImages.length === 1) {
+        setImagePreview(newImages[0].url);
+      }
+      
+      console.log("Added images from files, new count:", newImages.length);
+      
+      // Update original file for legacy support
+      if (files.length > 0) {
+        setImageFile(files[0]);
+      }
+      
+      toast({
+        title: "Изображения загружены",
+        description: `Добавлено ${files.length} изображений для обработки`
+      });
+    });
   };
 
   // Handle adding a new image by URL
   const addImage = (url: string, car: Car) => {
     if (!car) return null;
     
-    const newImage = {
-      id: uuidv4(),
-      url: url,
-      alt: `${car.brand} ${car.model} - Изображение ${(images.length || 0) + 1}`,
-    };
-    
-    const updatedImages = [...(images || []), newImage];
-    setImages(updatedImages);
-    
-    // Update car object
-    const updatedCar = {...car};
-    updatedCar.images = updatedImages;
-    
-    // If this is the first image, also set it as the main image
-    if (updatedImages.length === 1 || !updatedCar.image_url) {
-      updatedCar.image_url = url;
-      setImagePreview(url);
+    try {
+      // Validate URL
+      new URL(url);
+      
+      const newImage = {
+        id: uuidv4(),
+        url: url,
+        alt: `${car.brand} ${car.model} - Изображение ${(images.length || 0) + 1}`,
+      };
+      
+      const updatedImages = [...(images || []), newImage];
+      setImages(updatedImages);
+      
+      // Update car object
+      const updatedCar = {...car};
+      updatedCar.images = updatedImages;
+      
+      // If this is the first image, also set it as the main image
+      if (updatedImages.length === 1 || !updatedCar.image_url) {
+        updatedCar.image_url = url;
+        setImagePreview(url);
+      }
+      
+      console.log("Added image by URL:", newImage.id, "Total images:", updatedImages.length);
+      
+      toast({
+        title: "Изображение добавлено",
+        description: "Новое изображение добавлено в галерею"
+      });
+      
+      return updatedCar;
+    } catch (error) {
+      console.error("Invalid URL format:", url);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Некорректный формат URL"
+      });
+      return null;
     }
-    
-    console.log("Added image by URL:", newImage.id, "Total images:", updatedImages.length);
-    return updatedCar;
   };
 
   // Handle removing an image
@@ -154,6 +188,12 @@ export const useImageHandling = (initialCar: Car | null) => {
     }
     
     console.log("Removed image at index:", index, "Total images:", updatedImages.length);
+    
+    toast({
+      title: "Изображение удалено",
+      description: "Изображение удалено из галереи"
+    });
+    
     return updatedCar;
   };
 
@@ -170,6 +210,25 @@ export const useImageHandling = (initialCar: Car | null) => {
     }
     
     console.log(`Uploading ${localImages.length} images to Supabase Storage`);
+    toast({
+      title: "Загрузка изображений",
+      description: `Загрузка ${localImages.length} изображений на сервер...`
+    });
+    
+    // Create storage bucket if it doesn't exist (will be ignored if it exists)
+    try {
+      const { data: bucketExists } = await supabase.storage.getBucket('car-images');
+      if (!bucketExists) {
+        await supabase.storage.createBucket('car-images', {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+        });
+        console.log("Created 'car-images' bucket");
+      }
+    } catch (error) {
+      console.warn("Error checking/creating bucket:", error);
+      // Continue anyway, as the bucket might exist
+    }
     
     // Upload each file in the images array
     for (const image of localImages) {
@@ -188,6 +247,12 @@ export const useImageHandling = (initialCar: Car | null) => {
         
         if (error) {
           console.error('Error uploading file:', error);
+          toast({
+            variant: "destructive",
+            title: "Ошибка загрузки",
+            description: `Не удалось загрузить файл: ${error.message}`
+          });
+          
           // Keep the original image with the local preview
           uploadResults.push(image);
         } else {
@@ -209,6 +274,11 @@ export const useImageHandling = (initialCar: Car | null) => {
         }
       } catch (uploadError) {
         console.error('Unexpected upload error:', uploadError);
+        toast({
+          variant: "destructive",
+          title: "Ошибка загрузки",
+          description: "Непредвиденная ошибка при загрузке файла"
+        });
         uploadResults.push(image);
       }
     }
@@ -228,6 +298,11 @@ export const useImageHandling = (initialCar: Car | null) => {
     if (allImages.length > 0 && (!imagePreview || allImages[0].id === images[0]?.id)) {
       setImagePreview(allImages[0].url);
     }
+    
+    toast({
+      title: "Загрузка завершена",
+      description: `Загружено ${uploadResults.length} изображений`
+    });
     
     return allImages;
   };

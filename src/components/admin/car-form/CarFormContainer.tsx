@@ -10,12 +10,14 @@ import { useImageHandling } from './hooks/useImageHandling';
 import { useCarSave } from './hooks/useCarSave';
 import { useExternalCarData } from './hooks/useExternalCarData';
 import { Car } from '@/types/car';
+import { useToast } from '@/hooks/use-toast';
 
 const CarFormContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isNewCar = id === "new";
   const navigate = useNavigate();
   const saveOperationInProgress = useRef(false);
+  const { toast } = useToast();
   
   // Get car data
   const {
@@ -113,7 +115,6 @@ const CarFormContainer: React.FC = () => {
     
     try {
       console.log("Saving car with images:", images?.length || 0, "images");
-      console.log("Images before save:", images);
       
       // Ensure images array is properly attached to the car
       updatedCar.images = images;
@@ -121,29 +122,63 @@ const CarFormContainer: React.FC = () => {
       // Upload any local images to storage
       if (images.some(img => img.file)) {
         console.log("Uploading local images to storage...");
-        const uploadedImages = await uploadImageFiles(updatedCar.id);
-        updatedCar.images = uploadedImages;
+        toast({
+          title: "Загрузка изображений",
+          description: "Идет загрузка изображений на сервер..."
+        });
         
-        // Update main image URL if necessary
-        if (uploadedImages.length > 0) {
-          updatedCar.image_url = uploadedImages[0].url;
-          console.log("Updated main image URL to:", updatedCar.image_url);
+        try {
+          const uploadedImages = await uploadImageFiles(updatedCar.id);
+          updatedCar.images = uploadedImages;
+          
+          // Update main image URL if necessary
+          if (uploadedImages.length > 0) {
+            updatedCar.image_url = uploadedImages[0].url;
+            console.log("Updated main image URL to:", updatedCar.image_url);
+          }
+        } catch (uploadError) {
+          console.error("Error uploading images:", uploadError);
+          toast({
+            variant: "destructive",
+            title: "Ошибка загрузки изображений",
+            description: "Произошла ошибка при загрузке изображений, но данные автомобиля будут сохранены"
+          });
         }
       }
       
       // Call the save function with correct parameters
       const result = await saveCar(updatedCar, isNewCar);
       
-      if (result.success && isNewCar) {
-        console.log("Navigating back to cars list after successful save");
-        navigate(`/admin/cars`);
+      if (result.success) {
+        toast({
+          title: isNewCar ? "Автомобиль добавлен" : "Автомобиль обновлен",
+          description: `${updatedCar.brand} ${updatedCar.model} успешно ${isNewCar ? "добавлен" : "обновлен"}`
+        });
+        
+        if (isNewCar) {
+          console.log("Navigating back to cars list after successful save");
+          navigate(`/admin/cars`);
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Ошибка сохранения",
+          description: result.message || "Произошла ошибка при сохранении автомобиля"
+        });
       }
+    } catch (error) {
+      console.error("Error in save handler:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка сохранения",
+        description: "Произошла непредвиденная ошибка при сохранении автомобиля"
+      });
     } finally {
       setFormLoading(false);
       // Short delay to prevent accidental double submission
       setTimeout(() => {
         saveOperationInProgress.current = false;
-      }, 300);
+      }, 500);
     }
   };
 
@@ -168,6 +203,7 @@ const CarFormContainer: React.FC = () => {
         <p className="mb-6 text-auto-gray-600">{error}</p>
         <button 
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          onClick={() => window.location.reload()}
         >
           Попробовать снова
         </button>

@@ -105,6 +105,8 @@ export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
     if (!initialDataLoadedRef.current && !loading) {
       initialDataLoadedRef.current = true;
       console.log("🚀 Loading cars data - INITIAL LOAD");
+      
+      // Reload cars data immediately
       reloadCars();
     }
   }, [reloadCars, loading]);

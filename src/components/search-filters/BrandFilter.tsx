@@ -20,6 +20,7 @@ export const BrandFilter = ({ filter, setFilter }: BrandFilterProps) => {
   const brands = getUniqueValues("brand") as string[];
   
   const handleBrandChange = (brand: string, checked: boolean) => {
+    console.log("Brand filter change:", brand, checked);
     const currentBrands = filter.brands || [];
     
     if (checked) {
@@ -56,11 +57,18 @@ export const BrandFilter = ({ filter, setFilter }: BrandFilterProps) => {
                 <Checkbox 
                   id={`brand-${brand}`} 
                   checked={isChecked}
-                  onCheckedChange={(checked) => handleBrandChange(brand, checked as boolean)}
+                  onCheckedChange={(checked) => {
+                    // Ensure we're getting a boolean value
+                    handleBrandChange(brand, checked === true);
+                  }}
                 />
                 <Label 
                   htmlFor={`brand-${brand}`}
-                  className="text-sm cursor-pointer"
+                  className="text-sm cursor-pointer w-full py-1"
+                  onClick={() => {
+                    // Toggle the checkbox on label click
+                    handleBrandChange(brand, !isChecked);
+                  }}
                 >
                   {brand}
                 </Label>

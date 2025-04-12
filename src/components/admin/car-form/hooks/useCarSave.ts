@@ -47,6 +47,7 @@ export const useCarSave = () => {
       
       // Based on whether it's a new car or updating an existing one
       if (isNewCar) {
+        console.log("Adding new car:", car);
         const result = await addCar(car);
         
         if (result) {
@@ -60,6 +61,7 @@ export const useCarSave = () => {
           throw new Error("Failed to add new car");
         }
       } else {
+        console.log("Updating existing car:", car);
         const result = await updateCar(car);
         
         if (result) {
