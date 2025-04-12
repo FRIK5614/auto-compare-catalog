@@ -1,11 +1,12 @@
 
-import { Car, CarImage } from '@/types/car';
+import { Car, CarImage, Order } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
 import { Json } from '@/integrations/supabase/types';
 
 // Transform vehicle data from Supabase to app format
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
   try {
+    // Создаем базовый объект автомобиля
     const car: Car = {
       id: vehicle.id || uuidv4(),
       brand: vehicle.brand || '',
@@ -31,6 +32,7 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
         gears: vehicle.transmission_gears || 0,
       },
       drivetrain: vehicle.drivetrain || '',
+      // Правильно обрабатываем dimensions из JSON
       dimensions: vehicle.dimensions || {
         length: 0,
         width: 0,
@@ -39,6 +41,7 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
         weight: 0,
         trunkVolume: 0,
       },
+      // Правильно обрабатываем performance из JSON
       performance: vehicle.performance || {
         acceleration: 0,
         topSpeed: 0,
@@ -77,11 +80,16 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
 // Transform app data to Supabase format
 export const transformVehicleForSupabase = (car: Car) => {
   try {
-    // Convert complex objects to JSON strings for Supabase
-    const dimensionsJson = car.dimensions ? car.dimensions as unknown as Json : null;
-    const performanceJson = car.performance ? car.performance as unknown as Json : null;
-    const featuresJson = car.features ? car.features as unknown as Json : null;
-
+    console.log("Преобразование автомобиля для Supabase:", car);
+    
+    // Преобразуем сложные объекты в JSON для Supabase
+    const dimensionsJson = car.dimensions ? JSON.stringify(car.dimensions) : null;
+    const performanceJson = car.performance ? JSON.stringify(car.performance) : null;
+    const featuresJson = car.features ? JSON.stringify(car.features) : null;
+    
+    console.log("Размеры JSON:", dimensionsJson);
+    console.log("Характеристики JSON:", performanceJson);
+    
     return {
       id: car.id,
       brand: car.brand,
@@ -101,9 +109,9 @@ export const transformVehicleForSupabase = (car: Car) => {
       transmission_type: car.transmission.type,
       transmission_gears: car.transmission.gears,
       drivetrain: car.drivetrain,
-      dimensions: dimensionsJson,
-      performance: performanceJson,
-      features: featuresJson,
+      dimensions: dimensionsJson as unknown as Json,
+      performance: performanceJson as unknown as Json,
+      features: featuresJson as unknown as Json,
       description: car.description,
       is_new: car.isNew,
       is_popular: car.isPopular || false,

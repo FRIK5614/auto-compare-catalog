@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -35,6 +34,11 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+});
+
+// Инициализируем Supabase при загрузке
+initializeSupabase().catch(error => {
+  console.error("Failed to initialize Supabase:", error);
 });
 
 // AppContent component to handle routes

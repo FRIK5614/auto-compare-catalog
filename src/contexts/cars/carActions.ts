@@ -1,8 +1,6 @@
-
 import { Car } from "@/types/car";
-import { incrementCarViewCount, saveCar, updateCar as apiUpdateCar, deleteCar as apiDeleteCar } from "@/services/api";
-import { transformVehicleForSupabase } from "@/services/api/transformers";
 import { supabase } from "@/integrations/supabase/client";
+import { transformVehicleForSupabase } from "@/services/api/transformers";
 
 // Increment view count for a car
 export const viewCar = async (
@@ -11,8 +9,23 @@ export const viewCar = async (
   onSuccess: (updatedCars: Car[]) => void
 ) => {
   try {
-    await incrementCarViewCount(carId);
+    // Инкрементируем счетчик просмотров в базе данных
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('view_count')
+      .eq('id', carId)
+      .single();
     
+    if (!error) {
+      const currentViewCount = data?.view_count || 0;
+      
+      await supabase
+        .from('vehicles')
+        .update({ view_count: currentViewCount + 1 })
+        .eq('id', carId);
+    }
+    
+    // Обновляем локальное состояние
     const updatedCars = cars.map(car => 
       car.id === carId 
         ? { ...car, viewCount: (car.viewCount || 0) + 1 } 
@@ -23,6 +36,7 @@ export const viewCar = async (
   } catch (err) {
     console.error("Failed to update view count:", err);
     
+    // Fallback: update local state only
     const updatedCars = cars.map(car => 
       car.id === carId 
         ? { ...car, viewCount: (car.viewCount || 0) + 1 } 
@@ -41,9 +55,23 @@ export const deleteCar = async (
   onError: (message: string) => void
 ) => {
   try {
-    await apiDeleteCar(carId);
+    console.log(`Удаление автомобиля с ID ${carId}`);
     
+    // Удаляем автомобиль из базы данных
+    const { error } = await supabase
+      .from('vehicles')
+      .delete()
+      .eq('id', carId);
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Фильтруем локальное состояние, чтобы удалить автомобиль
     const updatedCars = cars.filter(car => car.id !== carId);
+    console.log(`Машина удалена, было: ${cars.length}, стало: ${updatedCars.length}`);
+    
+    // Обновляем локальное состояние
     onSuccess(updatedCars);
     
     return {
@@ -53,6 +81,7 @@ export const deleteCar = async (
   } catch (err) {
     console.error("Failed to delete car:", err);
     
+    // Фильтруем локальное состояние, чтобы удалить автомобиль (fallback)
     const updatedCars = cars.filter(car => car.id !== carId);
     onSuccess(updatedCars);
     

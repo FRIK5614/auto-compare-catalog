@@ -109,7 +109,9 @@ export const orderAPI = {
         customer_phone: customerPhone,
         customer_email: customerEmail,
         status: 'new',
-        message: message || ''
+        message: message || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
       console.log('Submitting order with data:', newOrder);
@@ -155,7 +157,10 @@ export const orderAPI = {
       
       const { error } = await supabase
         .from('orders')
-        .update({ status })
+        .update({ 
+          status, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', orderId);
       
       if (error) {

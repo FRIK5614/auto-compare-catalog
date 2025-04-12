@@ -26,25 +26,29 @@ export const useImageStorage = () => {
     });
     
     try {
-      // Check if bucket exists
+      // Check if bucket exists and create it if it doesn't
       const { data: buckets } = await supabase.storage.listBuckets();
       const bucketExists = buckets?.some(bucket => bucket.name === 'car-images');
       
       if (!bucketExists) {
         try {
           // Create bucket if it doesn't exist
-          await supabase.storage.createBucket('car-images', {
+          const { data, error } = await supabase.storage.createBucket('car-images', {
             public: true
           });
-          console.log("Created 'car-images' bucket");
-        } catch (bucketError: any) {
-          // If bucket creation fails due to RLS, continue anyway as it might already exist
+          
+          if (error) {
+            console.error("Error creating car-images bucket:", error);
+          } else {
+            console.log("Created 'car-images' bucket:", data);
+          }
+        } catch (bucketError) {
           console.warn("Error creating car-images bucket:", bucketError);
         }
       }
     } catch (error) {
       console.warn("Error checking buckets:", error);
-      // Continue anyway
+      // Continue anyway, will fail on upload if bucket doesn't exist
     }
     
     // Upload each file in the images array
@@ -56,10 +60,14 @@ export const useImageStorage = () => {
       const fileName = `${carId}/${uuidv4()}.${fileExt}`;
       
       try {
+        console.log(`Uploading file ${fileName} to car-images bucket`);
+        
         const { data, error } = await supabase.storage
           .from('car-images')
           .upload(fileName, file, {
             upsert: true,
+            cacheControl: '3600',
+            contentType: file.type
           });
         
         if (error) {
@@ -73,7 +81,7 @@ export const useImageStorage = () => {
           // Keep the original image with the local preview
           uploadResults.push(image);
         } else {
-          console.log('Successfully uploaded file:', fileName);
+          console.log('Successfully uploaded file:', fileName, data);
           
           // Get public URL for the uploaded file
           const { data: { publicUrl } } = supabase.storage
