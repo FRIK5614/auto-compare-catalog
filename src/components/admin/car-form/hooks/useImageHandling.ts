@@ -15,6 +15,16 @@ export const useImageHandling = (initialCar: Car | null) => {
       setImagePreview(car.images[0].url);
     } else if (car.image_url) {
       setImagePreview(car.image_url);
+      
+      // If there's an image_url but no images array, initialize the images array
+      if (!car.images || car.images.length === 0) {
+        const initialImage = {
+          id: uuidv4(),
+          url: car.image_url,
+          alt: `${car.brand} ${car.model}`
+        };
+        setImages([initialImage]);
+      }
     }
   };
 
@@ -39,30 +49,47 @@ export const useImageHandling = (initialCar: Car | null) => {
     }
     
     setImages(updatedCar.images);
+    setImagePreview(url);
     return updatedCar;
   };
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, car: Car) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      // Handle multiple files
+      const files = Array.from(e.target.files);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const preview = reader.result as string;
-        setImagePreview(preview);
+      // Process each file
+      files.forEach((file, index) => {
+        setImageFile(file);
         
-        // Also update in car object
-        handleImageUrlChange(preview);
-      };
-      reader.readAsDataURL(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const preview = reader.result as string;
+          
+          // Set the first image as the preview and main image
+          if (index === 0) {
+            setImagePreview(preview);
+            
+            // Update main image
+            if (handleImageUrlChange) {
+              handleImageUrlChange(preview);
+            }
+          } else {
+            // Add additional images
+            if (addImage) {
+              addImage(preview, car);
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
   // Handle adding a new image
-  const handleAddImage = (url: string, car: Car) => {
+  const addImage = (url: string, car: Car) => {
     if (!car) return;
     
     const newImage = {
@@ -81,13 +108,14 @@ export const useImageHandling = (initialCar: Car | null) => {
     // If this is the first image, also set it as the main image
     if (updatedImages.length === 1 || !updatedCar.image_url) {
       updatedCar.image_url = url;
+      setImagePreview(url);
     }
     
     return updatedCar;
   };
 
   // Handle removing an image
-  const handleRemoveImage = (index: number, car: Car) => {
+  const removeImage = (index: number, car: Car) => {
     if (!car || !images) return;
     
     const updatedImages = [...images];
@@ -101,6 +129,7 @@ export const useImageHandling = (initialCar: Car | null) => {
     // If we removed the main image, update the main image URL
     if (index === 0 || updatedImages.length === 0) {
       updatedCar.image_url = updatedImages.length > 0 ? updatedImages[0].url : "";
+      setImagePreview(updatedImages.length > 0 ? updatedImages[0].url : null);
     }
     
     return updatedCar;
@@ -114,7 +143,7 @@ export const useImageHandling = (initialCar: Car | null) => {
     initializeImagesFromCar,
     handleImageUrlChange,
     handleImageUpload,
-    handleAddImage,
-    handleRemoveImage
+    handleAddImage: addImage,
+    handleRemoveImage: removeImage
   };
 };

@@ -52,8 +52,8 @@ const CarFormContainer: React.FC = () => {
 
   // Initialize images when car is loaded
   useEffect(() => {
-    if (car && car.images && car.id) {
-      console.log("Initializing images for car:", car.id);
+    if (car && car.id) {
+      console.log("Initializing images for car:", car.id, car.images);
       initializeImagesFromCar(car);
     }
   }, [car?.id]);
@@ -107,7 +107,7 @@ const CarFormContainer: React.FC = () => {
     setFormLoading(true);
     
     try {
-      console.log("Handling save operation for car:", updatedCar.id);
+      console.log("Saving car with images:", updatedCar.images?.length || 0);
       
       // Ensure images array is properly attached to the car
       updatedCar.images = images;

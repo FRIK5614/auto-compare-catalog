@@ -78,9 +78,21 @@ const CarFormImage: React.FC<CarFormImageProps> = ({
     }
   };
 
+  // Обновлено для поддержки мультизагрузки
   const handleMultipleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0 && handleImageUpload) {
       handleImageUpload(e);
+      
+      // Show success message
+      toast({
+        title: "Изображения загружены",
+        description: `Добавлено ${e.target.files.length} изображений`
+      });
+      
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -103,7 +115,7 @@ const CarFormImage: React.FC<CarFormImageProps> = ({
           </TabsTrigger>
           <TabsTrigger value="gallery" className="flex-1">
             <ImageIcon className="h-4 w-4 mr-2" />
-            Галерея
+            Галерея ({images.length})
           </TabsTrigger>
         </TabsList>
         
@@ -118,17 +130,17 @@ const CarFormImage: React.FC<CarFormImageProps> = ({
                       alt="Preview"
                       className="h-64 w-full object-contain rounded-md border bg-muted"
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        if (handleRemoveImage) handleRemoveImage(0);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    {handleRemoveImage && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => handleRemoveImage(0)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="border rounded-md flex items-center justify-center h-64 w-full bg-muted mb-4">
@@ -239,19 +251,19 @@ const CarFormImage: React.FC<CarFormImageProps> = ({
                         alt={image.alt || `Изображение ${index + 1}`}
                         className="h-24 w-full object-cover rounded-md border"
                       />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            if (handleRemoveImage) handleRemoveImage(index);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {handleRemoveImage && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleRemoveImage(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                   

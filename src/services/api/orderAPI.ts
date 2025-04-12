@@ -23,10 +23,11 @@ export const submitPurchaseRequest = async (formData: Record<string, any>): Prom
       .single();
     
     if (error) {
+      console.error("Ошибка при отправке заявки:", error);
       throw error;
     }
     
-    console.log(`[API] Заявка успешно отправлена в Supabase`);
+    console.log(`[API] Заявка успешно отправлена в Supabase:`, data);
     return {
       success: true,
       message: "Ваша заявка успешно отправлена. Наш менеджер свяжется с вами в ближайшее время."
@@ -49,14 +50,15 @@ export const fetchOrders = async (): Promise<any[]> => {
     
     const { data, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, vehicles(brand, model)')
       .order('created_at', { ascending: false });
     
     if (error) {
+      console.error("Ошибка при получении заказов:", error);
       throw error;
     }
     
-    console.log(`[API] Получено ${data?.length || 0} заказов из Supabase`);
+    console.log(`[API] Получено ${data?.length || 0} заказов из Supabase:`, data);
     return data || [];
   } catch (error) {
     console.error("Ошибка при получении заказов:", error);
@@ -77,6 +79,7 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
       .eq('id', orderId);
     
     if (error) {
+      console.error("Ошибка при обновлении статуса заказа:", error);
       throw error;
     }
     

@@ -1,51 +1,40 @@
 
-import { fetchAllCars, fetchOrders } from "@/services/api";
 import { Car, Order } from "@/types/car";
-import { loadFavoritesFromLocalStorage, loadOrdersFromLocalStorage } from "./utils";
-import { databaseService } from "@/services/database/DatabaseProvider";
+import { fetchAllCars, fetchCarsByCountryWithFallback } from "@/services/api/carAPI";
+import { fetchOrders } from "@/services/api/orderAPI";
 
-// Load cars from API
-export const loadCars = async (): Promise<Car[]> => {
-  try {
-    // Используем абстракцию базы данных для загрузки автомобилей
-    const data = await databaseService.getCars();
-    console.log("Loaded cars from database:", data.length);
-    return data;
-  } catch (err) {
-    console.error("Failed to load cars:", err);
-    throw new Error("Не удалось загрузить данные об автомобилях");
-  }
-};
-
-// Load orders from database or localStorage
+// Загрузка заказов
 export const loadOrders = async (): Promise<Order[]> => {
   try {
-    const ordersData = await databaseService.getOrders();
-    
-    const formattedOrders: Order[] = ordersData.map(order => ({
-      id: order.id,
-      carId: order.car_id,
-      customerName: order.customer_name,
-      customerPhone: order.customer_phone,
-      customerEmail: order.customer_email,
-      status: order.status as Order['status'],
-      createdAt: order.created_at
-    }));
-    
-    return formattedOrders;
-  } catch (err) {
-    console.error("Failed to load orders from database:", err);
-    return loadOrdersFromLocalStorage();
+    const orders = await fetchOrders();
+    console.log("Loaded orders from fetchOrders:", orders);
+    return orders;
+  } catch (error) {
+    console.error("Error loading orders:", error);
+    return [];
   }
 };
 
-// Load favorites from database or localStorage
-export const loadFavorites = async (): Promise<string[]> => {
+// Загрузка всех автомобилей
+export const loadAllCars = async (): Promise<Car[]> => {
   try {
-    // Используем абстракцию базы данных для загрузки избранного
-    return await databaseService.getFavorites();
-  } catch (err) {
-    console.error("Failed to load favorites from database:", err);
-    return loadFavoritesFromLocalStorage();
+    const cars = await fetchAllCars();
+    console.log("Loaded cars from database:", cars.length);
+    return cars;
+  } catch (error) {
+    console.error("Error loading cars:", error);
+    return [];
+  }
+};
+
+// Загрузка автомобилей по стране
+export const loadCarsByCountry = async (country: string): Promise<Car[]> => {
+  try {
+    const cars = await fetchCarsByCountryWithFallback(country);
+    console.log(`Loaded ${cars.length} cars from ${country}`);
+    return cars;
+  } catch (error) {
+    console.error(`Error loading cars from ${country}:`, error);
+    return [];
   }
 };
