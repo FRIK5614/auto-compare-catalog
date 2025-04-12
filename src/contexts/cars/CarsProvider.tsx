@@ -64,13 +64,16 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Modified to ensure it always returns a boolean value regardless of originalAddToCompare's return
+  // Fix the compare functions to ensure they return boolean values
   const handleAddToCompare = (carId: string): boolean => {
     try {
       if (typeof originalAddToCompare === 'function') {
+        // Call the original function, but don't rely on its return value
         originalAddToCompare(carId);
+        // Always return true if the function executed without errors
         return true;
       }
+      console.warn("addToCompare function is not available");
       return false;
     } catch (error) {
       console.error("Error adding car to compare:", error);
@@ -78,13 +81,15 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Modified to ensure it always returns a boolean value regardless of originalRemoveFromCompare's return
   const handleRemoveFromCompare = (carId: string): boolean => {
     try {
       if (typeof originalRemoveFromCompare === 'function') {
+        // Call the original function, but don't rely on its return value
         originalRemoveFromCompare(carId);
+        // Always return true if the function executed without errors
         return true;
       }
+      console.warn("removeFromCompare function is not available");
       return false;
     } catch (error) {
       console.error("Error removing car from compare:", error);
