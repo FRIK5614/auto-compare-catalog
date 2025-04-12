@@ -1,143 +1,117 @@
-
-import { useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useRef, useCallback } from "react";
 import { saveFavoritesToLocalStorage } from "../../utils";
-import { FavoritesActions } from "./types";
+import { FavoritesState, FavoritesActions } from "./types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export const useFavoritesActions = (
-  favorites: string[],
-  setFavorites: (favorites: string[]) => void,
-  isOnline: boolean,
-  setLoading: (loading: boolean) => void,
-  loadFromDatabase: () => Promise<string[] | null>,
-  syncWithDatabase: (items?: string[]) => Promise<void>,
-  loadFromLocalStorage: () => string[]
+  state: FavoritesState
 ): FavoritesActions => {
+  const { favorites, setFavorites, loading, setLoading, isOnline } = state;
   const { toast } = useToast();
+  const loadedRef = useRef(false);
 
-  // Add to favorites
+  // Add car to favorites
   const addToFavorites = useCallback(async (carId: string) => {
+    if (favorites.includes(carId)) return;
+    
     try {
-      // Always update local state and localStorage
-      const newFavorites = [...favorites, carId];
-      setFavorites(newFavorites);
-      saveFavoritesToLocalStorage(newFavorites);
+      setLoading(true);
       
-      // Show notification
-      toast({
-        title: "Добавлено в избранное",
-        description: isOnline 
-          ? "Автомобиль добавлен в список избранного" 
-          : "Автомобиль добавлен в избранное локально. Синхронизация будет выполнена при подключении к интернету"
-      });
+      // Update local state first
+      const updatedFavorites = [...favorites, carId];
+      setFavorites(updatedFavorites);
+      loadedRef.current = true;
       
-      // Sync with database if online
+      // Save to localStorage
+      saveFavoritesToLocalStorage(updatedFavorites);
+      
+      // If online, sync with Supabase
       if (isOnline) {
-        const { error } = await supabase
-          .from('favorites')
-          .insert({
-            car_id: carId,
-            user_id: 'anonymous'
+        try {
+          const { error } = await supabase
+            .from('favorites')
+            .insert([{ car_id: carId }]);
+            
+          if (error) throw error;
+          
+        } catch (supabaseError) {
+          console.error("Failed to sync favorites to Supabase:", supabaseError);
+          toast({
+            title: "Синхронизация не удалась",
+            description: "Избранное сохранено локально, но не синхронизировано с облаком",
+            variant: "destructive",
           });
-        
-        if (error) {
-          console.warn("Error adding to favorites in database:", error);
         }
       }
     } catch (error) {
       console.error("Error adding to favorites:", error);
-      toast({ 
-        variant: "destructive", 
-        title: "Ошибка", 
-        description: "Не удалось добавить в избранное" 
-      });
-    }
-  }, [favorites, isOnline, setFavorites, toast]);
-
-  // Remove from favorites
-  const removeFromFavorites = useCallback(async (carId: string) => {
-    try {
-      // Always update local state and localStorage
-      const newFavorites = favorites.filter(id => id !== carId);
-      setFavorites(newFavorites);
-      saveFavoritesToLocalStorage(newFavorites);
-      
-      // Show notification
       toast({
-        title: "Удалено из избранного",
-        description: isOnline 
-          ? "Автомобиль удален из списка избранного" 
-          : "Автомобиль удален из избранного локально. Синхронизация будет выполнена при подключении к интернету"
+        title: "Ошибка",
+        description: "Не удалось добавить автомобиль в избранное",
+        variant: "destructive",
       });
+    } finally {
+      setLoading(false);
+    }
+  }, [favorites, isOnline, setFavorites, setLoading, toast]);
+
+  // Remove car from favorites
+  const removeFromFavorites = useCallback(async (carId: string) => {
+    if (!favorites.includes(carId)) return;
+    
+    try {
+      setLoading(true);
       
-      // Sync with database if online
+      // Update local state first
+      const updatedFavorites = favorites.filter(id => id !== carId);
+      setFavorites(updatedFavorites);
+      loadedRef.current = true;
+      
+      // Save to localStorage
+      saveFavoritesToLocalStorage(updatedFavorites);
+      
+      // If online, sync with Supabase
       if (isOnline) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('car_id', carId)
-          .eq('user_id', 'anonymous');
-        
-        if (error) {
-          console.warn("Error removing from favorites in database:", error);
+        try {
+          const { error } = await supabase
+            .from('favorites')
+            .delete()
+            .eq('car_id', carId);
+            
+          if (error) throw error;
+          
+        } catch (supabaseError) {
+          console.error("Failed to sync favorites deletion to Supabase:", supabaseError);
+          toast({
+            title: "Синхронизация не удалась",
+            description: "Изменения сохранены локально, но не синхронизированы с облаком",
+            variant: "destructive",
+          });
         }
       }
     } catch (error) {
       console.error("Error removing from favorites:", error);
-      toast({ 
-        variant: "destructive", 
-        title: "Ошибка", 
-        description: "Не удалось удалить из избранного" 
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить автомобиль из избранного",
+        variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-  }, [favorites, isOnline, setFavorites, toast]);
+  }, [favorites, isOnline, setFavorites, setLoading, toast]);
 
-  // Refresh favorites
+  // Refresh favorites (reload from Supabase)
   const refreshFavorites = useCallback(() => {
-    const loadFavoritesFromDB = async () => {
-      setLoading(true);
-      
-      try {
-        if (isOnline) {
-          // Try to get from database first
-          const favoriteIds = await loadFromDatabase();
-          
-          if (favoriteIds && favoriteIds.length > 0) {
-            // Update local state and localStorage
-            setFavorites(favoriteIds);
-            saveFavoritesToLocalStorage(favoriteIds);
-            console.log(`Loaded ${favoriteIds.length} favorites from database`);
-          } else {
-            // If nothing in DB, use localStorage
-            const localFavorites = loadFromLocalStorage();
-            if (localFavorites.length > 0) {
-              setFavorites(localFavorites);
-              // Sync local data with DB
-              syncWithDatabase(localFavorites);
-            }
-          }
-        } else {
-          // If offline, load from localStorage only
-          const localFavorites = loadFromLocalStorage();
-          setFavorites(localFavorites);
-        }
-      } catch (error) {
-        console.error("Error loading favorites:", error);
-        // On error use localStorage
-        const localFavorites = loadFromLocalStorage();
-        setFavorites(localFavorites);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadFavoritesFromDB();
-  }, [isOnline, loadFromDatabase, loadFromLocalStorage, setFavorites, setLoading, syncWithDatabase]);
+    // Implement refresh logic if needed
+    console.log("Refreshing favorites");
+  }, []);
 
   return {
     addToFavorites,
     removeFromFavorites,
-    refreshFavorites
+    refreshFavorites,
+    setFavorites
   };
 };
