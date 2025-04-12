@@ -53,7 +53,19 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   
-  // Fix: Pass only the file parameter to the uploadCarImage adapter
+  // Wrap addToCompare to ensure it returns boolean
+  const handleAddToCompare = (carId: string): boolean => {
+    addToCompare(carId);
+    return true;
+  };
+  
+  // Wrap removeFromCompare to ensure it returns boolean
+  const handleRemoveFromCompare = (carId: string): boolean => {
+    removeFromCompare(carId);
+    return true;
+  };
+  
+  // Fix: Create proper adapter for uploadCarImage
   const handleUploadCarImage = createUploadCarImageAdapter(uploadCarImage);
 
   return (
@@ -71,8 +83,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         setFilter,
         addToFavorites,
         removeFromFavorites,
-        addToCompare,
-        removeFromCompare,
+        addToCompare: handleAddToCompare,
+        removeFromCompare: handleRemoveFromCompare,
         clearCompare,
         getCarById,
         reloadCars,

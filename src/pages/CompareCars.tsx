@@ -126,11 +126,17 @@ const ComparisonCarCard = ({ index, car, onRemove }: { index: number; car: any; 
     </button>
     
     <div className="h-40 overflow-hidden">
-      <img
-        src={car.images[0].url}
-        alt={car.images[0].alt}
-        className="w-full h-full object-cover"
-      />
+      {car.images && car.images.length > 0 ? (
+        <img
+          src={car.images[0].url}
+          alt={car.images[0].alt}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-auto-gray-200 flex items-center justify-center">
+          <Car className="h-12 w-12 text-auto-gray-400" />
+        </div>
+      )}
     </div>
     
     <div className="p-4">
@@ -140,7 +146,7 @@ const ComparisonCarCard = ({ index, car, onRemove }: { index: number; car: any; 
         </Link>
       </h3>
       <p className="text-auto-gray-600 text-sm mb-2">
-        {car.year} • {car.engine.displacement}л • {car.bodyType}
+        {car.year} • {car.engine?.displacement || 0}л • {car.bodyType}
       </p>
       
       <div className="font-bold text-auto-blue-700 text-lg">
@@ -247,23 +253,33 @@ const CompareContent = () => {
               items={[
                 { 
                   label: "Разгон до 100 км/ч", 
-                  values: comparisonCars.map(car => car.performance.acceleration + " с") 
+                  values: comparisonCars.map(car => 
+                    car.performance?.acceleration ? car.performance.acceleration + " с" : "—"
+                  ) 
                 },
                 { 
                   label: "Максимальная скорость", 
-                  values: comparisonCars.map(car => car.performance.topSpeed + " км/ч") 
+                  values: comparisonCars.map(car => 
+                    car.performance?.topSpeed ? car.performance.topSpeed + " км/ч" : "—"
+                  ) 
                 },
                 { 
                   label: "Расход в городе", 
-                  values: comparisonCars.map(car => car.performance.fuelConsumption.city + " л/100км") 
+                  values: comparisonCars.map(car => 
+                    car.performance?.fuelConsumption?.city ? car.performance.fuelConsumption.city + " л/100км" : "—"
+                  ) 
                 },
                 { 
                   label: "Расход на трассе", 
-                  values: comparisonCars.map(car => car.performance.fuelConsumption.highway + " л/100км") 
+                  values: comparisonCars.map(car => 
+                    car.performance?.fuelConsumption?.highway ? car.performance.fuelConsumption.highway + " л/100км" : "—"
+                  ) 
                 },
                 { 
                   label: "Смешанный цикл", 
-                  values: comparisonCars.map(car => car.performance.fuelConsumption.combined + " л/100км") 
+                  values: comparisonCars.map(car => 
+                    car.performance?.fuelConsumption?.combined ? car.performance.fuelConsumption.combined + " л/100км" : "—"
+                  ) 
                 }
               ]} 
             />
@@ -275,35 +291,35 @@ const CompareContent = () => {
               items={[
                 { 
                   label: "Тип двигателя", 
-                  values: comparisonCars.map(car => car.engine.type) 
+                  values: comparisonCars.map(car => car.engine?.type || "—") 
                 },
                 { 
                   label: "Объем двигателя", 
-                  values: comparisonCars.map(car => car.engine.displacement + " л") 
+                  values: comparisonCars.map(car => car.engine?.displacement ? car.engine.displacement + " л" : "—") 
                 },
                 { 
                   label: "Мощность", 
-                  values: comparisonCars.map(car => car.engine.power + " л.с.") 
+                  values: comparisonCars.map(car => car.engine?.power ? car.engine.power + " л.с." : "—") 
                 },
                 { 
                   label: "Крутящий момент", 
-                  values: comparisonCars.map(car => car.engine.torque + " Нм") 
+                  values: comparisonCars.map(car => car.engine?.torque ? car.engine.torque + " Нм" : "—") 
                 },
                 { 
                   label: "Тип топлива", 
-                  values: comparisonCars.map(car => car.engine.fuelType) 
+                  values: comparisonCars.map(car => car.engine?.fuelType || "—") 
                 },
                 { 
                   label: "Коробка передач", 
-                  values: comparisonCars.map(car => car.transmission.type) 
+                  values: comparisonCars.map(car => car.transmission?.type || "—") 
                 },
                 { 
                   label: "Количество передач", 
-                  values: comparisonCars.map(car => car.transmission.gears || "Вариатор") 
+                  values: comparisonCars.map(car => car.transmission?.gears ? car.transmission.gears.toString() : "—") 
                 },
                 { 
                   label: "Привод", 
-                  values: comparisonCars.map(car => car.drivetrain) 
+                  values: comparisonCars.map(car => car.drivetrain || "—") 
                 }
               ]} 
             />
@@ -315,27 +331,27 @@ const CompareContent = () => {
               items={[
                 { 
                   label: "Длина", 
-                  values: comparisonCars.map(car => car.dimensions.length + " мм") 
+                  values: comparisonCars.map(car => car.dimensions?.length ? car.dimensions.length + " мм" : "—") 
                 },
                 { 
                   label: "Ширина", 
-                  values: comparisonCars.map(car => car.dimensions.width + " мм") 
+                  values: comparisonCars.map(car => car.dimensions?.width ? car.dimensions.width + " мм" : "—") 
                 },
                 { 
                   label: "Высота", 
-                  values: comparisonCars.map(car => car.dimensions.height + " мм") 
+                  values: comparisonCars.map(car => car.dimensions?.height ? car.dimensions.height + " мм" : "—") 
                 },
                 { 
                   label: "Колесная база", 
-                  values: comparisonCars.map(car => car.dimensions.wheelbase + " мм") 
+                  values: comparisonCars.map(car => car.dimensions?.wheelbase ? car.dimensions.wheelbase + " мм" : "—") 
                 },
                 { 
                   label: "Масса", 
-                  values: comparisonCars.map(car => car.dimensions.weight + " кг") 
+                  values: comparisonCars.map(car => car.dimensions?.weight ? car.dimensions.weight + " кг" : "—") 
                 },
                 { 
                   label: "Объем багажника", 
-                  values: comparisonCars.map(car => car.dimensions.trunkVolume + " л") 
+                  values: comparisonCars.map(car => car.dimensions?.trunkVolume ? car.dimensions.trunkVolume + " л" : "—") 
                 }
               ]} 
             />
@@ -344,10 +360,13 @@ const CompareContent = () => {
           <TabsContent value="features" className="mt-4">
             {/* Get all unique feature categories across all cars */}
             {(() => {
+              // Safely extract feature categories from all cars
               const allCategories = Array.from(
                 new Set(
                   comparisonCars.flatMap(car => 
-                    car.features.map(feature => feature.category)
+                    Array.isArray(car.features) 
+                      ? car.features.map(feature => feature.category)
+                      : []
                   )
                 )
               );
@@ -357,9 +376,11 @@ const CompareContent = () => {
                 const allFeatureNames = Array.from(
                   new Set(
                     comparisonCars.flatMap(car => 
-                      car.features
-                        .filter(feature => feature.category === category)
-                        .map(feature => feature.name)
+                      Array.isArray(car.features)
+                        ? car.features
+                            .filter(feature => feature.category === category)
+                            .map(feature => feature.name)
+                        : []
                     )
                   )
                 );
@@ -368,6 +389,10 @@ const CompareContent = () => {
                   return {
                     label: featureName,
                     values: comparisonCars.map(car => {
+                      if (!Array.isArray(car.features)) {
+                        return null;
+                      }
+                      
                       const feature = car.features.find(
                         f => f.name === featureName && f.category === category
                       );

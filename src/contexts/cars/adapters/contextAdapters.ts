@@ -1,6 +1,5 @@
 
-import { Car, CarImage, Order } from "@/types/car";
-import { uploadCarImage as uploadCarImageAction } from "../carActions";
+import { Car, CarImage } from "@/types/car";
 
 /**
  * Adapter functions to ensure type compatibility between the internal hooks and the context interface
@@ -58,11 +57,11 @@ export const createImportCarsDataAdapter = (
   };
 };
 
-// Fix: Adapter for uploadCarImage to ensure it returns a CarImage promise
+// Fix: Adapter for uploadCarImage to ensure it takes a single file parameter and returns a CarImage promise
 export const createUploadCarImageAdapter = (
   uploadCarImageAction: (file: File) => Promise<string>
 ) => {
-  return async (file: File): Promise<CarImage> => {
+  return async (file: File, carId: string): Promise<CarImage> => {
     try {
       const imageUrl = await uploadCarImageAction(file);
       return {

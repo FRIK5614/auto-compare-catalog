@@ -1,22 +1,22 @@
 
-import { useFavoritesState } from "./useFavoritesState";
-import { useFavoritesActions } from "./useFavoritesActions";
+import { useCompareState } from "./useFavoritesState";
+import { useCompareActions } from "./useFavoritesActions";
 import { useLocalStorage } from "./useLocalStorage";
 import { useSupabaseSync } from "./useSupabaseSync";
 import { UseFavoritesReturn } from "./types";
 
 export const useFavorites = (): UseFavoritesReturn => {
   // Get state
-  const state = useFavoritesState();
+  const state = useCompareState();
   
   // Sync with localStorage
-  useLocalStorage(state.favorites, state.setFavorites);
+  useLocalStorage(state.favorites);
   
-  // Sync with Supabase
+  // Sync with Supabase (passing isOnline as undefined, which is valid according to the signature)
   useSupabaseSync(state);
   
   // Get actions
-  const actions = useFavoritesActions(state);
+  const actions = useCompareActions(state);
   
   // Combine state and actions
   return {
