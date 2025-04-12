@@ -53,7 +53,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
   
-  // Create a proper wrapper for deleteCar
+  // Create a proper wrapper for deleteCar that returns a Promise<boolean>
   const handleDeleteCar = async (carId: string): Promise<boolean> => {
     try {
       await deleteCar(carId);
