@@ -13,11 +13,10 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
       throw new Error("Telegram Bot Token is not configured");
     }
 
-    // Get updates from the channel
-    let url = `https://api.telegram.org/bot${botToken}/getUpdates?limit=100`;
+    console.log(`Fetching Telegram channel messages from ${channelName}`);
     
-    console.log(`Fetching Telegram channel updates from ${channelName} with token`);
-    
+    // Use Telegram API to get channel history
+    const url = `https://api.telegram.org/bot${botToken}/getUpdates?limit=100`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -32,30 +31,14 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
 
     console.log(`Got ${data.result?.length || 0} updates from Telegram API`);
     
-    // Alternative approach: Get channel messages directly
-    // This requires adding the bot to the channel as admin
-    const channelUrl = `https://api.telegram.org/bot${botToken}/getChat?chat_id=@${channelName}`;
-    const channelResponse = await fetch(channelUrl);
-    const channelData = await channelResponse.json();
-    
-    console.log("Channel info:", channelData);
-    
-    // Try to get messages from chat history
-    const messagesUrl = `https://api.telegram.org/bot${botToken}/getChatHistory?chat_id=@${channelName}&limit=${limit}&offset=${offset}`;
-    const messagesResponse = await fetch(messagesUrl);
-    const messagesData = await messagesResponse.json();
-    
-    console.log("Messages response:", messagesData);
-    
-    // Transform the data into a more usable format
-    // First try to get updates from channel, fallback to mocked data if needed
+    // Filter updates for channel posts
     let posts = [];
     
     if (data.result && data.result.length > 0) {
       posts = data.result
         .filter((update: any) => 
           update.channel_post || 
-          (update.message && (update.message.text || update.message.photo))
+          (update.message && update.message.chat && update.message.chat.username === channelName)
         )
         .slice(offset, offset + limit)
         .map((update: any) => {
@@ -63,31 +46,55 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
           
           // Extract photos if any
           const photos = post.photo 
-            ? post.photo.map((photo: any) => `https://api.telegram.org/file/bot${botToken}/${photo.file_id}`)
+            ? post.photo.map((photo: any) => {
+                // Get the largest photo (they are sorted by size, largest last)
+                const largestPhoto = post.photo[post.photo.length - 1];
+                return `https://api.telegram.org/bot${botToken}/getFile?file_id=${largestPhoto.file_id}`;
+              })
             : [];
             
           return {
             id: update.update_id,
             text: post.text || post.caption || "Фото без текста",
-            photos: photos,
+            photos: photos.length > 0 ? photos : [`https://picsum.photos/seed/${update.update_id}/800/600`],
             date: new Date(post.date * 1000).toISOString(),
             link: `https://t.me/${channelName}/${post.message_id || ''}`
           };
         });
     }
     
-    // If we didn't get any posts, create mock data
+    // If no posts were found, try to fetch from the channel directly
     if (posts.length === 0) {
-      console.log("No posts found, creating mock data");
-      posts = Array.from({ length: limit }, (_, i) => ({
-        id: offset + i + 1,
-        text: `Пост ${offset + i + 1}: Акция на автомобили в наличии! Скидки до 15% при покупке до конца месяца. Приходите на тест-драйв сегодня!`,
-        photos: [
-          `https://picsum.photos/seed/${offset + i + 1}/800/600`
-        ],
-        date: new Date().toISOString(),
-        link: `https://t.me/${channelName}`
-      }));
+      console.log("No posts found through updates, fetching from channel directly");
+      
+      try {
+        // Try to get channel info
+        const channelInfoUrl = `https://api.telegram.org/bot${botToken}/getChat?chat_id=@${channelName}`;
+        const channelInfoResponse = await fetch(channelInfoUrl);
+        const channelInfo = await channelInfoResponse.json();
+        
+        console.log("Channel info response:", channelInfo);
+        
+        // If we got channel info, try to get recent messages
+        if (channelInfo.ok) {
+          console.log("Channel found, attempting to get recent messages");
+          // Unfortunately, bot API doesn't allow getting messages directly from channel without admin rights
+          // We would ideally use getUpdates with a channel filter
+        }
+      } catch (e) {
+        console.error("Error fetching channel directly:", e);
+      }
+    }
+    
+    // If we still don't have posts, return with a clear error message
+    if (posts.length === 0) {
+      console.log("Still no posts found, please check bot permissions");
+      return {
+        success: false,
+        error: "No posts could be retrieved. Make sure the bot has proper access to the channel and is set as an administrator.",
+        posts: [],
+        count: 0
+      };
     }
     
     return {
@@ -100,16 +107,8 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
     return {
       success: false,
       error: error.message,
-      posts: Array.from({ length: 10 }, (_, i) => ({
-        id: i + 1,
-        text: `Пост ${i + 1}: Акция на автомобили в наличии! Скидки до 15% при покупке до конца месяца. Приходите на тест-драйв сегодня!`,
-        photos: [
-          `https://picsum.photos/seed/${i + 1}/800/600`
-        ],
-        date: new Date().toISOString(),
-        link: `https://t.me/${channelName}`
-      })),
-      count: 10
+      posts: [],
+      count: 0
     };
   }
 }
@@ -165,15 +164,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        posts: Array.from({ length: 10 }, (_, i) => ({
-          id: i + 1,
-          text: `Пост ${i + 1}: Акция на автомобили в наличии! Скидки до 15% при покупке до конца месяца. Приходите на тест-драйв сегодня!`,
-          photos: [
-            `https://picsum.photos/seed/${i + 1}/800/600`
-          ],
-          date: new Date().toISOString(),
-          link: "https://t.me/VoeAVTO"
-        })),
+        posts: []
       }),
       {
         headers: { 

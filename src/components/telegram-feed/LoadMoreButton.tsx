@@ -19,19 +19,30 @@ const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({
   onLoadMore
 }) => {
   if (!postsExist) {
-    return null;
+    return (
+      <div className="text-center mt-6">
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={onRetry}
+          className="min-w-[180px]"
+        >
+          Настроить бота Telegram
+        </Button>
+      </div>
+    );
   }
   
   if (!hasMore) {
     return (
-      <div className="text-center text-gray-500">
+      <div className="text-center text-gray-500 mt-4">
         Все предложения загружены
       </div>
     );
   }
   
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center mt-6">
       <Button
         variant="outline"
         size="lg"
@@ -50,6 +61,10 @@ const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({
       </Button>
     </div>
   );
+  
+  function onRetry() {
+    window.open('https://docs.lovable.dev/integrations/telegram-bot/', '_blank');
+  }
 };
 
 export default LoadMoreButton;

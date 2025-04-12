@@ -64,6 +64,9 @@ const PostsGrid: React.FC<PostsGridProps> = ({
       {!loading && posts.length === 0 && (
         <div className="col-span-full py-12 text-center">
           <p className="text-lg text-gray-500">Нет доступных предложений</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Убедитесь, что бот имеет доступ к каналу и добавлен как администратор
+          </p>
         </div>
       )}
     </div>
