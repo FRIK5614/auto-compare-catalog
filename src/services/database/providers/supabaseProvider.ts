@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Car } from "@/types/car";
 import { transformVehicleFromSupabase, transformVehicleForSupabase } from "@/services/api/transformers";

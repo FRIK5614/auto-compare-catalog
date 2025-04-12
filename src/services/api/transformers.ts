@@ -1,6 +1,7 @@
 
 import { Car, CarImage } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
+import { Json } from '@/integrations/supabase/types';
 
 // Transform vehicle data from Supabase to app format
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
@@ -76,6 +77,11 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
 // Transform app data to Supabase format
 export const transformVehicleForSupabase = (car: Car) => {
   try {
+    // Convert complex objects to JSON strings for Supabase
+    const dimensionsJson = car.dimensions ? car.dimensions as unknown as Json : null;
+    const performanceJson = car.performance ? car.performance as unknown as Json : null;
+    const featuresJson = car.features ? car.features as unknown as Json : null;
+
     return {
       id: car.id,
       brand: car.brand,
@@ -95,9 +101,9 @@ export const transformVehicleForSupabase = (car: Car) => {
       transmission_type: car.transmission.type,
       transmission_gears: car.transmission.gears,
       drivetrain: car.drivetrain,
-      dimensions: car.dimensions,
-      performance: car.performance,
-      features: car.features,
+      dimensions: dimensionsJson,
+      performance: performanceJson,
+      features: featuresJson,
       description: car.description,
       is_new: car.isNew,
       is_popular: car.isPopular || false,

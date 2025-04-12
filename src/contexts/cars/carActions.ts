@@ -1,7 +1,7 @@
 
 import { Car } from "@/types/car";
 import { incrementCarViewCount, saveCar, updateCar as apiUpdateCar, deleteCar as apiDeleteCar } from "@/services/api";
-import { formatVehicleForSupabase } from "./utils";
+import { transformVehicleForSupabase } from "@/services/api/transformers";
 import { supabase } from "@/integrations/supabase/client";
 
 // Increment view count for a car
@@ -171,7 +171,7 @@ export const importCarsData = async (
         if (error) throw error;
         
         for (const car of parsedData) {
-          const vehicle = formatVehicleForSupabase(car);
+          const vehicle = transformVehicleForSupabase(car);
           const { error } = await supabase.from('vehicles').insert(vehicle);
           if (error) console.error("Error inserting vehicle:", error);
         }

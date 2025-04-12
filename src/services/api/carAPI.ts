@@ -1,3 +1,4 @@
+
 import { Car } from '@/types/car';
 import { supabase } from '@/integrations/supabase/client';
 import { transformVehicleFromSupabase, transformVehicleForSupabase } from './transformers';
@@ -272,7 +273,7 @@ export const fetchCarsByCountryWithFallback = async (country: string): Promise<C
         const mockCars = generateMockCarsForChina(15);
         
         // Сохраняем сгенерированные данные в Supabase
-        const vehicles = mockCars.map(car => transformCarToVehicle(car));
+        const vehicles = mockCars.map(car => transformVehicleForSupabase(car));
         await supabase.from('vehicles').insert(vehicles);
         
         return mockCars;
