@@ -22,8 +22,8 @@ export const useInitializeHooks = () => {
   // Initialize orders
   const { orders, processOrder, getOrders, reloadOrders } = useOrders();
   
-  // Initialize CRUD operations
-  const { getCarById, viewCar, deleteCar, updateCar, addCar, uploadCarImage, exportCarsData, importCarsData } = useCarsCRUD(cars, reloadCars);
+  // Initialize CRUD operations - fix by removing the second argument
+  const { getCarById, viewCar, deleteCar, updateCar, addCar, uploadCarImage, exportCarsData, importCarsData } = useCarsCRUD(cars);
   
   return {
     cars,

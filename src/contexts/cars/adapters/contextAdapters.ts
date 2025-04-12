@@ -57,11 +57,11 @@ export const createImportCarsDataAdapter = (
   };
 };
 
-// Fix: Adapter for uploadCarImage to ensure it takes a single file parameter and returns a CarImage promise
+// Adapter for uploadCarImage to ensure it takes a single file parameter and returns a CarImage promise
 export const createUploadCarImageAdapter = (
   uploadCarImageAction: (file: File) => Promise<string>
 ) => {
-  return async (file: File, carId: string): Promise<CarImage> => {
+  return async (file: File): Promise<CarImage> => {
     try {
       const imageUrl = await uploadCarImageAction(file);
       return {

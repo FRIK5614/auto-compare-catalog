@@ -65,7 +65,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
   
-  // Fix: Create proper adapter for uploadCarImage
+  // Create proper adapter for uploadCarImage
+  // We need to adapt the function signature to match the expected interface
   const handleUploadCarImage = createUploadCarImageAdapter(uploadCarImage);
 
   return (
