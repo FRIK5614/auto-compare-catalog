@@ -57,6 +57,22 @@ export const createImportCarsDataAdapter = (
   };
 };
 
+// New adapter for deleteCar to ensure it returns a boolean promise
+export const createDeleteCarAdapter = (
+  deleteCar: (id: string) => Promise<boolean> | boolean | void
+) => {
+  return async (id: string): Promise<boolean> => {
+    try {
+      const result = await deleteCar(id);
+      // If the original function returns undefined or void, assume success
+      return result !== false;
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      return false;
+    }
+  };
+};
+
 // Adapter for uploadCarImage to ensure it takes a single file parameter and returns a CarImage promise
 export const createUploadCarImageAdapter = (
   uploadCarImageAction: (carId: string, file: File) => Promise<string>

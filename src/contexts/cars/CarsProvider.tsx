@@ -7,7 +7,8 @@ import {
   createAddCarAdapter,
   createExportCarsDataAdapter,
   createImportCarsDataAdapter,
-  createUploadCarImageAdapter
+  createUploadCarImageAdapter,
+  createDeleteCarAdapter
 } from "./adapters/contextAdapters";
 import { useInitializeHooks } from "./hooks/useInitializeHooks";
 
@@ -52,14 +53,15 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleAddCar = createAddCarAdapter(addCar);
   const handleExportCarsData = createExportCarsDataAdapter(exportCarsData);
   const handleImportCarsData = createImportCarsDataAdapter(importCarsData, cars);
+  const handleDeleteCar = createDeleteCarAdapter(deleteCar);
   
-  // Fix: Wrap addToCompare to ensure it returns boolean
+  // Fix: Wrap addToCompare to ensure it returns boolean or Promise<boolean>
   const handleAddToCompare = (carId: string): boolean | Promise<boolean> => {
     addToCompare(carId);
     return true;
   };
   
-  // Fix: Wrap removeFromCompare to ensure it returns boolean
+  // Fix: Wrap removeFromCompare to ensure it returns boolean or Promise<boolean>
   const handleRemoveFromCompare = (carId: string): boolean | Promise<boolean> => {
     removeFromCompare(carId);
     return true;
@@ -90,7 +92,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         getCarById,
         reloadCars,
         viewCar: handleViewCar,
-        deleteCar,
+        deleteCar: handleDeleteCar,
         updateCar: handleUpdateCar,
         addCar: handleAddCar,
         processOrder,
