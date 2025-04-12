@@ -11,7 +11,7 @@ import CarDeleteDialog from './CarDeleteDialog';
 
 // New hooks and utilities
 import { useCarFormData } from './hooks/useCarFormData';
-import { useImageHandling } from './hooks/useImageHandling';
+import { useImageHandling } from './hooks/image-handling';
 import { useCarSave } from './hooks/useCarSave';
 import { useExternalCarData } from './hooks/useExternalCarData';
 import { createCarFromImportData } from './utils/carUrlFetcher';

@@ -6,7 +6,7 @@ import LoadingState from '@/components/LoadingState';
 import CarForm from './CarForm';
 import CarUrlFetcher from './CarUrlFetcher';
 import { useCarFormData } from './hooks/useCarFormData';
-import { useImageHandling } from './hooks/useImageHandling';
+import { useImageHandling } from './hooks/image-handling';
 import { useCarSave } from './hooks/useCarSave';
 import { useExternalCarData } from './hooks/useExternalCarData';
 import { Car } from '@/types/car';
