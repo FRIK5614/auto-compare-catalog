@@ -1,6 +1,6 @@
 
 import { Order } from "@/types/car";
-import { updateOrderStatus } from "@/services/api/orderAPI";
+import { orderAPI } from "@/services/api/orderAPI";
 import { saveOrdersToLocalStorage } from "./utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,7 +14,7 @@ export const processOrder = async (
 ) => {
   try {
     console.log('Processing order:', orderId, 'New status:', status);
-    const success = await updateOrderStatus(orderId, status);
+    const success = await orderAPI.updateOrderStatus(orderId, status);
     
     if (!success) {
       throw new Error("Failed to update order status");

@@ -9,17 +9,17 @@ import { useImageStorage } from './useImageStorage';
 export const useImageHandling = () => {
   // Setup image preview state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const previewHook = useImagePreview(setImagePreview);
+  const previewHook = useImagePreview();
   
   // Image initialization hook
   const initHook = useImageInitialization(setImagePreview);
   
   // Setup image upload
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const uploadHook = useImageUpload(setImagePreview, setImageFile, initHook.setImages);
+  const uploadHook = useImageUpload(initHook.images, initHook.setImages, setImagePreview);
   
   // Setup image storage
-  const storageHook = useImageStorage(initHook.images);
+  const storageHook = useImageStorage();
 
   return {
     // Image state
@@ -35,11 +35,13 @@ export const useImageHandling = () => {
     
     // Image upload
     handleImageUpload: uploadHook.handleImageUpload,
-    handleImageUrlChange: uploadHook.handleImageUrlChange,
-    handleAddImage: uploadHook.handleAddImage,
-    handleRemoveImage: uploadHook.handleRemoveImage,
+    
+    // Image preview and management
+    handleImageUrlChange: previewHook.handleImageUrlChange,
+    handleAddImage: previewHook.addImage,
+    handleRemoveImage: (index: number, car: Car) => previewHook.removeImage(index, car, initHook.images),
     
     // Image storage
-    uploadImageFiles: storageHook.uploadImageFiles
+    uploadImageFiles: (carId: string) => storageHook.uploadImageFiles(carId, initHook.images)
   };
 };

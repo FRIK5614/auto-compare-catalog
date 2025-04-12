@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -57,7 +58,7 @@ const CarFormContainer: React.FC = () => {
   const handleImageUrlChange = (url: string) => {
     if (!car) return;
     console.log("Changing image URL to:", url);
-    const updatedCar = imageUrlChange(url);
+    const updatedCar = imageUrlChange(url, car);
     if (updatedCar) {
       setCar(updatedCar);
     }

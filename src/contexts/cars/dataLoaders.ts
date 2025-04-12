@@ -1,32 +1,16 @@
-
+// Import the correct orderAPI function
+import { orderAPI } from "@/services/api/orderAPI";
 import { Car, Order } from "@/types/car";
-import { fetchAllCars, fetchCarsByCountryWithFallback } from "@/services/api/carAPI";
-import { fetchOrders } from "@/services/api/orderAPI";
-import { loadFavoritesFromLocalStorage } from "./utils";
+import { fetchCars } from "@/services/api";
+import { saveCarsToLocalStorage, saveFavoritesToLocalStorage, saveOrdersToLocalStorage } from "./utils";
 
-// Загрузка заказов
-export const loadOrders = async (): Promise<Order[]> => {
+// Load cars
+export const loadCars = async (): Promise<Car[]> => {
   try {
-    console.log("Loading orders from fetchOrders API");
-    const orders = await fetchOrders();
-    console.log("Loaded orders from fetchOrders:", orders);
-    
-    if (!orders || orders.length === 0) {
-      console.warn("No orders returned from the API");
-    }
-    
-    return orders;
-  } catch (error) {
-    console.error("Error loading orders:", error);
-    return [];
-  }
-};
-
-// Загрузка всех автомобилей
-export const loadAllCars = async (): Promise<Car[]> => {
-  try {
-    const cars = await fetchAllCars();
-    console.log("Loaded cars from database:", cars.length);
+    console.log("Loading cars from API...");
+    const cars = await fetchCars();
+    console.log(`Loaded ${cars.length} cars`);
+    saveCarsToLocalStorage(cars);
     return cars;
   } catch (error) {
     console.error("Error loading cars:", error);
@@ -34,31 +18,28 @@ export const loadAllCars = async (): Promise<Car[]> => {
   }
 };
 
-// Загрузка автомобилей по стране
-export const loadCarsByCountry = async (country: string): Promise<Car[]> => {
-  try {
-    const cars = await fetchCarsByCountryWithFallback(country);
-    console.log(`Loaded ${cars.length} cars from ${country}`);
-    return cars;
-  } catch (error) {
-    console.error(`Error loading cars from ${country}:`, error);
-    return [];
-  }
-};
-
-// Экспортируем функцию загрузки избранного
+// Load favorites
 export const loadFavorites = async (): Promise<string[]> => {
   try {
-    // Здесь можно добавить логику загрузки избранного из Supabase
-    // Пока используем локальное хранилище
-    return loadFavoritesFromLocalStorage();
+    console.log("Loading favorites from local storage...");
+    const favorites = localStorage.getItem("favoriteCars");
+    return favorites ? JSON.parse(favorites) : [];
   } catch (error) {
     console.error("Error loading favorites:", error);
     return [];
   }
 };
 
-// Экспортируем функцию загрузки автомобилей
-export const loadCars = async (): Promise<Car[]> => {
-  return loadAllCars();
+// Load orders
+export const loadOrders = async (): Promise<Order[]> => {
+  try {
+    console.log("Loading orders from API...");
+    // Use the orderAPI.getAllOrders function instead of fetchOrders
+    const orders = await orderAPI.getAllOrders();
+    console.log(`Loaded ${orders.length} orders`);
+    return orders;
+  } catch (error) {
+    console.error("Error loading orders:", error);
+    return [];
+  }
 };
