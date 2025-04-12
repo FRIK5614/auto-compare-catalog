@@ -159,6 +159,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
     try {
+      // uploadCarImage now takes a single argument (file) based on the error message
       const imageUrl = await uploadCarImage(file);
       return {
         id: `img-${Date.now()}`,
