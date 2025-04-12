@@ -1,6 +1,6 @@
 
 import { createContext, useContext, ReactNode, useRef, useEffect } from "react";
-import { CarsContextType } from "./types";
+import { CarsContextType, FilterOptions } from "./types";
 import { useCarsData } from "./hooks/useCarsData";
 import { useFilters } from "./hooks/useFilters";
 import { useFavorites } from "./hooks/useFavorites";
@@ -8,7 +8,7 @@ import { useCompare } from "./hooks/useCompare";
 import { useCarsCRUD } from "./hooks/useCarsCRUD";
 import { useOrders } from "./hooks/useOrders";
 import { loadFavoritesFromLocalStorage, loadCompareFromLocalStorage } from "./utils";
-import { Car } from "@/types/car";
+import { Car, CarImage } from "@/types/car";
 
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
@@ -82,7 +82,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
       
       // Синхронизируем данные при загрузке, если мы онлайн
       if (initialOnlineStatus) {
-        refreshFavorites();
+        refreshFavorites?.();
         reloadOrders();
       }
     }
@@ -120,12 +120,41 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
 
   // Оборачиваем reloadCarsData чтобы соответствовать ожидаемому типу в CarsContextType
   const reloadCars = async (): Promise<Car[]> => {
-    await reloadCarsData();
-    return cars;
+    return await reloadCarsData();
   };
 
   // Определяем общий статус сетевого подключения
   const isOnline = favoritesIsOnline && ordersIsOnline && compareIsOnline && dataIsOnline;
+
+  // Adapter functions to ensure type compatibility
+  const handleUpdateCar = async (car: Car): Promise<Car> => {
+    const success = await updateCar(car);
+    return success ? car : Promise.reject("Failed to update car");
+  };
+
+  const handleAddCar = async (car: Partial<Car>): Promise<Car> => {
+    const newCar = car as Car; // Type assertion for compatibility
+    const success = await addCar(newCar);
+    return success ? newCar : Promise.reject("Failed to add car");
+  };
+
+  const handleExportCarsData = async (): Promise<string> => {
+    return Promise.resolve(exportCarsData());
+  };
+
+  const handleImportCarsData = async (data: string): Promise<Car[]> => {
+    const success = await importCarsData(data);
+    return success ? cars : []; // Return current cars if successful
+  };
+
+  const handleUploadCarImage = async (file: File, carId: string): Promise<CarImage> => {
+    const imageUrl = await uploadCarImage(carId, file);
+    return {
+      id: `img-${Date.now()}`,
+      url: imageUrl,
+      alt: 'Uploaded image'
+    };
+  };
 
   return (
     <CarsContext.Provider
@@ -149,14 +178,14 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         reloadCars,
         viewCar,
         deleteCar,
-        updateCar,
-        addCar,
+        updateCar: handleUpdateCar,
+        addCar: handleAddCar,
         processOrder,
         getOrders,
         reloadOrders,
-        exportCarsData,
-        importCarsData,
-        uploadCarImage,
+        exportCarsData: handleExportCarsData,
+        importCarsData: handleImportCarsData,
+        uploadCarImage: handleUploadCarImage,
         refreshFavorites
       }}
     >

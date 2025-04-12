@@ -69,7 +69,7 @@ export const FiltersWithHook = () => {
         <div>
           <Label htmlFor="brand">Марка</Label>
           <Select
-            value={filter.brand || ""}
+            value={filter.brands && filter.brands.length > 0 ? filter.brands[0] : ""}
             onValueChange={(value) => setBrand(value === "all" ? null : value)}
           >
             <SelectTrigger id="brand">
@@ -87,7 +87,7 @@ export const FiltersWithHook = () => {
         <div>
           <Label htmlFor="bodyType">Тип кузова</Label>
           <Select
-            value={filter.bodyType || ""}
+            value={filter.bodyTypes && filter.bodyTypes.length > 0 ? filter.bodyTypes[0] : ""}
             onValueChange={(value) => setBodyType(value === "all" ? null : value)}
           >
             <SelectTrigger id="bodyType">
@@ -105,7 +105,7 @@ export const FiltersWithHook = () => {
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="onlyNew" 
-            checked={filter.onlyNew || false}
+            checked={filter.isNew || false}
             onCheckedChange={() => toggleOnlyNew()}
           />
           <Label htmlFor="onlyNew">Только новые</Label>

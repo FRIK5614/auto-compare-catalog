@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Car, CarFilter } from "@/types/car";
+import { Car } from "@/types/car";
+import { FilterOptions } from "../types";
 import { applyFilters } from "../filterActions";
 
 export const useFilters = (cars: Car[]) => {
-  const [filter, setFilter] = useState<CarFilter>({});
+  const [filter, setFilter] = useState<FilterOptions>({});
   const [filteredCars, setFilteredCars] = useState<Car[]>([]);
 
   // Apply filters whenever cars or filter changes

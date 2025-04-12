@@ -32,15 +32,18 @@ const Catalog = () => {
     const bodyType = searchParams.get("bodyType");
     if (bodyType) {
       newFilter.bodyType = bodyType;
+      newFilter.bodyTypes = [bodyType];
     }
     
     if (searchParams.get("filter") === "new") {
       newFilter.onlyNew = true;
+      newFilter.isNew = true;
     }
     
     const brand = searchParams.get("brand");
     if (brand) {
       newFilter.brand = brand;
+      newFilter.brands = [brand];
     }
     
     const pageParam = searchParams.get("page");

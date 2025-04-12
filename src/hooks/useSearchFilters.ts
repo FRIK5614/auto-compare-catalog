@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useCars } from "@/hooks/useCars";
-import { CarFilter } from "@/types/car";
+import { FilterOptions } from "@/contexts/cars/types";
 
 export const useSearchFilters = () => {
   const { 
@@ -61,7 +61,7 @@ export const useSearchFilters = () => {
   }, [cars, loading, getUniqueValues, getPriceRange, getYearRange]);
 
   // Filter helpers
-  const updateFilter = (updates: Partial<CarFilter>) => {
+  const updateFilter = (updates: Partial<FilterOptions>) => {
     setFilter({ ...filter, ...updates });
   };
 
@@ -69,7 +69,7 @@ export const useSearchFilters = () => {
     setFilter({});
   };
 
-  const toggleBooleanFilter = (key: keyof CarFilter) => {
+  const toggleBooleanFilter = (key: keyof FilterOptions) => {
     const currentValue = filter[key] as boolean | undefined;
     updateFilter({ [key]: currentValue ? undefined : true });
   };
@@ -81,40 +81,44 @@ export const useSearchFilters = () => {
   const setBrand = (brand: string | null) => {
     if (!brand || brand === "all") {
       const newFilter = { ...filter };
-      delete newFilter.brand;
+      delete newFilter.brands;
+      delete newFilter.brand; // Remove legacy field too
       setFilter(newFilter);
     } else {
-      updateFilter({ brand });
+      updateFilter({ brands: [brand], brand });
     }
   };
 
   const setBodyType = (bodyType: string | null) => {
     if (!bodyType || bodyType === "all") {
       const newFilter = { ...filter };
-      delete newFilter.bodyType;
+      delete newFilter.bodyTypes;
+      delete newFilter.bodyType; // Remove legacy field too
       setFilter(newFilter);
     } else {
-      updateFilter({ bodyType });
+      updateFilter({ bodyTypes: [bodyType], bodyType });
     }
   };
 
   const setTransmissionType = (transmissionType: string | null) => {
     if (!transmissionType || transmissionType === "all") {
       const newFilter = { ...filter };
-      delete newFilter.transmissionType;
+      delete newFilter.transmissionTypes;
+      delete newFilter.transmissionType; // Remove legacy field too
       setFilter(newFilter);
     } else {
-      updateFilter({ transmissionType });
+      updateFilter({ transmissionTypes: [transmissionType], transmissionType });
     }
   };
 
   const setFuelType = (fuelType: string | null) => {
     if (!fuelType || fuelType === "all") {
       const newFilter = { ...filter };
-      delete newFilter.fuelType;
+      delete newFilter.fuelTypes;
+      delete newFilter.fuelType; // Remove legacy field too
       setFilter(newFilter);
     } else {
-      updateFilter({ fuelType });
+      updateFilter({ fuelTypes: [fuelType], fuelType });
     }
   };
 
@@ -129,22 +133,34 @@ export const useSearchFilters = () => {
   };
 
   const setPriceRangeFilter = (min: number, max: number) => {
-    updateFilter({ minPrice: min, maxPrice: max });
+    updateFilter({ 
+      priceRange: { min, max },
+      minPrice: min, 
+      maxPrice: max 
+    });
   };
 
   const setYearRangeFilter = (min: number, max: number) => {
-    updateFilter({ minYear: min, maxYear: max });
+    updateFilter({ 
+      yearRange: { min, max },
+      minYear: min, 
+      maxYear: max 
+    });
   };
 
   const toggleOnlyNew = () => {
-    toggleBooleanFilter("onlyNew");
+    const newValue = !filter.isNew;
+    updateFilter({ 
+      isNew: newValue,
+      onlyNew: newValue
+    });
   };
 
   const toggleDiscount = () => {
     toggleBooleanFilter("discount");
   };
 
-  const setSortBy = (sortOption: CarFilter["sortBy"]) => {
+  const setSortBy = (sortOption: FilterOptions["sortBy"]) => {
     updateFilter({ sortBy: sortOption });
   };
 

@@ -1,8 +1,9 @@
 
-import { Car, CarFilter } from "@/types/car";
+import { Car } from "@/types/car";
+import { FilterOptions } from "./types";
 
 // Apply filters to cars
-export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
+export const applyFilters = (cars: Car[], filter: FilterOptions): Car[] => {
   let result = [...cars];
 
   // Handle brands filter as an array
@@ -12,10 +13,6 @@ export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
 
   if (filter.models && filter.models.length > 0) {
     result = result.filter(car => filter.models?.includes(car.model));
-  }
-
-  if (filter.years && filter.years.length > 0) {
-    result = result.filter(car => filter.years?.includes(car.year));
   }
 
   if (filter.bodyTypes && filter.bodyTypes.length > 0) {
@@ -30,22 +27,31 @@ export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
     );
   }
 
-  if (filter.engineTypes && filter.engineTypes.length > 0) {
-    result = result.filter(car => filter.engineTypes?.includes(car.engine.type));
+  if (filter.yearRange) {
+    result = result.filter(
+      car => 
+        car.year >= (filter.yearRange?.min || 0) && 
+        car.year <= (filter.yearRange?.max || Infinity)
+    );
   }
 
-  if (filter.drivetrains && filter.drivetrains.length > 0) {
-    result = result.filter(car => filter.drivetrains?.includes(car.drivetrain));
+  if (filter.fuelTypes && filter.fuelTypes.length > 0) {
+    result = result.filter(car => filter.fuelTypes?.includes(car.engine.fuelType));
+  }
+
+  if (filter.transmissionTypes && filter.transmissionTypes.length > 0) {
+    result = result.filter(car => filter.transmissionTypes?.includes(car.transmission.type));
   }
 
   if (filter.isNew !== undefined) {
     result = result.filter(car => car.isNew === filter.isNew);
   }
   
-  if (filter.countries && filter.countries.length > 0) {
-    result = result.filter(car => car.country && filter.countries?.includes(car.country));
+  if (filter.country) {
+    result = result.filter(car => car.country === filter.country);
   }
 
+  // Legacy support for older filter properties
   // Handle single brand filter (legacy support)
   if (filter.brand) {
     result = result.filter(car => car.brand === filter.brand);
@@ -82,10 +88,6 @@ export const applyFilters = (cars: Car[], filter: CarFilter): Car[] => {
     } else {
       result = result.filter(car => car.transmission.type === filter.transmissionType);
     }
-  }
-
-  if (filter.country) {
-    result = result.filter(car => car.country === filter.country);
   }
 
   if (filter.onlyNew) {

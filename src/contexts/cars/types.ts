@@ -6,14 +6,25 @@ export type FilterOptions = {
   search?: string;
   brands?: string[];
   bodyTypes?: string[];
-  priceRange?: [number, number];
-  yearRange?: [number, number];
+  priceRange?: { min: number; max: number };
+  yearRange?: { min: number; max: number };
   fuelTypes?: string[];
   transmissionTypes?: string[];
   isNew?: boolean;
   country?: string;
-  sortBy?: 'price' | 'year' | 'popularity';
+  sortBy?: 'price' | 'year' | 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc';
   sortOrder?: 'asc' | 'desc';
+  // Legacy fields for compatibility
+  brand?: string;
+  bodyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  fuelType?: string;
+  transmissionType?: string | string[];
+  onlyNew?: boolean;
+  discount?: boolean;
 };
 
 export interface CarsContextType {

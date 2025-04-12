@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { loadFavoritesToLocalStorage, saveFavoritesToLocalStorage } from "@/contexts/cars/utils";
+import { saveFavoritesToLocalStorage, loadFavoritesFromLocalStorage } from "@/contexts/cars/utils";
 
 export const favoriteProvider = {
   async getFavorites(): Promise<string[]> {
@@ -23,7 +23,7 @@ export const favoriteProvider = {
         return favoriteIds;
       } else {
         // Если в Supabase нет данных, используем локальное хранилище как запасной вариант
-        const localFavorites = loadFavoritesToLocalStorage();
+        const localFavorites = loadFavoritesFromLocalStorage();
         
         // Если у нас есть локальные избранные, но их нет в базе, попробуем их синхронизировать
         // (только если их длина > 0, чтобы не синхронизировать пустой массив)
@@ -36,7 +36,7 @@ export const favoriteProvider = {
     } catch (err) {
       console.error("Failed to load favorites from Supabase:", err);
       // В случае ошибки используем локальное хранилище
-      return loadFavoritesToLocalStorage();
+      return loadFavoritesFromLocalStorage();
     }
   },
 

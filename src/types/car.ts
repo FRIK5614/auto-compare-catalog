@@ -1,4 +1,3 @@
-
 export interface CarImage {
   id: string;
   url: string;
@@ -102,9 +101,17 @@ export interface CarFilter {
   country?: string;       // Single country filter
   onlyNew?: boolean;      // New cars only flag
   search?: string;        // Search term
-  sortBy?: 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc'; // Sort option
+  sortBy?: 'popularity' | 'priceAsc' | 'priceDesc' | 'yearDesc' | 'yearAsc' | 'nameAsc' | 'nameDesc' | 'price' | 'year'; // Sort option
   limit?: number;         // Limit number of results
   discount?: boolean;     // Flag to filter cars with discounts
+  // New properties to match FilterOptions
+  fuelTypes?: string[];
+  transmissionTypes?: string[];
+  yearRange?: {
+    min: number;
+    max: number;
+  };
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface Order {
