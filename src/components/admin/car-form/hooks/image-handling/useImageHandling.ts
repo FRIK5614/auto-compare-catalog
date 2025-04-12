@@ -1,69 +1,45 @@
 
-import { Car } from '@/types/car';
-import { useImagePreview } from './useImagePreview';
+import { useState, useCallback } from 'react';
+import { Car, CarImage } from '@/types/car';
 import { useImageInitialization } from './useImageInitialization';
+import { useImagePreview } from './useImagePreview';
 import { useImageUpload } from './useImageUpload';
 import { useImageStorage } from './useImageStorage';
 
-export const useImageHandling = (initialCar: Car | null) => {
-  // Use specialized hooks
-  const { 
-    imagePreview, 
-    setImagePreview, 
-    handleImageUrlChange: imageUrlChange, 
-    addImage, 
-    removeImage 
-  } = useImagePreview();
+export const useImageHandling = () => {
+  // Setup image preview state
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const previewHook = useImagePreview(setImagePreview);
   
-  const { 
-    images, 
-    setImages, 
-    initializeImagesFromCar 
-  } = useImageInitialization(setImagePreview);
+  // Image initialization hook
+  const initHook = useImageInitialization(setImagePreview);
   
-  const { 
-    imageFile, 
-    setImageFile, 
-    handleImageUpload: imageUpload 
-  } = useImageUpload(images, setImages, setImagePreview);
+  // Setup image upload
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const uploadHook = useImageUpload(setImagePreview, setImageFile, initHook.setImages);
   
-  const { 
-    uploadImageFiles: uploadImages 
-  } = useImageStorage();
-
-  // Adapter functions that simplify the API by connecting hooks together
-  const handleImageUrlChange = (url: string) => {
-    const updatedCar = imageUrlChange(url, initialCar);
-    return updatedCar;
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!initialCar) return;
-    imageUpload(e, initialCar);
-  };
-
-  const handleAddImage = (url: string, car: Car) => {
-    return addImage(url, car);
-  };
-
-  const handleRemoveImage = (index: number, car: Car) => {
-    return removeImage(index, car, images);
-  };
-
-  const uploadImageFiles = async (carId: string) => {
-    return await uploadImages(carId, images);
-  };
+  // Setup image storage
+  const storageHook = useImageStorage(initHook.images);
 
   return {
+    // Image state
     imageFile,
+    setImageFile,
     imagePreview,
-    images,
-    setImages,
-    initializeImagesFromCar,
-    handleImageUrlChange,
-    handleImageUpload,
-    handleAddImage,
-    handleRemoveImage,
-    uploadImageFiles
+    setImagePreview,
+    images: initHook.images,
+    setImages: initHook.setImages,
+    
+    // Image initialization
+    initializeImagesFromCar: initHook.initializeImagesFromCar,
+    
+    // Image upload
+    handleImageUpload: uploadHook.handleImageUpload,
+    handleImageUrlChange: uploadHook.handleImageUrlChange,
+    handleAddImage: uploadHook.handleAddImage,
+    handleRemoveImage: uploadHook.handleRemoveImage,
+    
+    // Image storage
+    uploadImageFiles: storageHook.uploadImageFiles
   };
 };

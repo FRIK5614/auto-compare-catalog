@@ -4,6 +4,7 @@ import { Order } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
 import { transformOrder } from './transformers';
 
+// Create a singleton export for all order-related API functions
 export const orderAPI = {
   /**
    * Retrieve all orders from the database
@@ -40,23 +41,7 @@ export const orderAPI = {
       
       // Transform data to match Order type
       const transformedOrders: Order[] = orders.map(order => {
-        return {
-          id: order.id,
-          carId: order.car_id,
-          customerName: order.customer_name,
-          customerPhone: order.customer_phone,
-          customerEmail: order.customer_email,
-          // Check if message exists before using it
-          message: order.message || '',
-          status: order.status || 'new',
-          createdAt: order.created_at,
-          car: order.vehicles ? {
-            id: order.vehicles.id,
-            brand: order.vehicles.brand,
-            model: order.vehicles.model,
-            image_url: order.vehicles.image_url
-          } : undefined
-        };
+        return transformOrder(order);
       });
       
       return transformedOrders;
@@ -185,4 +170,16 @@ export const orderAPI = {
       return false;
     }
   }
+};
+
+// Export individual functions for compatibility
+export const fetchOrders = async (): Promise<Order[]> => {
+  return orderAPI.getAllOrders();
+};
+
+export const updateOrderStatus = async (
+  orderId: string,
+  status: 'new' | 'processing' | 'completed' | 'canceled'
+): Promise<boolean> => {
+  return orderAPI.updateOrderStatus(orderId, status);
 };

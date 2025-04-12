@@ -1,5 +1,4 @@
-
-import { Car, CarImage } from '@/types/car';
+import { Car, CarImage, Order } from '@/types/car';
 
 /**
  * Функция для преобразования объекта из таблицы vehicles в формат Car
@@ -141,5 +140,27 @@ export const transformCarToVehicle = (car: Car): any => {
     is_new: car.isNew,
     country: car.country,
     view_count: car.viewCount || 0
+  };
+};
+
+/**
+ * Transform order data from database to Order type
+ */
+export const transformOrder = (data: any): Order => {
+  return {
+    id: data.id,
+    carId: data.car_id,
+    customerName: data.customer_name,
+    customerPhone: data.customer_phone,
+    customerEmail: data.customer_email,
+    message: data.message || '',
+    status: (data.status || 'new') as 'new' | 'processing' | 'completed' | 'canceled',
+    createdAt: data.created_at,
+    car: data.vehicles ? {
+      id: data.vehicles.id,
+      brand: data.vehicles.brand,
+      model: data.vehicles.model,
+      image_url: data.vehicles.image_url
+    } : undefined
   };
 };

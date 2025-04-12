@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,7 +18,6 @@ const CarFormContainer: React.FC = () => {
   const saveOperationInProgress = useRef(false);
   const { toast } = useToast();
   
-  // Get car data
   const {
     car,
     setCar,
@@ -30,7 +28,6 @@ const CarFormContainer: React.FC = () => {
     error,
   } = useCarFormData(id, isNewCar);
   
-  // Handle images
   const {
     imageFile,
     imagePreview,
@@ -42,18 +39,14 @@ const CarFormContainer: React.FC = () => {
     handleAddImage: addImage,
     handleRemoveImage: removeImage,
     uploadImageFiles
-  } = useImageHandling(car);
+  } = useImageHandling();
   
-  // Handle save
   const { saving, saveCar } = useCarSave();
   
-  // State for URL fetcher
   const [showUrlFetcher, setShowUrlFetcher] = useState(isNewCar);
   
-  // External car data fetching
   const { loading: fetchLoading, fetchCarFromUrl } = useExternalCarData(setCar, setImages);
 
-  // Initialize images when car is loaded
   useEffect(() => {
     if (car && car.id) {
       console.log("Initializing images for car:", car.id, car.images?.length || 0, "images");
@@ -61,7 +54,6 @@ const CarFormContainer: React.FC = () => {
     }
   }, [car?.id]);
   
-  // Adapter functions for image handlers
   const handleImageUrlChange = (url: string) => {
     if (!car) return;
     console.log("Changing image URL to:", url);
@@ -95,7 +87,6 @@ const CarFormContainer: React.FC = () => {
     }
   };
 
-  // Handle car data from URL
   const handleCarFromUrl = async (url: string) => {
     setFormLoading(true);
     const success = await fetchCarFromUrl(url);
@@ -106,7 +97,6 @@ const CarFormContainer: React.FC = () => {
     }
   };
 
-  // Save car 
   const handleSave = async (updatedCar: Car) => {
     if (!car || saveOperationInProgress.current) return;
     
@@ -116,10 +106,8 @@ const CarFormContainer: React.FC = () => {
     try {
       console.log("Saving car with images:", images?.length || 0, "images");
       
-      // Ensure images array is properly attached to the car
       updatedCar.images = images;
       
-      // Upload any local images to storage
       if (images.some(img => img.file)) {
         console.log("Uploading local images to storage...");
         toast({
@@ -131,7 +119,6 @@ const CarFormContainer: React.FC = () => {
           const uploadedImages = await uploadImageFiles(updatedCar.id);
           updatedCar.images = uploadedImages;
           
-          // Update main image URL if necessary
           if (uploadedImages.length > 0) {
             updatedCar.image_url = uploadedImages[0].url;
             console.log("Updated main image URL to:", updatedCar.image_url);
@@ -146,7 +133,6 @@ const CarFormContainer: React.FC = () => {
         }
       }
       
-      // Call the save function with correct parameters
       const result = await saveCar(updatedCar, isNewCar);
       
       if (result.success) {
@@ -175,7 +161,6 @@ const CarFormContainer: React.FC = () => {
       });
     } finally {
       setFormLoading(false);
-      // Short delay to prevent accidental double submission
       setTimeout(() => {
         saveOperationInProgress.current = false;
       }, 500);

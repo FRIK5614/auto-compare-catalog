@@ -1,6 +1,6 @@
 
 import { Order } from "@/types/car";
-import { updateOrderStatus } from "@/services/api";
+import { updateOrderStatus } from "@/services/api/orderAPI";
 import { saveOrdersToLocalStorage } from "./utils";
 import { supabase } from "@/integrations/supabase/client";
 
