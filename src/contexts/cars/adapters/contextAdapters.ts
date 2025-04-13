@@ -86,14 +86,14 @@ export const createUploadCarImageAdapter = (
 ) => {
   return async (file: File, carId: string): Promise<CarImage> => {
     try {
-      // Log parameters to ensure they're correct
-      console.log("Uploading image for car:", carId, "file:", file?.name);
-      
-      // Ensure both parameters are valid
+      // Validate parameters
       if (!carId || !file) {
-        console.error("Invalid parameters for image upload:", { carId, file });
+        console.error("Invalid parameters for image upload:", { carId, fileExists: !!file });
         return Promise.reject("Invalid parameters for image upload");
       }
+      
+      // Log parameters to ensure they're correct
+      console.log("Uploading image for car:", carId, "file:", file?.name);
       
       const imageUrl = await uploadCarImageAction(carId, file);
       

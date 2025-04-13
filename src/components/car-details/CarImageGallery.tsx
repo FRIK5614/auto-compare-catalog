@@ -25,19 +25,13 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   };
 
   // Safely convert input to an array, ensuring we always have at least one image
-  let displayImages: CarImage[] = [];
-  
-  // Only try to use the input images if they exist and are actually an array
-  if (images && Array.isArray(images) && images.length > 0) {
-    displayImages = images.map(img => ({
-      ...img,
-      url: img.url || "/placeholder.svg", // Ensure URL is never undefined
-      alt: img.alt || "Изображение автомобиля"
-    }));
-  } else {
-    // Fallback to default image
-    displayImages = [defaultImage];
-  }
+  const displayImages: CarImage[] = images && Array.isArray(images) && images.length > 0 
+    ? images.map(img => ({
+        ...img,
+        url: img.url || "/placeholder.svg", // Ensure URL is never undefined
+        alt: img.alt || "Изображение автомобиля"
+      }))
+    : [defaultImage]; // Fallback to default image
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);
 

@@ -121,9 +121,6 @@ const CarDetailsContent: React.FC = () => {
     );
   }
 
-  // Ensure car.images is always an array
-  const safeImages = car.images && Array.isArray(car.images) ? car.images : [];
-
   return (
     <>
       <CarBreadcrumbs car={car} />
@@ -138,9 +135,8 @@ const CarDetailsContent: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            {/* Pass the safe images array to the gallery */}
             <CarImageGallery 
-              images={safeImages} 
+              images={car.images} 
               isNew={car.isNew} 
             />
             <CarTabs car={car} />
