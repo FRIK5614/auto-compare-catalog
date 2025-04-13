@@ -10,7 +10,7 @@ export const useCarSave = () => {
   const { toast } = useToast();
   const { reloadCars } = useCars();
   
-  const saveCar = async (car: Car, isNewCar: boolean): Promise<{ success: boolean, message?: string }> => {
+  const saveCar = async (car: Car, isNewCar: boolean): Promise<boolean> => {
     setSaving(true);
     console.log("Saving car:", isNewCar ? "new car" : "update car", car);
     console.log("Images to save:", car.images?.length || 0, "images");
@@ -23,7 +23,7 @@ export const useCarSave = () => {
           title: "Ошибка валидации",
           description: "Пожалуйста, заполните обязательные поля (Марка и Модель)",
         });
-        return { success: false, message: "Валидация не пройдена" };
+        return false;
       }
       
       // Ensure images are properly formatted before save
@@ -54,6 +54,7 @@ export const useCarSave = () => {
           result = await saveCarAPI(car);
         } catch (error) {
           console.error("Error saving new car to API:", error);
+          throw error;
         }
         
         if (result) {
@@ -63,7 +64,7 @@ export const useCarSave = () => {
             title: "Автомобиль добавлен",
             description: `${car.brand} ${car.model} успешно добавлен`,
           });
-          return { success: true };
+          return true;
         } else {
           throw new Error("Failed to add new car");
         }
@@ -73,6 +74,7 @@ export const useCarSave = () => {
           result = await updateCarAPI(car);
         } catch (error) {
           console.error("Error updating car in API:", error);
+          throw error;
         }
         
         if (result) {
@@ -82,7 +84,7 @@ export const useCarSave = () => {
             title: "Автомобиль обновлен",
             description: `${car.brand} ${car.model} успешно обновлен`,
           });
-          return { success: true };
+          return true;
         } else {
           throw new Error("Failed to update car");
         }
@@ -94,7 +96,7 @@ export const useCarSave = () => {
         title: "Ошибка сохранения",
         description: `Не удалось сохранить автомобиль: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
       });
-      return { success: false, message: error instanceof Error ? error.message : 'Неизвестная ошибка' };
+      return false;
     } finally {
       setSaving(false);
     }

@@ -50,7 +50,7 @@ export const useTelegramFeed = ({
       console.log("Telegram feed response:", data);
       
       // Check if we got valid data
-      if (!data || !data.success || !data.posts || data.posts.length === 0) {
+      if (!data || !data.success || !data.posts) {
         console.warn("No valid telegram posts data received");
         throw new Error(data?.error || "No posts received from Telegram");
       }

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import AdminCarsList from "@/components/AdminCarsList";
 import { useExportImport } from "@/hooks/useExportImport";
 import AdminLayout from "@/components/AdminLayout";
-import { deleteCar as deleteCarAPI } from "@/services/api/car/carCRUD";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminCars = () => {
   const { cars, deleteCar, reloadCars } = useCars();
@@ -58,11 +58,14 @@ const AdminCars = () => {
     try {
       setIsLoading(true);
       
-      // First delete from the API directly
-      const deleted = await deleteCarAPI(id);
+      // First delete directly from the database using Supabase
+      const { error } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('id', id);
       
-      if (!deleted) {
-        throw new Error("Failed to delete car from API");
+      if (error) {
+        throw new Error(`Failed to delete car from database: ${error.message}`);
       }
       
       // Then update the local state

@@ -1,12 +1,10 @@
 
 import { useCallback } from "react";
 import { Order } from "@/types/car";
-import { loadOrders } from "../../dataLoaders";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OrdersState, OrdersActions } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
-import { loadOrdersFromLocalStorage, saveOrdersToLocalStorage } from "./useLocalStorage";
 import { orderAPI } from "@/services/api/orderAPI";
 
 export const useOrdersActions = (state: OrdersState): OrdersActions => {
@@ -21,17 +19,51 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
     setLoading(true);
     
     try {
-      console.log("Обновление заказов из API...");
-      // Use orderAPI directly to ensure we get data from the database
-      const ordersData = await orderAPI.getAllOrders();
-      console.log("Заказы обновлены:", ordersData);
+      console.log("Обновление заказов из базы данных...");
+      // Use direct Supabase query to ensure we get fresh data from the database
+      const { data: ordersData, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          vehicles:car_id (
+            id,
+            brand,
+            model,
+            image_url
+          )
+        `)
+        .order('created_at', { ascending: false });
       
-      setOrders(ordersData);
-      saveOrdersToLocalStorage(ordersData);
+      if (error) {
+        throw error;
+      }
+      
+      // Transform data to match Order type
+      const transformedOrders: Order[] = ordersData ? ordersData.map(order => ({
+        id: order.id,
+        carId: order.car_id,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerEmail: order.customer_email,
+        message: (order as any).message || '',
+        status: (order.status || 'new') as Order['status'],
+        createdAt: order.created_at,
+        updatedAt: order.updated_at || order.created_at,
+        car: order.vehicles ? {
+          id: order.vehicles.id,
+          brand: order.vehicles.brand,
+          model: order.vehicles.model,
+          image_url: order.vehicles.image_url
+        } : undefined
+      })) : [];
+      
+      console.log("Заказы обновлены:", transformedOrders);
+      
+      setOrders(transformedOrders);
       
       toast({
         title: "Заказы обновлены",
-        description: `Загружено ${ordersData.length} заказов`
+        description: `Загружено ${transformedOrders.length} заказов`
       });
       
     } catch (error) {
@@ -49,28 +81,40 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
   // Process order (update status)
   const handleProcessOrder = useCallback(async (orderId: string, status: Order['status']) => {
     try {
-      // Always update local state
-      const updatedOrders = orders.map(order => 
-        order.id === orderId ? { ...order, status } : order
-      );
-      setOrders(updatedOrders);
-      saveOrdersToLocalStorage(updatedOrders);
-      
+      // Always update database first
       if (isOnline) {
-        // If online, update in database using our dedicated API
-        const success = await orderAPI.updateOrderStatus(orderId, status);
+        // Update in database directly using Supabase
+        const { error } = await supabase
+          .from('orders')
+          .update({ 
+            status,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', orderId);
         
-        if (!success) {
-          throw new Error("Failed to update order status in database");
+        if (error) {
+          throw new Error(`Failed to update order status in database: ${error.message}`);
         }
+        
+        // Then update local state
+        const updatedOrders = orders.map(order => 
+          order.id === orderId ? { ...order, status } : order
+        );
+        setOrders(updatedOrders);
       } else {
-        // If offline, add to pending orders
+        // If offline, add to pending orders and update local state
         const orderToUpdate = orders.find(order => order.id === orderId);
         if (orderToUpdate) {
           addToPendingOrders({
             ...orderToUpdate,
             status
           });
+          
+          // Update local state
+          const updatedOrders = orders.map(order => 
+            order.id === orderId ? { ...order, status } : order
+          );
+          setOrders(updatedOrders);
         }
       }
       
