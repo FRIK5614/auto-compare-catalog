@@ -13,7 +13,7 @@ import { CatalogGrid } from "@/components/catalog/CatalogGrid";
 import { EmptyResults } from "@/components/catalog/EmptyResults";
 import { mapSortOptionFromFilter, mapSortOptionToFilter } from "@/components/catalog/SortOptions";
 import SearchFiltersModal from "@/components/SearchFiltersModal";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const BrandCatalog = () => {
   const { brand } = useParams<{ brand: string }>();
@@ -103,7 +103,7 @@ const BrandCatalog = () => {
       <Helmet>
         <title>{brand ? `${brand} Автомобили` : 'Каталог автомобилей'}</title>
         <meta name="description" content={`Все автомобили марки ${brand} в каталоге. Просмотрите доступные модели, цены и характеристики.`} />
-        <link rel="canonical" href={`${window.location.origin}/cars/${brand}`} />
+        <link rel="canonical" href={`${window.location.origin}/cars/brand/${brand}`} />
       </Helmet>
       
       <Header />

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
@@ -6,15 +5,14 @@ import Footer from "@/components/Footer";
 import SearchFilters from "@/components/SearchFilters";
 import ComparePanel from "@/components/ComparePanel";
 import { useCars } from "@/hooks/useCars";
-import { Filter } from "lucide-react";
-import SearchFiltersModal from "@/components/SearchFiltersModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CarLoadingAnimation from "@/components/CarLoadingAnimation";
 import { CatalogHeader } from "@/components/catalog/CatalogHeader";
 import { CatalogGrid } from "@/components/catalog/CatalogGrid";
 import { EmptyResults } from "@/components/catalog/EmptyResults";
 import { mapSortOptionFromFilter, mapSortOptionToFilter } from "@/components/catalog/SortOptions";
-import { Helmet } from "react-helmet";
+import SearchFiltersModal from "@/components/SearchFiltersModal";
+import { Helmet } from "react-helmet-async";
 
 const Catalog = () => {
   const { filteredCars, filter, setFilter, loading } = useCars();
@@ -98,7 +96,6 @@ const Catalog = () => {
     setIsFilterModalOpen(false);
   };
 
-  // Build canonical URL without query parameters
   const canonicalUrl = `${window.location.origin}/cars`;
 
   return (
