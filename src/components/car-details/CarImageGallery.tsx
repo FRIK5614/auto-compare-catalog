@@ -38,6 +38,11 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);
 
+  // Ensure the activeImageIndex is valid
+  if (activeImageIndex >= displayImages.length) {
+    setActiveImageIndex(0);
+  }
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative">
@@ -69,6 +74,10 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                 alt={image.alt || `Изображение ${index + 1}`}
                 className="w-full h-full object-cover"
                 draggable="false"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
               />
             </SwiperSlide>
           ))}
@@ -78,11 +87,13 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
             <>
               <button 
                 className="swiper-button-prev bg-white/80 hover:bg-white text-auto-gray-700 rounded-full w-10 h-10 flex items-center justify-center shadow-sm absolute top-1/2 left-2 z-10 transform -translate-y-1/2"
+                aria-label="Previous slide"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button 
                 className="swiper-button-next bg-white/80 hover:bg-white text-auto-gray-700 rounded-full w-10 h-10 flex items-center justify-center shadow-sm absolute top-1/2 right-2 z-10 transform -translate-y-1/2"
+                aria-label="Next slide"
               >
                 <ChevronRight className="h-6 w-6" />
               </button>
@@ -98,6 +109,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
             spaceBetween={8}
             slidesPerView="auto"
             className="thumbnails-swiper"
+            key={`thumbs-${displayImages.length}`} // Force re-render when images change
           >
             {displayImages.map((image, index) => (
               <SwiperSlide 
@@ -117,6 +129,10 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                     alt={image.alt || `Миниатюра ${index + 1}`}
                     className="w-full h-full object-cover"
                     draggable="false"
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
               </SwiperSlide>
