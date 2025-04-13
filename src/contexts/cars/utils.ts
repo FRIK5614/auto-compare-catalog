@@ -114,8 +114,12 @@ export const saveCompareToSupabase = async (compareCars: string[]): Promise<bool
   return true;
 };
 
-// Export compatibility functions with the same names as the old functions
+// Export old function names for compatibility
 export const loadFavoritesFromLocalStorage = loadFavoritesFromSupabase;
 export const saveFavoritesToLocalStorage = saveFavoritesToSupabase;
 export const loadCompareFromLocalStorage = loadCompareFromSupabase;
 export const saveCompareToLocalStorage = saveCompareToSupabase;
+
+// Add the missing export for loadOrdersFromLocalStorage
+export { loadOrdersFromSupabase as loadOrdersFromLocalStorage } from './hooks/orders/useLocalStorage';
+export { saveOrdersToSupabase as saveOrdersToLocalStorage } from './hooks/orders/useLocalStorage';

@@ -1,33 +1,36 @@
 
 import { useEffect } from "react";
-import { saveFavoritesToLocalStorage, loadFavoritesFromLocalStorage } from "../../utils";
+import { loadFavoritesFromSupabase, saveFavoritesToSupabase } from "../../utils";
 
-export const useLocalStorage = (
+export const useFavoritesLocalStorage = (
   favorites: string[],
-  setFavorites: (favorites: string[]) => void,
-  loadedRef: React.MutableRefObject<boolean>
+  setFavorites: (favorites: string[]) => void
 ) => {
-  // Load favorites from localStorage on initial load
+  // Load favorites on mount
   useEffect(() => {
-    if (!loadedRef.current) {
-      const localFavorites = loadFavoritesFromLocalStorage();
-      if (localFavorites.length > 0) {
-        setFavorites(localFavorites);
+    const loadFavorites = async () => {
+      try {
+        const storedFavorites = await loadFavoritesFromSupabase();
+        if (storedFavorites && storedFavorites.length > 0) {
+          setFavorites(storedFavorites);
+        }
+      } catch (error) {
+        console.error("Error loading favorites from database:", error);
       }
-    }
-  }, [setFavorites, loadedRef]);
+    };
 
-  // Save to localStorage when favorites change
+    loadFavorites();
+  }, [setFavorites]);
+
+  // Save favorites when they change
   useEffect(() => {
-    if (favorites.length > 0 && loadedRef.current) {
-      saveFavoritesToLocalStorage(favorites);
+    if (favorites.length > 0) {
+      saveFavoritesToSupabase(favorites);
     }
-  }, [favorites, loadedRef]);
+  }, [favorites]);
 
   return {
-    loadFromLocalStorage: () => {
-      const localFavorites = loadFavoritesFromLocalStorage();
-      return localFavorites;
-    }
+    loadFavoritesFromSupabase,
+    saveFavoritesToSupabase
   };
 };

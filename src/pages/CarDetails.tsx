@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { useCars } from '@/hooks/useCars';
 import LoadingState from '@/components/LoadingState';
 import { Helmet } from 'react-helmet-async';
-import { CarDetailsContent } from '@/components/car-details/CarDetailsContent';
+import CarDetailsContent from '@/components/car-details/CarDetailsContent';
 
 const CarDetails = () => {
   const { id } = useParams<{ id: string }>();

@@ -60,16 +60,23 @@ export const useCarsData = () => {
         console.error("Ошибка при загрузке данных:", err);
         setError("Не удалось загрузить данные. Пожалуйста, попробуйте позже.");
         
-        // Если произошла ошибка, попробуем загрузить из localStorage
-        const localOrders = loadOrdersFromLocalStorage();
-        const localFavorites = loadFavoritesFromLocalStorage();
-        
-        if (localOrders.length > 0) {
-          setOrders(localOrders);
-        }
-        
-        if (localFavorites.length > 0) {
-          setFavorites(localFavorites);
+        // Если произошла ошибка, попробуем загрузить из базы данных напрямую
+        try {
+          const localOrdersPromise = loadOrdersFromLocalStorage();
+          const localFavoritesPromise = loadFavoritesFromLocalStorage();
+          
+          const localOrders = await localOrdersPromise;
+          const localFavorites = await localFavoritesPromise;
+          
+          if (localOrders.length > 0) {
+            setOrders(localOrders);
+          }
+          
+          if (localFavorites.length > 0) {
+            setFavorites(localFavorites);
+          }
+        } catch (fallbackErr) {
+          console.error("Ошибка при загрузке локальных данных:", fallbackErr);
         }
       } finally {
         setLoading(false);

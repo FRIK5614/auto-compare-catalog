@@ -7,15 +7,7 @@ export const favoriteProvider = {
     try {
       console.log('[API] Загрузка избранных автомобилей из Supabase');
       
-      // Try to get favorites from localStorage first
-      const localFavorites = loadFavoritesFromLocalStorage();
-      
-      if (localFavorites.length > 0) {
-        console.log(`[API] Загружено ${localFavorites.length} избранных автомобилей из localStorage`);
-        return localFavorites;
-      }
-      
-      // Then try to get from Supabase
+      // Try to get directly from Supabase
       const { data, error } = await supabase
         .from('favorites')
         .select('car_id');
@@ -44,8 +36,33 @@ export const favoriteProvider = {
     try {
       console.log(`[API] Сохранение ${favorites.length} избранных автомобилей в Supabase`);
       
-      // Store in localStorage for offline/anonymous use
-      localStorage.setItem('favorites', JSON.stringify(favorites));
+      // Clear existing favorites
+      const { error: deleteError } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', 'anonymous');
+      
+      if (deleteError) {
+        console.error('Error clearing favorites:', deleteError);
+        return false;
+      }
+      
+      // Insert new favorites
+      if (favorites.length > 0) {
+        const favoritesToInsert = favorites.map(car_id => ({
+          car_id,
+          user_id: 'anonymous'
+        }));
+        
+        const { error: insertError } = await supabase
+          .from('favorites')
+          .insert(favoritesToInsert);
+        
+        if (insertError) {
+          console.error('Error inserting favorites:', insertError);
+          return false;
+        }
+      }
       
       return true;
     } catch (error) {

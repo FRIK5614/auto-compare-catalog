@@ -1,45 +1,32 @@
 
 import { useState, useEffect } from "react";
-import { CompareState } from "./types";
 import { loadCompareFromLocalStorage } from "../../utils";
 
-export const useCompareState = (): CompareState => {
+export const useCompareState = () => {
   const [compareCars, setCompareCars] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [loading, setLoading] = useState(true);
 
-  // Monitor network status
+  // Load initial compare list
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+    const loadInitialCompare = async () => {
+      try {
+        setLoading(true);
+        const initialCompare = await loadCompareFromLocalStorage();
+        setCompareCars(initialCompare);
+      } catch (error) {
+        console.error("Error loading comparison list:", error);
+        setCompareCars([]);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, []);
 
-  // Initialize from localStorage
-  useEffect(() => {
-    try {
-      const compareData = loadCompareFromLocalStorage();
-      // Apply hard limit of 3 cars to prevent performance issues
-      const limitedCompareData = compareData.slice(0, 3);
-      setCompareCars(limitedCompareData);
-    } catch (error) {
-      console.error("Error loading comparison list:", error);
-      setCompareCars([]);
-    }
+    loadInitialCompare();
   }, []);
 
   return {
     compareCars,
-    loading,
-    isOnline,
     setCompareCars,
-    setLoading
+    loading
   };
 };

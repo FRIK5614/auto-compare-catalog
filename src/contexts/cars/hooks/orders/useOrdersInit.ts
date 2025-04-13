@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { loadOrders } from "../../dataLoaders";
 import { OrdersState } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
-import { loadOrdersFromLocalStorage, saveOrdersToLocalStorage } from "./useLocalStorage";
+import { loadOrdersFromLocalStorage, saveOrdersToLocalStorage } from "../../utils";
 import { useToast } from "@/hooks/use-toast";
 
 export const useOrdersInit = (state: OrdersState) => {
@@ -42,24 +42,34 @@ export const useOrdersInit = (state: OrdersState) => {
         if (isOnline) {
           await loadOrdersFromAPI();
         } else {
-          // If offline, use localStorage
-          const localOrders = loadOrdersFromLocalStorage();
-          console.log("Загружены заказы из localStorage:", localOrders);
-          setOrders(localOrders);
+          // If offline, use database through useLocalStorage function
+          try {
+            const localOrders = await loadOrdersFromLocalStorage();
+            console.log("Загружены заказы из базы данных:", localOrders);
+            setOrders(localOrders);
+          } catch (error) {
+            console.error("Ошибка при загрузке заказов из базы данных:", error);
+            setOrders([]);
+          }
         }
       } catch (error) {
         console.error("Ошибка при инициализации заказов:", error);
         
-        // On error, try to use localStorage
-        const localOrders = loadOrdersFromLocalStorage();
-        if (localOrders.length > 0) {
-          setOrders(localOrders);
+        // On error, try to use direct database query
+        try {
+          const localOrders = await loadOrdersFromLocalStorage();
+          if (localOrders.length > 0) {
+            setOrders(localOrders);
+          }
+        } catch (fallbackError) {
+          console.error("Ошибка при загрузке заказов из базы данных:", fallbackError);
+          setOrders([]);
         }
         
         toast({
           variant: "destructive",
           title: "Ошибка загрузки заказов",
-          description: "Используются локальные данные"
+          description: "Не удалось загрузить заказы из базы данных"
         });
       } finally {
         setLoading(false);
