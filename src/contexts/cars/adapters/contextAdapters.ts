@@ -7,12 +7,19 @@ import { Car, CarImage } from "@/types/car";
 
 // Adapter for viewCar to ensure it returns a Car promise
 export const createViewCarAdapter = (
-  viewCar: (id: string) => Promise<boolean> | boolean,
+  viewCar: (id: string) => Promise<boolean> | boolean | void,
   cars: Car[]
 ) => {
   return async (id: string): Promise<Car | undefined> => {
-    const result = await viewCar(id);
-    return result ? cars.find(car => car.id === id) : undefined;
+    try {
+      // Execute the viewCar function, regardless of its return type
+      await viewCar(id);
+      // Return the car from the cars array if it exists
+      return cars.find(car => car.id === id);
+    } catch (error) {
+      console.error("Error viewing car:", error);
+      return undefined;
+    }
   };
 };
 
@@ -77,11 +84,9 @@ export const createDeleteCarAdapter = (
 export const createUploadCarImageAdapter = (
   uploadCarImageAction: (carId: string, file: File) => Promise<string>
 ) => {
-  return async (file: File): Promise<CarImage> => {
+  return async (file: File, carId: string): Promise<CarImage> => {
     try {
-      // We need to provide a dummy carId since the adapter expects only one parameter (file)
-      // but the underlying function needs two parameters
-      const imageUrl = await uploadCarImageAction('temp', file);
+      const imageUrl = await uploadCarImageAction(carId, file);
       return {
         id: `img-${Date.now()}`,
         url: imageUrl,
