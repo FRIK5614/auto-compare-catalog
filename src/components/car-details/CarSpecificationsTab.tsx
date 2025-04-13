@@ -7,6 +7,11 @@ interface CarSpecificationsTabProps {
 }
 
 const CarSpecificationsTab: React.FC<CarSpecificationsTabProps> = ({ car }) => {
+  // Make sure car is available to prevent null reference errors
+  if (!car) {
+    return <div className="p-4 text-center">Информация об автомобиле недоступна</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -16,19 +21,19 @@ const CarSpecificationsTab: React.FC<CarSpecificationsTabProps> = ({ car }) => {
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
           <div className="flex justify-between py-1 border-b border-auto-gray-100">
             <dt className="text-auto-gray-600">Марка</dt>
-            <dd className="font-medium text-auto-gray-900">{car.brand}</dd>
+            <dd className="font-medium text-auto-gray-900">{car.brand || 'Н/Д'}</dd>
           </div>
           <div className="flex justify-between py-1 border-b border-auto-gray-100">
             <dt className="text-auto-gray-600">Модель</dt>
-            <dd className="font-medium text-auto-gray-900">{car.model}</dd>
+            <dd className="font-medium text-auto-gray-900">{car.model || 'Н/Д'}</dd>
           </div>
           <div className="flex justify-between py-1 border-b border-auto-gray-100">
             <dt className="text-auto-gray-600">Год выпуска</dt>
-            <dd className="font-medium text-auto-gray-900">{car.year}</dd>
+            <dd className="font-medium text-auto-gray-900">{car.year || 'Н/Д'}</dd>
           </div>
           <div className="flex justify-between py-1 border-b border-auto-gray-100">
             <dt className="text-auto-gray-600">Тип кузова</dt>
-            <dd className="font-medium text-auto-gray-900">{car.bodyType}</dd>
+            <dd className="font-medium text-auto-gray-900">{car.bodyType || 'Н/Д'}</dd>
           </div>
         </dl>
       </div>

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OrdersState, OrdersActions } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
 import { loadOrdersFromLocalStorage, saveOrdersToLocalStorage } from "./useLocalStorage";
+import { orderAPI } from "@/services/api/orderAPI";
 
 export const useOrdersActions = (state: OrdersState): OrdersActions => {
   const { orders, setOrders, loading, setLoading, isOnline } = state;
@@ -15,18 +16,15 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
 
   // Reload orders from database
   const reloadOrdersFromDB = useCallback(async () => {
-    if (loading || !isOnline) return;
+    if (loading) return;
     
     setLoading(true);
     
     try {
       console.log("Обновление заказов из API...");
-      const ordersData = await loadOrders();
+      // Use orderAPI directly to ensure we get data from the database
+      const ordersData = await orderAPI.getAllOrders();
       console.log("Заказы обновлены:", ordersData);
-      
-      if (!ordersData || ordersData.length === 0) {
-        console.warn("API не вернул ни одного заказа");
-      }
       
       setOrders(ordersData);
       saveOrdersToLocalStorage(ordersData);
@@ -35,6 +33,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
         title: "Заказы обновлены",
         description: `Загружено ${ordersData.length} заказов`
       });
+      return ordersData;
     } catch (error) {
       console.error("Не удалось обновить заказы:", error);
       toast({
@@ -42,10 +41,11 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
         title: "Ошибка загрузки заказов",
         description: "Не удалось обновить данные о заказах"
       });
+      return [];
     } finally {
       setLoading(false);
     }
-  }, [isOnline, loading, setLoading, setOrders, toast]);
+  }, [loading, setLoading, setOrders, toast]);
 
   // Process order (update status)
   const handleProcessOrder = useCallback(async (orderId: string, status: Order['status']) => {
@@ -58,17 +58,11 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
       saveOrdersToLocalStorage(updatedOrders);
       
       if (isOnline) {
-        // If online, update in database
-        const { error } = await supabase
-          .from('orders')
-          .update({ 
-            status,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', orderId);
+        // If online, update in database using our dedicated API
+        const success = await orderAPI.updateOrderStatus(orderId, status);
         
-        if (error) {
-          throw error;
+        if (!success) {
+          throw new Error("Failed to update order status in database");
         }
       } else {
         // If offline, add to pending orders

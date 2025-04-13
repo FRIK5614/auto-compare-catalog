@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,10 +7,25 @@ import ComparePanel from "@/components/ComparePanel";
 import CarDetailsContent from "@/components/car-details/CarDetailsContent";
 import { useCars } from "@/hooks/useCars";
 import { Helmet } from "react-helmet-async";
+import LoadingState from "@/components/LoadingState";
 
 const CarDetails = () => {
   const { id, brand, model } = useParams<{ id: string; brand: string; model: string }>();
-  const { getCarById, cars, loading } = useCars();
+  const { getCarById, cars, loading, viewCar, reloadCars } = useCars();
+  
+  // Load car data if needed
+  useEffect(() => {
+    if (id && !loading && cars.length === 0) {
+      console.log("Loading cars for car details page");
+      reloadCars();
+    }
+    
+    // Increment view count when viewing car details
+    if (id && !loading) {
+      viewCar(id);
+    }
+  }, [id, reloadCars, loading, cars.length, viewCar]);
+  
   const car = id ? getCarById(id) : null;
   
   // Check if URL params match car data (for proper canonical URL)
@@ -23,10 +38,37 @@ const CarDetails = () => {
     return <Navigate to={`/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} replace />;
   }
 
+  // Show loading state while fetching data
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <LoadingState />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   // If car not found, show not found page
   if (!loading && !car && id) {
     console.error(`Car with ID ${id} not found`);
-    return <Navigate to="/cars" replace />;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center p-10">
+            <h1 className="text-2xl font-bold mb-4">Автомобиль не найден</h1>
+            <p className="mb-6">К сожалению, информация об автомобиле недоступна или автомобиль был удален.</p>
+            <a href="/cars" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              Вернуться в каталог
+            </a>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   return (
@@ -36,7 +78,7 @@ const CarDetails = () => {
           <title>{`${car.brand} ${car.model} ${car.year} - Подробная информация`}</title>
           <meta 
             name="description" 
-            content={`${car.brand} ${car.model} ${car.year} - ${car.engine.type} ${car.engine.displacement}л, ${car.engine.power} л.с., ${car.transmission.type}. Подробная информация, фото и технические характеристики.`} 
+            content={`${car.brand} ${car.model} ${car.year} - ${car.engine?.type || ''} ${car.engine?.displacement || ''}л, ${car.engine?.power || ''} л.с., ${car.transmission?.type || ''}. Подробная информация, фото и технические характеристики.`} 
           />
           <link rel="canonical" href={`${window.location.origin}/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} />
           <meta property="og:title" content={`${car.brand} ${car.model} ${car.year}`} />

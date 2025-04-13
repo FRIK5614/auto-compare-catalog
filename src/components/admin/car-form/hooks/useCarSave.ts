@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Car } from '@/types/car';
 import { useCars } from '@/hooks/useCars';
+import { saveCar, updateCar } from '@/services/api/car/carCRUD';
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
-  const { updateCar, addCar } = useCars();
+  const { reloadCars } = useCars();
   
   const saveCar = async (car: Car, isNewCar: boolean): Promise<{ success: boolean, message?: string }> => {
     setSaving(true);
@@ -31,7 +32,6 @@ export const useCarSave = () => {
         car.image_url = car.images[0].url;
         
         // Clean up file properties on images before saving to database
-        // We don't want to store file objects in the database
         car.images = car.images.map(img => ({
           id: img.id,
           url: img.url,
@@ -45,13 +45,20 @@ export const useCarSave = () => {
         car.images = [];
       }
       
+      let result: Car | null = null;
+      
       // Based on whether it's a new car or updating an existing one
       if (isNewCar) {
         console.log("Adding new car:", car);
-        const result = await addCar(car);
+        try {
+          result = await saveCar(car);
+        } catch (error) {
+          console.error("Error saving new car to API:", error);
+        }
         
         if (result) {
           console.log("Successfully added new car", result);
+          await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль добавлен",
             description: `${car.brand} ${car.model} успешно добавлен`,
@@ -62,10 +69,15 @@ export const useCarSave = () => {
         }
       } else {
         console.log("Updating existing car:", car);
-        const result = await updateCar(car);
+        try {
+          result = await updateCar(car);
+        } catch (error) {
+          console.error("Error updating car in API:", error);
+        }
         
         if (result) {
           console.log("Successfully updated car", result);
+          await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль обновлен",
             description: `${car.brand} ${car.model} успешно обновлен`,
