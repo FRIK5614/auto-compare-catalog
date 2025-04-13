@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -13,7 +12,7 @@ import { CatalogGrid } from "@/components/catalog/CatalogGrid";
 import { EmptyResults } from "@/components/catalog/EmptyResults";
 import { mapSortOptionFromFilter, mapSortOptionToFilter } from "@/components/catalog/SortOptions";
 import SearchFiltersModal from "@/components/SearchFiltersModal";
-import { Helmet } from "react-helmet";
+import { Helmet as HelmetAsync } from "react-helmet-async";
 
 const BodyTypeCatalog = () => {
   const { bodyType } = useParams<{ bodyType: string }>();
@@ -120,11 +119,11 @@ const BodyTypeCatalog = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
+      <HelmetAsync>
         <title>{formattedBodyType ? `${formattedBodyType} - Каталог` : 'Каталог автомобилей'}</title>
         <meta name="description" content={`Все ${formattedBodyType.toLowerCase()} в нашем каталоге. Просмотрите доступные модели, цены и характеристики.`} />
         <link rel="canonical" href={`${window.location.origin}/cars/type/${bodyType}`} />
-      </Helmet>
+      </HelmetAsync>
       
       <Header />
       

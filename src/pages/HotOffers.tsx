@@ -1,6 +1,5 @@
-
 import React, { useEffect } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ComparePanel from "@/components/ComparePanel";
@@ -10,7 +9,6 @@ import { useCars } from "@/hooks/useCars";
 const HotOffers = () => {
   const { cars, loading, error, reloadCars, filter, setFilter } = useCars();
   
-  // Apply discount filter when component mounts
   useEffect(() => {
     setFilter({
       ...filter,
@@ -18,7 +16,6 @@ const HotOffers = () => {
     });
   }, []);
   
-  // Get cars with discounts
   const discountCars = cars.filter(car => 
     car.price && car.price.discount && car.price.discount > 0
   );

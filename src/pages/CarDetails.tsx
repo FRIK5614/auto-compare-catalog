@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -7,7 +6,7 @@ import ComparePanel from "@/components/ComparePanel";
 import { CarsProvider } from "@/contexts/CarsContext";
 import CarDetailsContent from "@/components/car-details/CarDetailsContent";
 import { useCars } from "@/hooks/useCars";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const CarDetails = () => {
   const { id, brand, model } = useParams<{ id: string; brand: string; model: string }>();
