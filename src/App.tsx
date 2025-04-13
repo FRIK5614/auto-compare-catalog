@@ -20,7 +20,7 @@ const AppContent = () => {
   );
 };
 
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -36,6 +36,6 @@ const App = () => {
       </BrowserRouter>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
