@@ -29,8 +29,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     addToFavorites,
     removeFromFavorites,
     refreshFavorites,
-    addToCompare: originalAddToCompare,
-    removeFromCompare: originalRemoveFromCompare,
+    addToCompare,
+    removeFromCompare,
     clearCompare,
     getCarById,
     reloadCars,
@@ -67,10 +67,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   // Fix the compare functions to ensure they return boolean values
   const handleAddToCompare = async (carId: string): Promise<boolean> => {
     try {
-      if (typeof originalAddToCompare === 'function') {
-        // Handle the addToCompare function which might return void
-        // We'll convert it to return a boolean
-        originalAddToCompare(carId);
+      if (typeof addToCompare === 'function') {
+        // Call the addToCompare function and return true
+        // No need to await a void return type
+        addToCompare(carId);
         return true;
       }
       console.warn("addToCompare function is not available");
@@ -83,10 +83,10 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   
   const handleRemoveFromCompare = async (carId: string): Promise<boolean> => {
     try {
-      if (typeof originalRemoveFromCompare === 'function') {
-        // Handle the removeFromCompare function which might return void
-        // We'll convert it to return a boolean
-        originalRemoveFromCompare(carId);
+      if (typeof removeFromCompare === 'function') {
+        // Call the removeFromCompare function and return true
+        // No need to await a void return type
+        removeFromCompare(carId);
         return true;
       }
       console.warn("removeFromCompare function is not available");
