@@ -16,29 +16,30 @@ interface CarImageGalleryProps {
 
 const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  // Create a safe default image to use when no images are provided
+  const defaultImage: CarImage = { 
+    id: "default", 
+    url: "/placeholder.svg", 
+    alt: "Изображение автомобиля" 
+  };
 
-  // Ensure we have images to display
-  const displayImages = images && Array.isArray(images) && images.length > 0 
-    ? images 
-    : [{ 
-        id: "default", 
-        url: "/placeholder.svg", 
-        alt: "Изображение автомобиля" 
-      }];
+  // Safely convert input to an array, ensuring we always have at least one image
+  let displayImages: CarImage[] = [];
+  
+  // Only try to use the input images if they exist and are actually an array
+  if (images && Array.isArray(images) && images.length > 0) {
+    displayImages = images.map(img => ({
+      ...img,
+      url: img.url || "/placeholder.svg", // Ensure URL is never undefined
+      alt: img.alt || "Изображение автомобиля"
+    }));
+  } else {
+    // Fallback to default image
+    displayImages = [defaultImage];
+  }
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);
-
-  // Defensive check to ensure displayImages is actually an array before rendering
-  if (!Array.isArray(displayImages)) {
-    console.error("displayImages is not an array:", displayImages);
-    return (
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-        <div className="h-[300px] flex items-center justify-center bg-auto-gray-100">
-          <p className="text-auto-gray-500">Изображение недоступно</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
@@ -67,7 +68,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
           {displayImages.map((image, index) => (
             <SwiperSlide key={image.id || `image-${index}`}>
               <img
-                src={image.url || "/placeholder.svg"}
+                src={image.url}
                 alt={image.alt || `Изображение ${index + 1}`}
                 className="w-full h-full object-cover"
                 draggable="false"
@@ -94,7 +95,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
       </div>
 
       {/* Thumbnails - shown only if more than one image */}
-      {Array.isArray(displayImages) && displayImages.length > 1 && (
+      {displayImages.length > 1 && (
         <div className="p-4">
           <Swiper
             spaceBetween={8}
@@ -115,7 +116,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                   }`}
                 >
                   <img
-                    src={image.url || "/placeholder.svg"}
+                    src={image.url}
                     alt={image.alt || `Миниатюра ${index + 1}`}
                     className="w-full h-full object-cover"
                     draggable="false"
