@@ -28,6 +28,18 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);
 
+  // Defensive check to ensure displayImages is actually an array before rendering
+  if (!Array.isArray(displayImages)) {
+    console.error("displayImages is not an array:", displayImages);
+    return (
+      <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+        <div className="h-[300px] flex items-center justify-center bg-auto-gray-100">
+          <p className="text-auto-gray-500">Изображение недоступно</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative">
@@ -55,7 +67,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
           {displayImages.map((image, index) => (
             <SwiperSlide key={image.id || `image-${index}`}>
               <img
-                src={image.url}
+                src={image.url || "/placeholder.svg"}
                 alt={image.alt || `Изображение ${index + 1}`}
                 className="w-full h-full object-cover"
                 draggable="false"
@@ -82,7 +94,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
       </div>
 
       {/* Thumbnails - shown only if more than one image */}
-      {displayImages.length > 1 && (
+      {Array.isArray(displayImages) && displayImages.length > 1 && (
         <div className="p-4">
           <Swiper
             spaceBetween={8}
@@ -103,7 +115,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                   }`}
                 >
                   <img
-                    src={image.url}
+                    src={image.url || "/placeholder.svg"}
                     alt={image.alt || `Миниатюра ${index + 1}`}
                     className="w-full h-full object-cover"
                     draggable="false"

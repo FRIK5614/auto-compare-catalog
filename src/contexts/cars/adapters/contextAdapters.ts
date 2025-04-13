@@ -86,7 +86,23 @@ export const createUploadCarImageAdapter = (
 ) => {
   return async (file: File, carId: string): Promise<CarImage> => {
     try {
+      // Log parameters to ensure they're correct
+      console.log("Uploading image for car:", carId, "file:", file?.name);
+      
+      // Ensure both parameters are valid
+      if (!carId || !file) {
+        console.error("Invalid parameters for image upload:", { carId, file });
+        return Promise.reject("Invalid parameters for image upload");
+      }
+      
       const imageUrl = await uploadCarImageAction(carId, file);
+      
+      // Ensure we got a valid URL back
+      if (!imageUrl) {
+        console.error("Failed to get image URL from upload");
+        return Promise.reject("Failed to get image URL");
+      }
+      
       return {
         id: `img-${Date.now()}`,
         url: imageUrl,

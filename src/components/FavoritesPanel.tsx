@@ -66,7 +66,7 @@ const FavoritesPanel = () => {
               <div className="flex flex-col sm:flex-row">
                 <Link to={`/car/${car.id}`} className="block sm:w-40 h-40">
                   <img 
-                    src={car.images[0].url} 
+                    src={car.images && car.images.length > 0 ? car.images[0].url : "/placeholder.svg"} 
                     alt={car.brand + ' ' + car.model} 
                     className="w-full h-full object-cover"
                   />
