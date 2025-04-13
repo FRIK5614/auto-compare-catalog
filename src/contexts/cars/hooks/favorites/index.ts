@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useFavoritesState } from "./useFavoritesState";
 import { useFavoritesActions } from "./useFavoritesActions";
-import { useLocalStorage } from "./useLocalStorage";
+import { useFavoritesLocalStorage } from "./useLocalStorage";
 import { useSupabaseSync } from "./useSupabaseSync";
 import { UseFavoritesReturn } from "./types";
 
@@ -14,7 +14,7 @@ export const useFavorites = (): UseFavoritesReturn => {
   const loadedRef = useRef(false);
   
   // Sync with localStorage
-  useLocalStorage(state.favorites, state.setFavorites, loadedRef);
+  useFavoritesLocalStorage(state.favorites, state.setFavorites, loadedRef);
   
   // Sync with Supabase (passing state and isOnline)
   useSupabaseSync(state.favorites, state.setFavorites, state.isOnline);

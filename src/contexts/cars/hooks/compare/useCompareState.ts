@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { loadCompareFromLocalStorage } from "../../utils";
+import { loadCompareFromSupabase } from "../../utils";
 
 export const useCompareState = () => {
   const [compareCars, setCompareCars] = useState<string[]>([]);
@@ -11,7 +11,7 @@ export const useCompareState = () => {
     const loadInitialCompare = async () => {
       try {
         setLoading(true);
-        const initialCompare = await loadCompareFromLocalStorage();
+        const initialCompare = await loadCompareFromSupabase();
         setCompareCars(initialCompare);
       } catch (error) {
         console.error("Error loading comparison list:", error);
@@ -27,6 +27,7 @@ export const useCompareState = () => {
   return {
     compareCars,
     setCompareCars,
-    loading
+    loading,
+    setLoading
   };
 };

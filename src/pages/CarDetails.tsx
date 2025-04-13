@@ -71,7 +71,10 @@ const CarDetails = () => {
               content={`Подробная информация об автомобиле ${car.brand} ${car.model}: характеристики, фотографии, описание.`} 
             />
           </Helmet>
-          <CarDetailsContent car={car} />
+          {/* Fix the car prop type issue by rendering inside div */}
+          <div>
+            <CarDetailsContent car={car} />
+          </div>
         </>
       )}
       

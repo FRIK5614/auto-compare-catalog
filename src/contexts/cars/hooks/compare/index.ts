@@ -1,22 +1,40 @@
 
 import { useCompareState } from "./useCompareState";
 import { useCompareActions } from "./useCompareActions";
-import { useLocalStorage } from "./useLocalStorage";
 import { UseCompareReturn } from "./types";
+import { useEffect } from "react";
+import { useNetworkStatus } from "../useNetworkStatus";
 
 export const useCompare = (): UseCompareReturn => {
-  // Get state
-  const state = useCompareState();
+  // Get state (with loading state)
+  const { compareCars, setCompareCars, loading, setLoading } = useCompareState();
   
-  // Sync with localStorage
-  useLocalStorage(state.compareCars);
+  // Get network status
+  const { isOnline } = useNetworkStatus();
   
   // Get actions
-  const actions = useCompareActions(state);
+  const actions = useCompareActions({
+    compareCars,
+    setCompareCars,
+    loading,
+    isOnline,
+    setLoading
+  });
   
+  // Mark as loaded after initial load
+  useEffect(() => {
+    if (loading) {
+      setLoading(false);
+    }
+  }, [loading, setLoading]);
+
   // Combine state and actions
   return {
-    ...state,
-    ...actions
+    ...actions,
+    compareCars,
+    setCompareCars,
+    loading,
+    isOnline,
+    setLoading
   };
 };

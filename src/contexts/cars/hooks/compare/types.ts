@@ -1,17 +1,19 @@
 
-export type CompareState = {
+import { Dispatch, SetStateAction } from 'react';
+
+export interface CompareState {
   compareCars: string[];
+  setCompareCars: Dispatch<SetStateAction<string[]>>;
   loading: boolean;
   isOnline: boolean;
-  setCompareCars: (compareCars: string[]) => void;
-  setLoading: (loading: boolean) => void;
-};
+  setLoading: Dispatch<SetStateAction<boolean>>;
+}
 
-export type CompareActions = {
+export interface CompareActions {
   addToCompare: (carId: string) => Promise<boolean> | boolean;
   removeFromCompare: (carId: string) => Promise<boolean> | boolean;
   clearCompare: () => Promise<boolean> | boolean;
   isInCompare: (carId: string) => boolean;
-};
+}
 
 export type UseCompareReturn = CompareState & CompareActions;
