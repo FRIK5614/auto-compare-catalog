@@ -33,7 +33,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
         title: "Заказы обновлены",
         description: `Загружено ${ordersData.length} заказов`
       });
-      return ordersData;
+      
     } catch (error) {
       console.error("Не удалось обновить заказы:", error);
       toast({
@@ -41,7 +41,6 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
         title: "Ошибка загрузки заказов",
         description: "Не удалось обновить данные о заказах"
       });
-      return [];
     } finally {
       setLoading(false);
     }

@@ -44,7 +44,7 @@ const CarDetails = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-grow flex items-center justify-center">
-          <LoadingState />
+          <LoadingState count={1} />
         </div>
         <Footer />
       </div>

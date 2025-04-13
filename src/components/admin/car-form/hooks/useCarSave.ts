@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Car } from '@/types/car';
 import { useCars } from '@/hooks/useCars';
-import { saveCar, updateCar } from '@/services/api/car/carCRUD';
+import { saveCar as saveCarAPI, updateCar as updateCarAPI } from '@/services/api/car/carCRUD';
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
@@ -51,7 +51,7 @@ export const useCarSave = () => {
       if (isNewCar) {
         console.log("Adding new car:", car);
         try {
-          result = await saveCar(car);
+          result = await saveCarAPI(car);
         } catch (error) {
           console.error("Error saving new car to API:", error);
         }
@@ -70,7 +70,7 @@ export const useCarSave = () => {
       } else {
         console.log("Updating existing car:", car);
         try {
-          result = await updateCar(car);
+          result = await updateCarAPI(car);
         } catch (error) {
           console.error("Error updating car in API:", error);
         }
