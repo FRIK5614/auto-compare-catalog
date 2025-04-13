@@ -13,7 +13,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
   const { syncPendingOrders, addToPendingOrders } = useOrdersSync(orders, setOrders, isOnline);
 
   // Reload orders from database
-  const reloadOrdersFromDB = useCallback(async () => {
+  const reloadOrdersFromDB = useCallback(async (): Promise<void> => {
     if (loading) return;
     
     setLoading(true);

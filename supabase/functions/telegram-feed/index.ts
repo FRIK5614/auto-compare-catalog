@@ -17,7 +17,13 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
     
     // Get channel information first
     const channelInfoUrl = `https://api.telegram.org/bot${botToken}/getChat?chat_id=@${channelName}`;
+    console.log("Fetching channel info from:", channelInfoUrl);
+    
     const channelInfoResponse = await fetch(channelInfoUrl);
+    if (!channelInfoResponse.ok) {
+      throw new Error(`Failed to fetch channel info: ${channelInfoResponse.statusText}`);
+    }
+    
     const channelInfo = await channelInfoResponse.json();
     
     if (!channelInfo.ok) {
@@ -31,6 +37,8 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
     // First try the getUpdates endpoint
     let posts = [];
     const updatesUrl = `https://api.telegram.org/bot${botToken}/getUpdates?limit=100`;
+    console.log("Fetching updates from:", updatesUrl);
+    
     const updatesResponse = await fetch(updatesUrl);
     
     if (!updatesResponse.ok) {
@@ -38,6 +46,7 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
     }
     
     const updatesData = await updatesResponse.json();
+    console.log("Updates response:", JSON.stringify(updatesData).substring(0, 200) + "...");
     
     if (updatesData.ok && updatesData.result && updatesData.result.length > 0) {
       // Filter out channel posts
@@ -57,17 +66,38 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
             const post = update.channel_post;
             
             // Extract photos if any
-            const photos = post.photo 
-              ? [
-                  // Get the largest photo (they are sorted by size, largest last)
-                  `https://api.telegram.org/file/bot${botToken}/${post.photo[post.photo.length - 1].file_id}`
-                ]
-              : [];
+            let photos = [];
+            if (post.photo && post.photo.length > 0) {
+              const largestPhoto = post.photo[post.photo.length - 1];
+              
+              // Get photo file path
+              const photoUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${largestPhoto.file_id}`;
+              console.log("Getting photo file path:", photoUrl);
+              
+              try {
+                fetch(photoUrl)
+                  .then(res => res.json())
+                  .then(fileData => {
+                    if (fileData.ok && fileData.result && fileData.result.file_path) {
+                      photos.push(`https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`);
+                    }
+                  })
+                  .catch(error => {
+                    console.error("Error getting photo file:", error);
+                  });
+              } catch (error) {
+                console.error("Error getting photo file:", error);
+              }
+            }
+              
+            const finalPhotos = photos.length > 0 ? 
+              photos : 
+              [`https://picsum.photos/seed/${update.update_id}/800/600`];
               
             return {
               id: update.update_id,
               text: post.text || post.caption || "Фото без текста",
-              photos: photos.length > 0 ? photos : [`https://picsum.photos/seed/${update.update_id}/800/600`],
+              photos: finalPhotos,
               date: new Date(post.date * 1000).toISOString(),
               link: `https://t.me/${channelName}/${post.message_id || ''}`
             };
@@ -80,8 +110,14 @@ async function fetchTelegramPosts(channelName = "VoeAVTO", limit = 10, offset = 
     if (posts.length === 0) {
       console.log("No posts found in updates, trying to get channel history...");
       
+      // Try to use getChat method to verify access
+      const channelHistoryUrl = `https://api.telegram.org/bot${botToken}/getChat?chat_id=@${channelName}`;
+      const historyResponse = await fetch(channelHistoryUrl);
+      const historyData = await historyResponse.json();
+      
+      console.log("Channel history response:", JSON.stringify(historyData).substring(0, 200) + "...");
+      
       // If we couldn't get posts through updates, generate mock data for now
-      // In a real implementation, you would need to use getUpdates with proper filters or webhook
       posts = Array(limit).fill(0).map((_, index) => {
         const id = offset + index + 1;
         const date = new Date();

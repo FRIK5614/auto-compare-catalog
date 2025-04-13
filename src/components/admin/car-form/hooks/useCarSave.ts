@@ -10,7 +10,7 @@ export const useCarSave = () => {
   const { toast } = useToast();
   const { reloadCars } = useCars();
   
-  const saveCar = async (car: Car, isNewCar: boolean): Promise<boolean> => {
+  const saveCar = async (car: Car, isNewCar: boolean): Promise<{success: boolean; message?: string}> => {
     setSaving(true);
     console.log("Saving car:", isNewCar ? "new car" : "update car", car);
     console.log("Images to save:", car.images?.length || 0, "images");
@@ -23,7 +23,7 @@ export const useCarSave = () => {
           title: "Ошибка валидации",
           description: "Пожалуйста, заполните обязательные поля (Марка и Модель)",
         });
-        return false;
+        return { success: false, message: "Пожалуйста, заполните обязательные поля" };
       }
       
       // Ensure images are properly formatted before save
@@ -45,49 +45,33 @@ export const useCarSave = () => {
         car.images = [];
       }
       
-      let result: Car | null = null;
-      
-      // Based on whether it's a new car or updating an existing one
-      if (isNewCar) {
-        console.log("Adding new car:", car);
-        try {
-          result = await saveCarAPI(car);
-        } catch (error) {
-          console.error("Error saving new car to API:", error);
-          throw error;
-        }
-        
-        if (result) {
-          console.log("Successfully added new car", result);
+      try {
+        if (isNewCar) {
+          console.log("Adding new car:", car);
+          await saveCarAPI(car);
+          
+          console.log("Successfully added new car");
           await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль добавлен",
             description: `${car.brand} ${car.model} успешно добавлен`,
           });
-          return true;
+          return { success: true };
         } else {
-          throw new Error("Failed to add new car");
-        }
-      } else {
-        console.log("Updating existing car:", car);
-        try {
-          result = await updateCarAPI(car);
-        } catch (error) {
-          console.error("Error updating car in API:", error);
-          throw error;
-        }
-        
-        if (result) {
-          console.log("Successfully updated car", result);
+          console.log("Updating existing car:", car);
+          await updateCarAPI(car);
+          
+          console.log("Successfully updated car");
           await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль обновлен",
             description: `${car.brand} ${car.model} успешно обновлен`,
           });
-          return true;
-        } else {
-          throw new Error("Failed to update car");
+          return { success: true };
         }
+      } catch (error) {
+        console.error("Error with API call:", error);
+        throw error;
       }
     } catch (error) {
       console.error("Error saving car:", error);
@@ -96,7 +80,7 @@ export const useCarSave = () => {
         title: "Ошибка сохранения",
         description: `Не удалось сохранить автомобиль: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
       });
-      return false;
+      return { success: false, message: error instanceof Error ? error.message : "Неизвестная ошибка" };
     } finally {
       setSaving(false);
     }

@@ -69,8 +69,14 @@ const TelegramNews = () => {
   const { toast } = useToast();
   const { posts, loading, error, hasMore, loadMorePosts } = useTelegramFeed({
     postsPerPage: 9,
-    channelName: "VoeAVTO"
+    channelName: "VoeAVTO" // This should be your actual Telegram channel name
   });
+
+  // Force refresh on component mount to ensure we get the latest data
+  useEffect(() => {
+    // Load data from the beginning
+    loadMorePosts(0);
+  }, []);
 
   return (
     <div className="bg-gray-50 py-12">
@@ -93,26 +99,24 @@ const TelegramNews = () => {
         )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading && posts.length === 0 ? (
+          {loading ? (
             <>
               <TelegramNewsSkeleton />
               <TelegramNewsSkeleton />
               <TelegramNewsSkeleton />
             </>
-          ) : (
+          ) : posts.length > 0 ? (
             posts.map(post => (
               <TelegramNewsItem key={post.id} post={post} />
             ))
+          ) : (
+            <div className="col-span-3 text-center py-8">
+              <p className="text-gray-500">Нет доступных новостей из Telegram-канала</p>
+            </div>
           )}
         </div>
         
-        {posts.length === 0 && !loading && !error && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Нет доступных новостей из Telegram-канала</p>
-          </div>
-        )}
-        
-        {hasMore && posts.length > 0 && (
+        {hasMore && posts.length > 0 && !loading && (
           <div className="text-center mt-8">
             <button
               onClick={() => loadMorePosts()}

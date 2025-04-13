@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TelegramNews from '@/components/TelegramNews';
 import { Helmet } from 'react-helmet-async';
 
 const SpecialOffers = () => {
+  // Force refresh telegram feed when page loads
+  useEffect(() => {
+    console.log("Special Offers page loaded - should fetch Telegram feed");
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>

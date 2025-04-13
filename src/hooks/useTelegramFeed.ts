@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -88,6 +89,7 @@ export const useTelegramFeed = ({
     const currentOffset = newOffset !== undefined ? newOffset : offset + postsPerPage;
     
     try {
+      setLoading(true);
       const result = await fetchPosts(currentOffset);
       
       // If loading from beginning, replace posts
@@ -102,6 +104,8 @@ export const useTelegramFeed = ({
       setHasMore(result.hasMore);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка загрузки постов");
+    } finally {
+      setLoading(false);
     }
   }, [fetchPosts, offset, postsPerPage]);
   

@@ -32,35 +32,24 @@ export const formatVehicleForSupabase = (car: Car) => {
   };
 };
 
-// Function to save orders to localStorage as backup
-export const saveOrdersToLocalStorage = (orders: Order[]) => {
-  localStorage.setItem("orders", JSON.stringify(orders));
-};
+// These functions below are deprecated and should not be used
+// They are kept for backward compatibility but will be removed in future versions
+// All data should be stored and retrieved directly from the database
 
-// Function to save favorites to localStorage as backup
-export const saveFavoritesToLocalStorage = (favorites: string[]) => {
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-};
-
-// Function to save compareCars to localStorage
-export const saveCompareToLocalStorage = (compareCars: string[]) => {
-  localStorage.setItem("compareCars", JSON.stringify(compareCars));
-};
-
-// Function to load favorites from localStorage
+// Legacy function - DO NOT USE - Data should be fetched from database
 export const loadFavoritesFromLocalStorage = (): string[] => {
-  const savedFavorites = localStorage.getItem("favorites");
-  return savedFavorites ? JSON.parse(savedFavorites) : [];
+  console.warn("DEPRECATED: loadFavoritesFromLocalStorage should not be used anymore.");
+  return [];
 };
 
-// Function to load compareCars from localStorage
+// Legacy function - DO NOT USE - Data should be fetched from database
 export const loadCompareFromLocalStorage = (): string[] => {
-  const savedCompareCars = localStorage.getItem("compareCars");
-  return savedCompareCars ? JSON.parse(savedCompareCars) : [];
+  console.warn("DEPRECATED: loadCompareFromLocalStorage should not be used anymore.");
+  return [];
 };
 
-// Function to load orders from localStorage
+// Legacy function - DO NOT USE - Data should be fetched from database
 export const loadOrdersFromLocalStorage = (): Order[] => {
-  const savedOrders = localStorage.getItem("orders");
-  return savedOrders ? JSON.parse(savedOrders) : [];
+  console.warn("DEPRECATED: loadOrdersFromLocalStorage should not be used anymore.");
+  return [];
 };
