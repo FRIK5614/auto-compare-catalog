@@ -68,8 +68,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleAddToCompare = (carId: string): boolean => {
     try {
       if (typeof originalAddToCompare === 'function') {
-        originalAddToCompare(carId);
-        return true;
+        return originalAddToCompare(carId);
       }
       console.warn("addToCompare function is not available");
       return false;
@@ -82,8 +81,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   const handleRemoveFromCompare = (carId: string): boolean => {
     try {
       if (typeof originalRemoveFromCompare === 'function') {
-        originalRemoveFromCompare(carId);
-        return true;
+        return originalRemoveFromCompare(carId);
       }
       console.warn("removeFromCompare function is not available");
       return false;
