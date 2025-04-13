@@ -7,7 +7,7 @@ import { CarImage } from "@/types/car";
 import { cn } from "@/lib/utils";
 
 interface CarImageGalleryProps {
-  images: CarImage[];
+  images: CarImage[] | null | undefined;
   carId: string;
   isNew?: boolean;
 }
@@ -18,11 +18,13 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
   const touchEndX = useRef<number | null>(null);
   
   // Ensure we have images to display
-  const displayImages = images && images.length > 0 ? images : [{ 
-    id: "default", 
-    url: "/placeholder.svg", 
-    alt: "Изображение автомобиля" 
-  }];
+  const displayImages = images && Array.isArray(images) && images.length > 0 
+    ? images 
+    : [{ 
+        id: "default", 
+        url: "/placeholder.svg", 
+        alt: "Изображение автомобиля" 
+      }];
   
   const hasMultipleImages = displayImages.length > 1;
   
