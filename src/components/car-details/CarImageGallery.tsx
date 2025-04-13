@@ -26,11 +26,14 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
 
   // Safely convert input to an array, ensuring we always have at least one image
   const displayImages: CarImage[] = images && Array.isArray(images) && images.length > 0 
-    ? images.map(img => ({
-        ...img,
-        url: img.url || "/placeholder.svg", // Ensure URL is never undefined
-        alt: img.alt || "Изображение автомобиля"
-      }))
+    ? images
+        .filter(img => img && (img.url || img.id)) // Filter out invalid images
+        .map(img => ({
+          ...img,
+          id: img.id || `img-${Math.random().toString(36).substr(2, 9)}`,
+          url: img.url || "/placeholder.svg", // Ensure URL is never undefined
+          alt: img.alt || "Изображение автомобиля"
+        }))
     : [defaultImage]; // Fallback to default image
 
   console.log("CarImageGallery: Отображение изображений:", displayImages.length);

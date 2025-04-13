@@ -18,13 +18,23 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
   const touchEndX = useRef<number | null>(null);
   
   // Ensure we have images to display
+  const defaultImage: CarImage = { 
+    id: "default", 
+    url: "/placeholder.svg", 
+    alt: "Изображение автомобиля" 
+  };
+  
+  // Safely convert input to an array with valid images
   const displayImages = images && Array.isArray(images) && images.length > 0 
-    ? images 
-    : [{ 
-        id: "default", 
-        url: "/placeholder.svg", 
-        alt: "Изображение автомобиля" 
-      }];
+    ? images
+        .filter(img => img && (img.url || img.id)) // Filter out invalid images
+        .map(img => ({
+          ...img,
+          id: img.id || `img-${Math.random().toString(36).substr(2, 9)}`,
+          url: img.url || "/placeholder.svg",
+          alt: img.alt || "Изображение автомобиля"
+        }))
+    : [defaultImage];
   
   const hasMultipleImages = displayImages.length > 1;
   
@@ -73,7 +83,12 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
     touchEndX.current = null;
   };
   
-  const currentImage = displayImages[currentIndex];
+  // Ensure currentIndex is always valid
+  if (currentIndex >= displayImages.length) {
+    setCurrentIndex(0);
+  }
+  
+  const currentImage = displayImages[currentIndex] || defaultImage;
   
   return (
     <Link to={`/car/${carId}`} className="block relative group overflow-hidden rounded-t-lg">
@@ -88,6 +103,10 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
           alt={currentImage.alt || "Изображение автомобиля"}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           draggable="false"
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            e.currentTarget.src = "/placeholder.svg";
+          }}
         />
         
         {/* Страна происхождения */}
