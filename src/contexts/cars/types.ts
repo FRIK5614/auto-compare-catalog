@@ -49,8 +49,8 @@ export interface CarsContextType {
   refreshFavorites?: () => void;
   
   // Действия со сравнением
-  addToCompare: (carId: string) => void;
-  removeFromCompare: (carId: string) => void;
+  addToCompare: (carId: string) => Promise<boolean> | boolean;
+  removeFromCompare: (carId: string) => Promise<boolean> | boolean;
   clearCompare: () => void;
   
   // CRUD операции с автомобилями
