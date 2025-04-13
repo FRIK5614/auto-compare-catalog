@@ -6,8 +6,8 @@ import {
   ShoppingCart, 
   LogOut, 
   FileArchive, 
-  Package,
-  Settings
+  Settings,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -31,7 +31,7 @@ export const getMenuItems = (newOrdersCount: number): MenuItem[] => [
   { icon: CarFront, label: 'Автомобили', path: '/admin/cars' },
   { icon: ShoppingCart, label: 'Заказы', path: '/admin/orders', badge: newOrdersCount },
   { icon: FileArchive, label: 'Импорт данных', path: '/admin/import' },
-  { icon: Package, label: 'Каталог TMC', path: '/admin/tmcavto-catalog' },
+  { icon: MessageCircle, label: 'Чат', path: '/admin/chat' },
   { icon: Settings, label: 'Настройки', path: '/admin/settings' },
 ];
 

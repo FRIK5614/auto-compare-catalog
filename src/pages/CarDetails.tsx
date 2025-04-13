@@ -1,9 +1,9 @@
+
 import React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ComparePanel from "@/components/ComparePanel";
-import { CarsProvider } from "@/contexts/CarsContext";
 import CarDetailsContent from "@/components/car-details/CarDetailsContent";
 import { useCars } from "@/hooks/useCars";
 import { Helmet } from "react-helmet-async";
@@ -15,12 +15,18 @@ const CarDetails = () => {
   
   // Check if URL params match car data (for proper canonical URL)
   const urlIsCorrect = car && 
-                      brand?.toLowerCase() === car.brand.toLowerCase() && 
-                      model?.toLowerCase() === car.model.toLowerCase();
+                      (!brand || brand.toLowerCase() === car.brand.toLowerCase()) && 
+                      (!model || model.toLowerCase() === car.model.toLowerCase());
                       
   // Redirect to correct URL if parameters don't match
   if (!loading && car && !urlIsCorrect) {
     return <Navigate to={`/cars/${car.brand.toLowerCase()}/${car.model.toLowerCase()}/${car.id}`} replace />;
+  }
+
+  // If car not found, show not found page
+  if (!loading && !car && id) {
+    console.error(`Car with ID ${id} not found`);
+    return <Navigate to="/cars" replace />;
   }
 
   return (

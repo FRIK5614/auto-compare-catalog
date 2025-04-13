@@ -25,6 +25,7 @@ import AdminOrders from "@/pages/AdminOrders";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminChat from "@/pages/AdminChat";
 import NotFound from "@/pages/NotFound";
+import AdminLayout from "@/components/AdminLayout";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/cars" element={<Catalog />} />
                   <Route path="/cars/:brand/:model/:id" element={<CarDetails />} />
+                  <Route path="/car/:id" element={<CarDetails />} /> {/* Added direct car ID route */}
                   <Route path="/cars/type/:bodyType" element={<BodyTypeCatalog />} />
                   <Route path="/cars/brand/:brand" element={<BrandCatalog />} />
                   <Route path="/special-offers" element={<HotOffers />} />
@@ -49,15 +51,15 @@ function App() {
                   <Route path="/favorites" element={<Favorites />} />
                   
                   {/* Admin routes */}
-                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
                   <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/cars" element={<AdminCars />} />
-                  <Route path="/admin/cars/new" element={<AdminCarEdit />} />
-                  <Route path="/admin/cars/edit/:id" element={<AdminCarEdit />} />
-                  <Route path="/admin/import" element={<AdminImport />} />
-                  <Route path="/admin/orders" element={<AdminOrders />} />
-                  <Route path="/admin/settings" element={<AdminSettings />} />
-                  <Route path="/admin/chat" element={<AdminChat />} />
+                  <Route path="/admin/cars" element={<AdminLayout><AdminCars /></AdminLayout>} />
+                  <Route path="/admin/cars/new" element={<AdminLayout><AdminCarEdit /></AdminLayout>} />
+                  <Route path="/admin/cars/edit/:id" element={<AdminLayout><AdminCarEdit /></AdminLayout>} />
+                  <Route path="/admin/import" element={<AdminLayout><AdminImport /></AdminLayout>} />
+                  <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
+                  <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+                  <Route path="/admin/chat" element={<AdminLayout><AdminChat /></AdminLayout>} />
                   
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />

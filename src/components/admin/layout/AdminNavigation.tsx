@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { 
   BarChart3, 
   CarFront, 
   ShoppingCart, 
   FileArchive, 
   Package,
-  Settings
+  Settings,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -34,7 +35,7 @@ export const AdminNavigation: React.FC<AdminNavigationProps> = ({
     { icon: CarFront, label: 'Автомобили', path: '/admin/cars' },
     { icon: ShoppingCart, label: 'Заказы', path: '/admin/orders', badge: newOrdersCount },
     { icon: FileArchive, label: 'Импорт данных', path: '/admin/import' },
-    { icon: Package, label: 'Каталог TMC', path: '/admin/tmcavto-catalog' },
+    { icon: MessageCircle, label: 'Чат', path: '/admin/chat' },
     { icon: Settings, label: 'Настройки', path: '/admin/settings' },
   ];
 

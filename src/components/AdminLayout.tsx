@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '@/contexts/AdminContext';
 import { useCars } from '@/hooks/useCars';
 import { useToast } from '@/hooks/use-toast';
@@ -46,12 +46,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   }, [orders]);
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAdmin && location.pathname !== '/admin/login') {
       navigate('/admin/login');
     }
-  }, [isAdmin, navigate]);
+  }, [isAdmin, navigate, location.pathname]);
 
-  if (!isAdmin) {
+  if (!isAdmin && location.pathname !== '/admin/login') {
     return <Navigate to="/admin/login" />;
   }
 
@@ -103,7 +103,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       )}
       
       <main className="flex-1 overflow-y-auto p-4">
-        {children || <Outlet />}
+        {children}
       </main>
     </div>
   );
