@@ -136,7 +136,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
   }, [orders, isOnline, setOrders, addToPendingOrders, toast]);
 
   // Get all orders
-  const getOrders = useCallback(() => {
+  const getOrders = useCallback((): Order[] => {
     return orders;
   }, [orders]);
 

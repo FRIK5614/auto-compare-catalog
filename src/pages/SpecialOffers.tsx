@@ -4,12 +4,18 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TelegramNews from '@/components/TelegramNews';
 import { Helmet } from 'react-helmet-async';
+import { useTelegramFeed } from '@/hooks/useTelegramFeed';
 
 const SpecialOffers = () => {
+  const { loadMorePosts } = useTelegramFeed({
+    channelName: "VoeAVTO"
+  });
+  
   // Force refresh telegram feed when page loads
   useEffect(() => {
-    console.log("Special Offers page loaded - should fetch Telegram feed");
-  }, []);
+    console.log("Special Offers page loaded - forcing refresh from server");
+    loadMorePosts(0); // Reload from the beginning
+  }, [loadMorePosts]);
 
   return (
     <div className="min-h-screen flex flex-col">

@@ -1,11 +1,12 @@
+
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCars } from '@/hooks/useCars';
-import { CarDetails as CarDetailsComponent } from '@/components/CarDetails';
 import LoadingState from '@/components/LoadingState';
 import { Helmet } from 'react-helmet-async';
+import { CarDetailsContent } from '@/components/car-details/CarDetailsContent';
 
 const CarDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +71,7 @@ const CarDetails = () => {
               content={`Подробная информация об автомобиле ${car.brand} ${car.model}: характеристики, фотографии, описание.`} 
             />
           </Helmet>
-          <CarDetailsComponent car={car} />
+          <CarDetailsContent car={car} />
         </>
       )}
       

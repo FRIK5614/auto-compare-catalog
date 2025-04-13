@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Car } from '@/types/car';
 import { useCars } from '@/hooks/useCars';
-import { saveCar as saveCarAPI, updateCar as updateCarAPI } from '@/services/api/car/carCRUD';
+import { formatVehicleForSupabase } from '@/contexts/cars/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
@@ -46,11 +47,22 @@ export const useCarSave = () => {
       }
       
       try {
+        // Format vehicle data for Supabase
+        const vehicleData = formatVehicleForSupabase(car);
+        
         if (isNewCar) {
-          console.log("Adding new car:", car);
-          await saveCarAPI(car);
+          console.log("Adding new car to Supabase directly:", vehicleData);
+          const { data, error } = await supabase
+            .from('vehicles')
+            .insert(vehicleData)
+            .select()
+            .single();
           
-          console.log("Successfully added new car");
+          if (error) {
+            throw error;
+          }
+          
+          console.log("Successfully added new car:", data);
           await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль добавлен",
@@ -58,10 +70,19 @@ export const useCarSave = () => {
           });
           return { success: true };
         } else {
-          console.log("Updating existing car:", car);
-          await updateCarAPI(car);
+          console.log("Updating existing car in Supabase directly:", vehicleData);
+          const { data, error } = await supabase
+            .from('vehicles')
+            .update(vehicleData)
+            .eq('id', car.id)
+            .select()
+            .single();
           
-          console.log("Successfully updated car");
+          if (error) {
+            throw error;
+          }
+          
+          console.log("Successfully updated car:", data);
           await reloadCars(); // Reload cars to refresh the list
           toast({
             title: "Автомобиль обновлен",
@@ -70,7 +91,7 @@ export const useCarSave = () => {
           return { success: true };
         }
       } catch (error) {
-        console.error("Error with API call:", error);
+        console.error("Error with Supabase API call:", error);
         throw error;
       }
     } catch (error) {

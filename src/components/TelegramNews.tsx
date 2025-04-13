@@ -1,9 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
-import { Rss, ExternalLink } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Rss, ExternalLink, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTelegramFeed } from '@/hooks/useTelegramFeed';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface TelegramPost {
   id: number;
@@ -21,6 +22,12 @@ const TelegramNewsItem = ({ post }: { post: TelegramPost }) => {
     year: 'numeric'
   });
 
+  // Truncate long text
+  const maxLength = 200;
+  const displayText = post.text.length > maxLength
+    ? `${post.text.substring(0, maxLength)}...`
+    : post.text;
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {post.photos && post.photos.length > 0 && (
@@ -34,11 +41,16 @@ const TelegramNewsItem = ({ post }: { post: TelegramPost }) => {
               (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${post.id}/800/600`;
             }}
           />
+          {post.photos.length > 1 && (
+            <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+              +{post.photos.length - 1} фото
+            </div>
+          )}
         </div>
       )}
       <div className="p-4">
         <p className="text-sm text-gray-500 mb-2">{formattedDate}</p>
-        <p className="text-gray-800 line-clamp-3 mb-3">{post.text}</p>
+        <p className="text-gray-800 mb-3">{displayText}</p>
         <a 
           href={post.link} 
           target="_blank" 
@@ -74,9 +86,10 @@ const TelegramNews = () => {
 
   // Force refresh on component mount to ensure we get the latest data
   useEffect(() => {
+    console.log("TelegramNews component mounted - forcing refresh from server");
     // Load data from the beginning
     loadMorePosts(0);
-  }, []);
+  }, [loadMorePosts]);
 
   return (
     <div className="bg-gray-50 py-12">
@@ -86,12 +99,24 @@ const TelegramNews = () => {
           <h2 className="text-2xl font-bold text-center">Новости и специальные предложения</h2>
         </div>
         
+        <div className="flex justify-center mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => loadMorePosts(0)}
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Обновить ленту
+          </Button>
+        </div>
+        
         {error && (
           <div className="text-center text-red-500 mb-8">
             <p>{error}</p>
             <button 
               onClick={() => loadMorePosts(0)}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Попробовать снова
             </button>
@@ -99,7 +124,7 @@ const TelegramNews = () => {
         )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading ? (
+          {loading && posts.length === 0 ? (
             <>
               <TelegramNewsSkeleton />
               <TelegramNewsSkeleton />
@@ -112,6 +137,7 @@ const TelegramNews = () => {
           ) : (
             <div className="col-span-3 text-center py-8">
               <p className="text-gray-500">Нет доступных новостей из Telegram-канала</p>
+              <p className="text-gray-400 text-sm mt-2">Проверьте настройки доступа бота к каналу</p>
             </div>
           )}
         </div>
