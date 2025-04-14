@@ -29,10 +29,10 @@ interface BlogPost {
 
 const AdminBlogEdit = () => {
   const { id } = useParams<{ id: string }>();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
   const [post, setPost] = useState<Partial<BlogPost>>({
     title: '',
-    content: '',
+    content: '', // Set a default empty string to ensure content is never undefined
     excerpt: '',
     image_url: '',
     author: '',
@@ -136,26 +136,40 @@ const AdminBlogEdit = () => {
       return;
     }
 
+    // Ensure content is never undefined or null
+    if (post.content === undefined || post.content === null) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Содержание публикации обязательно'
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const now = new Date().toISOString();
       const slug = post.slug || `${generateSlug(post.title)}-${Date.now().toString(36)}`;
       
-      const postData = {
-        ...post,
-        slug,
-        published_at: post.published_at || now,
-        updated_at: now
-      };
-      
       if (isNew) {
+        // For new posts, create a complete post object with required fields
+        const newPost = {
+          title: post.title,
+          content: post.content || '', // Ensure content is never undefined
+          excerpt: post.excerpt || '',
+          image_url: post.image_url || '',
+          author: post.author || '',
+          published: post.published || false,
+          tags: post.tags || [],
+          slug,
+          published_at: now,
+          created_at: now,
+          updated_at: now,
+        };
+        
         const { data, error } = await supabase
           .from('blog_posts')
-          .insert({
-            ...postData,
-            id: uuidv4(),
-            created_at: now
-          })
+          .insert(newPost)
           .select();
         
         if (error) {
@@ -169,9 +183,23 @@ const AdminBlogEdit = () => {
         
         navigate('/admin/blog');
       } else {
+        // For existing posts, update only the changed fields
+        const updatedPost = {
+          title: post.title,
+          content: post.content || '', // Ensure content is never undefined
+          excerpt: post.excerpt || '',
+          image_url: post.image_url || '',
+          author: post.author || '',
+          published: post.published,
+          tags: post.tags || [],
+          slug,
+          published_at: post.published_at || now,
+          updated_at: now
+        };
+        
         const { error } = await supabase
           .from('blog_posts')
-          .update(postData)
+          .update(updatedPost)
           .eq('id', id);
         
         if (error) {
