@@ -37,7 +37,8 @@ const ImprovedCarFormContainer = () => {
     imagePreview,
     handleImageUpload,
     handleAddImage,
-    handleRemoveImage
+    handleRemoveImage,
+    initializeImagesFromCar
   } = useImageHandling();
 
   useEffect(() => {
@@ -47,15 +48,10 @@ const ImprovedCarFormContainer = () => {
   }, [loading, car, isNewCar, reloadCars]);
 
   useEffect(() => {
-    if (car && images.length === 0 && car.images && car.images.length > 0) {
-      // Initialize images from car if available
-      car.images.forEach(image => {
-        if (handleAddImage) {
-          handleAddImage(image.url);
-        }
-      });
+    if (car && car.id && car.images && car.images.length > 0) {
+      initializeImagesFromCar(car);
     }
-  }, [car, images.length, handleAddImage]);
+  }, [car, initializeImagesFromCar]);
 
   const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
@@ -64,7 +60,8 @@ const ImprovedCarFormContainer = () => {
 
   const handleAddImageAdapter = (url: string) => {
     if (!car) return;
-    handleAddImage(url);
+    const newImage = handleAddImage(url);
+    console.log("Added new image:", newImage);
   };
 
   const handleRemoveImageAdapter = (index: number) => {

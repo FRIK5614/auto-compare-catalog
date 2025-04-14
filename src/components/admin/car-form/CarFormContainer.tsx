@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -34,10 +35,10 @@ const CarFormContainer: React.FC = () => {
     images,
     setImages,
     initializeImagesFromCar,
-    handleImageUrlChange: imageUrlChange,
-    handleImageUpload: imageUpload,
-    handleAddImage: addImage,
-    handleRemoveImage: removeImage,
+    handleImageUrlChange,
+    handleImageUpload,
+    handleAddImage,
+    handleRemoveImage,
     uploadImageFiles
   } = useImageHandling();
   
@@ -54,36 +55,89 @@ const CarFormContainer: React.FC = () => {
     }
   }, [car?.id, initializeImagesFromCar]);
   
-  const handleImageUrlChange = (url: string) => {
+  const handleImageUrlChangeWrapper = (url: string) => {
     if (!car) return;
     console.log("Changing image URL to:", url);
-    const updatedCar = imageUrlChange(url, car);
-    if (updatedCar) {
-      setCar(updatedCar);
+    
+    // Update the image preview
+    handleImageUrlChange(url);
+    
+    if (car.images && car.images.length > 0) {
+      // Update the first image if it exists
+      const updatedImages = [...car.images];
+      updatedImages[0].url = url;
+      setImages(updatedImages);
+      
+      // Also update the car's main image URL
+      setCar({
+        ...car,
+        image_url: url,
+        images: updatedImages
+      });
+    } else {
+      // Create a new image
+      const newImage = {
+        id: uuidv4(),
+        url: url,
+        alt: `${car.brand} ${car.model}`
+      };
+      
+      setImages([newImage]);
+      
+      // Update the car with the new image
+      setCar({
+        ...car,
+        image_url: url,
+        images: [newImage]
+      });
     }
   };
   
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUploadWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
     console.log("Uploading images:", e.target.files?.length || 0, "files");
-    imageUpload(e, car);
+    handleImageUpload(e);
   };
   
-  const handleAddImage = (url: string) => {
+  const handleAddImageWrapper = (url: string) => {
     if (!car) return;
     console.log("Adding image by URL:", url);
-    const updatedCar = addImage(url, car);
-    if (updatedCar) {
-      setCar(updatedCar);
+    
+    const newImage = handleAddImage(url);
+    
+    if (newImage) {
+      const updatedImages = [...images, newImage];
+      setImages(updatedImages);
+      
+      // Update the car object with the new images
+      setCar({
+        ...car,
+        images: updatedImages,
+        // If this is the first image, set it as the main image
+        image_url: car.image_url || newImage.url
+      });
     }
   };
   
-  const handleRemoveImage = (index: number) => {
+  const handleRemoveImageWrapper = (index: number) => {
     if (!car) return;
     console.log("Removing image at index:", index);
-    const updatedCar = removeImage(index, car);
-    if (updatedCar) {
-      setCar(updatedCar);
+    
+    const updatedImages = handleRemoveImage(index);
+    
+    if (updatedImages) {
+      setImages(updatedImages);
+      
+      // If we removed the main image, update the main image URL
+      const newMainUrl = index === 0 && updatedImages.length > 0 
+        ? updatedImages[0].url 
+        : (index === 0 ? "" : car.image_url);
+      
+      setCar({
+        ...car,
+        images: updatedImages,
+        image_url: newMainUrl
+      });
     }
   };
 
@@ -207,11 +261,11 @@ const CarFormContainer: React.FC = () => {
       loading={formLoading || isSaving}
       onSave={handleSave}
       formErrors={formErrors}
-      handleImageUrlChange={handleImageUrlChange}
-      handleAddImage={handleAddImage}
-      handleRemoveImage={handleRemoveImage}
+      handleImageUrlChange={handleImageUrlChangeWrapper}
+      handleAddImage={handleAddImageWrapper}
+      handleRemoveImage={handleRemoveImageWrapper}
       imagePreview={imagePreview}
-      handleImageUpload={handleImageUpload}
+      handleImageUpload={handleImageUploadWrapper}
     />
   );
 };
