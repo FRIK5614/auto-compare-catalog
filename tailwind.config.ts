@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Roboto', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -88,6 +91,9 @@ export default {
 						"700": "#3E4C59",
 						"800": "#323F4B",
 						"900": "#1F2933"
+					},
+					"red": {
+						"500": "#FF3B30"
 					}
 				}
 			},

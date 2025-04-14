@@ -43,8 +43,8 @@ const CarPriceAndActions = ({
       <div className="flex space-x-2">
         <Button 
           asChild
-          variant="default" 
-          className="flex-1 bg-auto-blue-600 hover:bg-auto-blue-700"
+          variant="blue" 
+          className="flex-1"
         >
           <Link to={`/car/${car.id}`}>
             <Info className="mr-2 h-4 w-4" />

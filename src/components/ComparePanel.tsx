@@ -31,7 +31,7 @@ const ComparePanel = () => {
   const hasMoreCars = comparisonCars.length > visibleCarsLimit;
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-auto-gray-200 shadow-lg z-40">
+    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-auto-gray-200 shadow-lg z-40 safe-bottom">
       <div className="container mx-auto px-4 py-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
           <div className="flex items-center space-x-4 mb-2 sm:mb-0">
@@ -40,7 +40,7 @@ const ComparePanel = () => {
               <span className="font-medium">Сравнение: {comparisonCars.length} {comparisonCars.length === 1 ? 'автомобиль' : comparisonCars.length < 5 ? 'автомобиля' : 'автомобилей'}</span>
             </div>
             
-            <div className="hidden md:flex items-center space-x-2 flex-wrap max-h-20 overflow-y-auto">
+            <div className="hidden md:flex items-center space-x-2 flex-wrap max-h-20 overflow-y-auto smooth-scroll">
               {visibleCars.map(car => (
                 <div 
                   key={car.id} 
@@ -49,7 +49,7 @@ const ComparePanel = () => {
                   <span className="text-sm truncate max-w-[150px]">{car.brand} {car.model}</span>
                   <button 
                     onClick={() => removeFromCompare(car.id)}
-                    className="ml-1 text-auto-gray-500 hover:text-auto-gray-700"
+                    className="ml-1 text-auto-gray-500 hover:text-auto-gray-700 min-h-0 min-w-0"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -102,9 +102,12 @@ const ComparePanel = () => {
             <Button 
               asChild
               size="sm"
-              className="bg-auto-blue-600 hover:bg-auto-blue-700"
+              variant="blue"
             >
-              <Link to="/compare">Сравнить</Link>
+              <Link to="/compare">
+                <BarChart2 className="mr-1 h-4 w-4" />
+                Сравнить
+              </Link>
             </Button>
           </div>
         </div>

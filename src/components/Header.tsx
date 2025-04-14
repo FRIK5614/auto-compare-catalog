@@ -1,15 +1,13 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   User,
-  ShoppingCart,
+  Heart,
   Phone,
   Menu,
   X,
-  Heart,
   ArrowLeft,
-  Star,
+  BarChart2,
   ChevronDown,
   Newspaper
 } from "lucide-react";
@@ -63,7 +61,7 @@ const Header = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full bg-white shadow-sm transition-transform duration-300 ${
+      className={`sticky top-0 z-50 w-full bg-white shadow-sm transition-transform duration-300 safe-top ${
         !isVisible ? "-translate-y-full" : ""
       }`}
     >
@@ -133,7 +131,7 @@ const Header = () => {
             </Link>
             <Link to="/compare">
               <Button variant="ghost" size="icon" className="relative">
-                <Star className="h-5 w-5" />
+                <BarChart2 className="h-5 w-5" />
                 {comparisonCars.length > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-auto-primary text-[10px] text-white">
                     {comparisonCars.length}
@@ -250,7 +248,7 @@ const Header = () => {
                         }
                         className="w-full justify-start text-base"
                       >
-                        <Star className="mr-2 h-4 w-4" />
+                        <BarChart2 className="mr-2 h-4 w-4" />
                         Сравнение{" "}
                         {comparisonCars.length > 0 && (
                           <span className="ml-1 rounded-full bg-auto-primary px-1.5 py-0.5 text-xs text-white">
