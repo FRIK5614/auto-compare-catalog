@@ -96,7 +96,7 @@ export const useImageHandling = () => {
         if (!image.file) return image; // Skip if no file
         
         try {
-          const url = await uploadCarImage(image.file);
+          const url = await uploadCarImage(image.file, carId);
           // Return a new image object with the uploaded URL
           return {
             ...image,
@@ -117,14 +117,14 @@ export const useImageHandling = () => {
         return uploadedImage || img;
       });
       
-      setImages(updatedImages);
+      setImages(updatedImages as CarImage[]);
       
       // Update preview if needed
       if (updatedImages.length > 0 && updatedImages[0].url !== imagePreview) {
-        setImagePreview(updatedImages[0].url);
+        setImagePreview(updatedImages[0].url as string);
       }
       
-      return updatedImages;
+      return updatedImages as CarImage[];
     } catch (error) {
       console.error("Error uploading images:", error);
       return images; // Return original images on error
