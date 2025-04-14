@@ -139,6 +139,25 @@ export const orderAPI = {
       }
       
       console.log('Order submitted successfully:', data);
+
+      // Try to send a Telegram notification to admins
+      try {
+        await supabase.functions.invoke('telegram-notify', {
+          body: { 
+            order: {
+              ...newOrder,
+              id: newOrder.id.substring(0, 8),
+              car: { 
+                brand: 'Определяется...', 
+                model: 'Определяется...' 
+              }
+            } 
+          }
+        });
+      } catch (notifyError) {
+        console.error('Failed to send Telegram notification:', notifyError);
+        // Don't fail the order if notification fails
+      }
       
       return {
         success: true,

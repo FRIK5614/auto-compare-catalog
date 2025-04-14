@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import { useAdmin } from '@/contexts/AdminContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +14,7 @@ import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChatMessage, ChatSession } from '@/types/chat';
 import { Send, MessageCircle, User, Clock, CheckCircle, MessageSquare } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const MessageBubble: React.FC<{ message: ChatMessage; isAdmin?: boolean }> = ({ message, isAdmin = false }) => {
   const isUserMessage = message.senderType === 'user';
@@ -64,18 +66,27 @@ const MessageBubble: React.FC<{ message: ChatMessage; isAdmin?: boolean }> = ({ 
 };
 
 const AdminChat: React.FC = () => {
-  const { chatState, sendMessage, setActiveSession, closeSession } = useChat();
+  const { 
+    chatState, 
+    sendMessage, 
+    setActiveSession, 
+    closeSession,
+    telegramConnected,
+    connectTelegram,
+    disconnectTelegram
+  } = useChat();
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const [messageText, setMessageText] = useState('');
-  const [telegramConnected, setTelegramConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   
   const { sessions, activeSessionId } = chatState;
   const activeSession = sessions.find(session => session.id === activeSessionId);
   const activeSessions = sessions.filter(session => session.status === 'active');
   const closedSessions = sessions.filter(session => session.status === 'closed');
+  const telegramSessions = sessions.filter(session => session.source === 'telegram');
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAdmin) {
       navigate('/admin/login');
     }
@@ -84,27 +95,7 @@ const AdminChat: React.FC = () => {
   const handleSendMessage = () => {
     if (!messageText.trim() || !activeSessionId) return;
     
-    const adminMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      senderId: 'admin',
-      senderName: 'Менеджер',
-      senderType: 'admin',
-      content: messageText,
-      timestamp: new Date().toISOString(),
-      isRead: true
-    };
-    
-    const updatedSessions = sessions.map(session => 
-      session.id === activeSessionId 
-        ? { 
-            ...session, 
-            messages: [...session.messages, adminMessage],
-            lastActivity: new Date().toISOString()
-          }
-        : session
-    );
-    
-    setActiveSession(activeSessionId);
+    sendMessage(messageText);
     setMessageText('');
   };
   
@@ -114,11 +105,25 @@ const AdminChat: React.FC = () => {
     }
   };
   
+  const handleConnectTelegram = async () => {
+    setConnecting(true);
+    try {
+      await connectTelegram();
+    } finally {
+      setConnecting(false);
+    }
+  };
+  
+  const getTotalUnread = (sessionList: ChatSession[]) => {
+    return sessionList.reduce((total, session) => total + session.unreadCount, 0);
+  };
+  
   if (!isAdmin) {
     return null;
   }
 
-  const totalUnread = sessions.reduce((total, session) => total + session.unreadCount, 0);
+  const totalUnread = getTotalUnread(sessions);
+  const totalTelegramUnread = getTotalUnread(telegramSessions);
 
   return (
     <div className="container mx-auto p-6">
@@ -155,15 +160,22 @@ const AdminChat: React.FC = () => {
                   </TabsTrigger>
                   <TabsTrigger value="telegram" className="flex-1">
                     Telegram
-                    <Badge variant="outline" className="ml-2">0</Badge>
+                    {telegramSessions.length > 0 && (
+                      <Badge variant={totalTelegramUnread > 0 ? "destructive" : "outline"} className="ml-2">
+                        {telegramSessions.length}
+                        {totalTelegramUnread > 0 && `(${totalTelegramUnread})`}
+                      </Badge>
+                    )}
                   </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="active">
                   <ScrollArea className="h-[400px]">
-                    {activeSessions.length > 0 ? (
+                    {activeSessions.filter(s => s.source !== 'telegram').length > 0 ? (
                       <div className="space-y-2">
-                        {activeSessions.map(session => (
+                        {activeSessions
+                          .filter(s => s.source !== 'telegram')
+                          .map(session => (
                           <Card
                             key={session.id}
                             className={`cursor-pointer hover:bg-gray-50 transition-colors ${
@@ -248,31 +260,78 @@ const AdminChat: React.FC = () => {
                 </TabsContent>
                 
                 <TabsContent value="telegram">
-                  <div className="h-[400px] flex flex-col items-center justify-center">
+                  <div className="h-[400px] flex flex-col">
                     {telegramConnected ? (
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-4">
-                          <MessageSquare className="h-12 w-12 text-blue-500" />
+                      telegramSessions.length > 0 ? (
+                        <ScrollArea className="h-full">
+                          <div className="space-y-2">
+                            {telegramSessions.map(session => (
+                              <Card
+                                key={session.id}
+                                className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                                  session.id === activeSessionId ? 'border-primary' : ''
+                                }`}
+                                onClick={() => setActiveSession(session.id)}
+                              >
+                                <CardContent className="p-3">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center">
+                                      <Avatar className="h-8 w-8 mr-2 bg-blue-500 text-white">
+                                        <AvatarFallback>
+                                          <MessageSquare className="h-4 w-4" />
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-medium">{session.userName}</div>
+                                        <div className="text-xs text-muted-foreground flex items-center">
+                                          <Clock className="h-3 w-3 mr-1" />
+                                          {format(new Date(session.lastActivity), 'HH:mm', { locale: ru })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {session.unreadCount > 0 && (
+                                      <Badge variant="destructive">{session.unreadCount}</Badge>
+                                    )}
+                                  </div>
+                                  {session.messages.length > 0 && (
+                                    <div className="mt-2 text-sm line-clamp-1 text-muted-foreground">
+                                      {session.messages[session.messages.length - 1].content}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="h-full flex items-center justify-center flex-col text-center p-4">
+                          <MessageSquare className="h-12 w-12 text-blue-500 mb-4" />
+                          <h3 className="font-medium mb-1">Нет сообщений из Telegram</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Telegram подключен, но пока нет входящих сообщений от пользователей
+                          </p>
+                          <Alert className="mb-4">
+                            <AlertDescription>
+                              Убедитесь, что ваш бот добавлен в группу или пользователи знают о его существовании
+                            </AlertDescription>
+                          </Alert>
+                          <Button variant="outline" onClick={disconnectTelegram}>
+                            Отключить Telegram
+                          </Button>
                         </div>
-                        <h3 className="font-medium mb-1">Telegram подключен</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Бот активен и готов получать сообщения
-                        </p>
-                        <Button variant="outline" onClick={() => setTelegramConnected(false)}>
-                          Отключить Telegram
-                        </Button>
-                      </div>
+                      )
                     ) : (
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-4">
-                          <MessageSquare className="h-12 w-12 text-muted-foreground" />
-                        </div>
+                      <div className="h-full flex items-center justify-center flex-col text-center">
+                        <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
                         <h3 className="font-medium mb-1">Telegram не подключен</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                           Для получения сообщений из Telegram подключите бота
                         </p>
-                        <Button onClick={() => setTelegramConnected(true)}>
-                          Подключить Telegram
+                        <Button 
+                          onClick={handleConnectTelegram} 
+                          disabled={connecting}
+                        >
+                          {connecting ? 'Подключение...' : 'Подключить Telegram'}
                         </Button>
                       </div>
                     )}
@@ -290,13 +349,29 @@ const AdminChat: React.FC = () => {
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center">
-                      <Avatar className="h-8 w-8 mr-2">
-                        <AvatarFallback>{activeSession.userName.charAt(0)}</AvatarFallback>
-                      </Avatar>
+                      {activeSession.source === 'telegram' ? (
+                        <Avatar className="h-8 w-8 mr-2 bg-blue-500 text-white">
+                          <AvatarFallback>
+                            <MessageSquare className="h-4 w-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Avatar className="h-8 w-8 mr-2">
+                          <AvatarFallback>{activeSession.userName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                      )}
                       <div>
-                        <div>{activeSession.userName}</div>
+                        <div>
+                          {activeSession.userName}
+                          {activeSession.source === 'telegram' && (
+                            <Badge variant="outline" className="ml-2">Telegram</Badge>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">
-                          {activeSession.userContact || 'Контакт не указан'}
+                          {activeSession.source === 'telegram' 
+                            ? `ID: ${activeSession.telegramChatId}` 
+                            : (activeSession.userContact || 'Контакт не указан')
+                          }
                         </div>
                       </div>
                     </CardTitle>
@@ -336,9 +411,14 @@ const AdminChat: React.FC = () => {
                         />
                         <Button onClick={handleSendMessage} disabled={!messageText.trim()}>
                           <Send className="h-4 w-4 mr-2" />
-                          Отправить
+                          {activeSession.source === 'telegram' ? 'Ответить' : 'Отправить'}
                         </Button>
                       </div>
+                      {activeSession.source === 'telegram' && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Сообщение будет отправлено пользователю в Telegram
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>

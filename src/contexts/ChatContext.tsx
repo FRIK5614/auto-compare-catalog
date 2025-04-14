@@ -1,10 +1,11 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatSession, ChatMessage, ChatState } from '@/types/chat';
 import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/contexts/AdminContext';
 import { useLocation } from 'react-router-dom';
+import { telegramAPI } from '@/services/api/telegramAPI';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatContextType {
   chatState: ChatState;
@@ -19,6 +20,9 @@ interface ChatContextType {
   startNewSession: (userName?: string, userContact?: string) => void;
   closeSession: (sessionId: string) => void;
   submitPhoneNumber: (phone: string) => void;
+  telegramConnected: boolean;
+  connectTelegram: () => Promise<boolean>;
+  disconnectTelegram: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -32,6 +36,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   });
   const [responseTimeoutId, setResponseTimeoutId] = useState<number | null>(null);
   const [hasRequestedContact, setHasRequestedContact] = useState(false);
+  const [telegramConnected, setTelegramConnected] = useState(false);
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const location = useLocation();
@@ -50,12 +55,95 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         console.error('Failed to parse saved chat sessions:', error);
       }
     }
+    
+    // Check if Telegram is already connected
+    const telegramStatus = localStorage.getItem('telegramConnected');
+    if (telegramStatus === 'true') {
+      setTelegramConnected(true);
+    }
   }, []);
 
   // Save chat sessions to localStorage when they change
   useEffect(() => {
     localStorage.setItem('chatSessions', JSON.stringify(chatState.sessions));
   }, [chatState.sessions]);
+
+  // Load Telegram chat sessions when admin views the chat
+  useEffect(() => {
+    if (isAdmin && location.pathname.includes('/admin/chat')) {
+      loadTelegramSessions();
+    }
+  }, [isAdmin, location.pathname]);
+
+  // Subscribe to real-time changes for chat messages
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const channel = supabase
+      .channel('chat-updates')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'chat_messages' 
+      }, (payload) => {
+        const newMessage = payload.new as any;
+        
+        // Update our local state with the new message
+        setChatState(prevState => {
+          // Find the session this message belongs to
+          const sessionIndex = prevState.sessions.findIndex(s => s.id === newMessage.session_id);
+          
+          if (sessionIndex >= 0) {
+            // Update existing session
+            const updatedSessions = [...prevState.sessions];
+            const session = updatedSessions[sessionIndex];
+            
+            // Convert the message to our format
+            const chatMessage: ChatMessage = {
+              id: newMessage.id,
+              senderId: newMessage.sender_id,
+              senderName: newMessage.sender_name,
+              senderType: newMessage.sender_type,
+              content: newMessage.content,
+              timestamp: newMessage.timestamp,
+              isRead: newMessage.is_read,
+              attachments: newMessage.attachments
+            };
+            
+            // Add message to session
+            updatedSessions[sessionIndex] = {
+              ...session,
+              messages: [...session.messages, chatMessage],
+              lastActivity: newMessage.timestamp,
+              unreadCount: session.id === prevState.activeSessionId ? 0 : session.unreadCount + 1
+            };
+            
+            return {
+              ...prevState,
+              sessions: updatedSessions
+            };
+          } else if (newMessage.session_id.startsWith('telegram-')) {
+            // This is a new Telegram session
+            loadTelegramSessions();
+          }
+          
+          return prevState;
+        });
+        
+        // Show notification for new messages
+        if (isAdmin && (!isOpen || chatState.isMinimized)) {
+          toast({
+            title: "Новое сообщение",
+            description: "Получено новое сообщение в чате"
+          });
+        }
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin, isOpen, chatState.isMinimized]);
 
   // Don't show chat widget on admin pages
   useEffect(() => {
@@ -84,6 +172,128 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           : session
       )
     }));
+  };
+
+  const loadTelegramSessions = async () => {
+    if (!telegramConnected) return;
+    
+    try {
+      const telegramSessions = await telegramAPI.getTelegramSessions();
+      
+      if (telegramSessions.length > 0) {
+        // Convert Telegram sessions to our format
+        const formattedSessions = await Promise.all(
+          telegramSessions.map(async (session) => {
+            // Get messages for this session
+            const messages = await telegramAPI.getSessionMessages(session.id);
+            
+            // Format messages
+            const formattedMessages: ChatMessage[] = messages.map(msg => ({
+              id: msg.id,
+              senderId: msg.sender_id,
+              senderName: msg.sender_name,
+              senderType: msg.sender_type,
+              content: msg.content,
+              timestamp: msg.timestamp,
+              isRead: msg.is_read,
+              attachments: msg.attachments
+            }));
+            
+            // Create session object
+            return {
+              id: session.id,
+              userName: session.user_name,
+              userContact: session.telegram_chat_id,
+              status: session.status,
+              lastActivity: session.last_activity,
+              unreadCount: session.unread_count,
+              messages: formattedMessages,
+              telegramChatId: session.telegram_chat_id,
+              source: 'telegram'
+            } as ChatSession;
+          })
+        );
+        
+        // Update state with Telegram sessions
+        setChatState(prevState => {
+          // Filter out existing Telegram sessions
+          const existingSessionsFiltered = prevState.sessions.filter(
+            s => !s.id.startsWith('telegram-')
+          );
+          
+          return {
+            ...prevState,
+            sessions: [...existingSessionsFiltered, ...formattedSessions]
+          };
+        });
+      }
+    } catch (error) {
+      console.error('Error loading Telegram sessions:', error);
+    }
+  };
+
+  const connectTelegram = async (): Promise<boolean> => {
+    try {
+      // Generate a webhook URL for the Telegram bot
+      // For production, this should be your actual domain
+      const host = window.location.host;
+      const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+      const webhookUrl = isLocal 
+        ? `https://efqxihbtoftrqqkvemgb.supabase.co/functions/v1/telegram-chat`
+        : `https://${host}/api/telegram-chat`;
+      
+      const success = await telegramAPI.initializeIntegration(webhookUrl);
+      
+      if (success) {
+        setTelegramConnected(true);
+        localStorage.setItem('telegramConnected', 'true');
+        
+        // Load Telegram sessions
+        await loadTelegramSessions();
+        
+        toast({
+          title: "Telegram подключен",
+          description: "Бот активирован и готов к получению сообщений"
+        });
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('Failed to connect Telegram:', error);
+      
+      toast({
+        variant: "destructive",
+        title: "Ошибка подключения",
+        description: "Не удалось по��ключить Telegram"
+      });
+      
+      return false;
+    }
+  };
+
+  const disconnectTelegram = () => {
+    setTelegramConnected(false);
+    localStorage.removeItem('telegramConnected');
+    
+    // Remove Telegram sessions from state
+    setChatState(prevState => {
+      const nonTelegramSessions = prevState.sessions.filter(
+        session => !session.id.startsWith('telegram-')
+      );
+      
+      return {
+        ...prevState,
+        sessions: nonTelegramSessions,
+        activeSessionId: nonTelegramSessions.length > 0 
+          ? nonTelegramSessions[0].id 
+          : null
+      };
+    });
+    
+    toast({
+      title: "Telegram отключен",
+      description: "Бот деактивирован"
+    });
   };
 
   const openChat = () => {
@@ -232,8 +442,19 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     setChatState(prevState => {
       const activeSession = prevState.sessions.find(session => session.id === prevState.activeSessionId);
-      const isPhoneNumberSubmission = activeSession?.awaitingPhoneNumber && 
+      
+      if (!activeSession) return prevState;
+      
+      const isPhoneNumberSubmission = activeSession.awaitingPhoneNumber && 
         content.match(/\+?\d[\d\s-]{8,}/); // Simple phone number regex
+      
+      // If this is a Telegram session, send the message to Telegram
+      if (activeSession.source === 'telegram' && activeSession.telegramChatId) {
+        telegramAPI.sendMessageToTelegram(
+          activeSession.telegramChatId,
+          `<b>Администратор:</b> ${content}`
+        );
+      }
       
       if (isPhoneNumberSubmission) {
         // If this is a phone number submission, handle it differently
@@ -278,10 +499,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     setResponseTimeoutId(timeoutId);
     
-    // Simulate a response from the admin after a delay
-    setTimeout(() => {
-      simulateAdminResponse(content);
-    }, 1000);
+    // Simulate a response from the admin after a delay (unless its a Telegram session)
+    const activeSession = chatState.sessions.find(session => session.id === chatState.activeSessionId);
+    if (!activeSession?.source || activeSession.source !== 'telegram') {
+      setTimeout(() => {
+        simulateAdminResponse(content);
+      }, 1000);
+    }
   };
 
   const simulateAdminResponse = (userMessage: string) => {
@@ -323,7 +547,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               ...session, 
               messages: [...session.messages, adminMessage],
               lastActivity: new Date().toISOString(),
-              unreadCount: session.unreadCount + 1
+              unreadCount: session.id === prevState.activeSessionId ? 0 : session.unreadCount + 1
             }
           : session
       )
@@ -412,7 +636,10 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setActiveSession,
         startNewSession,
         closeSession,
-        submitPhoneNumber
+        submitPhoneNumber,
+        telegramConnected,
+        connectTelegram,
+        disconnectTelegram
       }}
     >
       {children}

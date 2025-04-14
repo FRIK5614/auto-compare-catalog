@@ -31,6 +31,7 @@ import BlogPost from "@/pages/BlogPost";
 import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEdit from "@/pages/AdminBlogEdit";
 import SpecialOffers from "@/pages/SpecialOffers";
+import AIChat from "@/pages/AIChat";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ function App() {
                   <Route path="/special-offers" element={<SpecialOffers />} />
                   <Route path="/compare" element={<CompareCars />} />
                   <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/ai-chat" element={<AIChat />} />
                   
                   {/* Blog routes */}
                   <Route path="/blog" element={<Blog />} />

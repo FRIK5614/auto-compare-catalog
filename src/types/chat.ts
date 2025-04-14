@@ -29,6 +29,8 @@ export interface ChatSession {
   unreadCount: number;
   messages: ChatMessage[];
   awaitingPhoneNumber?: boolean;
+  telegramChatId?: string;
+  source?: 'website' | 'telegram';
 }
 
 export interface ChatState {
