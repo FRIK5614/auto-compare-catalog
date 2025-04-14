@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,7 @@ const HomeCatalog = ({
     if (e.nativeEvent) {
       e.nativeEvent.stopImmediatePropagation();
     }
-    navigate('/catalog');
+    navigate('/cars');
   };
 
   return (

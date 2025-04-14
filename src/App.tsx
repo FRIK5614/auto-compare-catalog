@@ -47,6 +47,7 @@ function App() {
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
                   <Route path="/cars" element={<Catalog />} />
+                  <Route path="/catalog" element={<Catalog />} /> {/* Added redirect for 'all cars' button */}
                   <Route path="/cars/:brand/:model/:id" element={<CarDetails />} />
                   <Route path="/car/:id" element={<CarDetails />} /> {/* Added direct car ID route */}
                   <Route path="/cars/type/:bodyType" element={<BodyTypeCatalog />} />

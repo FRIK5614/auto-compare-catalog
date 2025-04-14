@@ -102,6 +102,15 @@ export const orderAPI = {
     try {
       console.log(`[API] Submitting purchase request for car: ${carId}`);
       
+      // Add debugging to check params
+      console.log('Order request data:', {
+        carId,
+        customerName,
+        customerPhone,
+        customerEmail,
+        message
+      });
+      
       const newOrder = {
         id: uuidv4(),
         car_id: carId,
@@ -187,4 +196,14 @@ export const updateOrderStatus = async (
   status: 'new' | 'processing' | 'completed' | 'canceled'
 ): Promise<boolean> => {
   return orderAPI.updateOrderStatus(orderId, status);
+};
+
+export const submitPurchaseRequest = async (
+  carId: string,
+  customerName: string,
+  customerPhone: string,
+  customerEmail: string,
+  message?: string
+): Promise<{ success: boolean; message: string; orderId?: string }> => {
+  return orderAPI.submitPurchaseRequest(carId, customerName, customerPhone, customerEmail, message);
 };

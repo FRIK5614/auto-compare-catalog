@@ -46,6 +46,17 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     importCarsData
   } = useInitializeHooks();
 
+  // Ensure cars are loaded initially
+  if (cars.length === 0 && !loading && !error) {
+    console.log("No cars loaded yet, triggering initial load");
+    // Use setTimeout to avoid blocking the rendering
+    setTimeout(() => {
+      reloadCars()
+        .then(() => console.log("Initial cars loaded successfully"))
+        .catch(err => console.error("Failed to load initial cars:", err));
+    }, 100);
+  }
+
   // Create adapter functions to ensure type compatibility
   const handleViewCar = createViewCarAdapter(viewCar, cars);
   const handleUpdateCar = createUpdateCarAdapter(updateCar);
