@@ -59,20 +59,19 @@ const ImprovedCarFormContainer = () => {
 
   const handleAddImageAdapter = (url: string) => {
     if (!car) return;
-    const newImage = handleAddImage(url, car);
+    const newImage = handleAddImage(url);
     console.log("Added new image:", newImage);
   };
 
   const handleRemoveImageAdapter = (index: number) => {
     if (!car) return;
-    handleRemoveImage(index, car);
+    handleRemoveImage(index);
   };
 
   const handleSave = async (updatedCar: Car) => {
     setFormLoading(true);
     
     try {
-      // Make sure the images are correctly assigned to the car
       updatedCar.images = images;
       
       const result = await saveCar(updatedCar, isNewCar);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -103,7 +102,7 @@ const CarFormContainer: React.FC = () => {
     if (!car) return;
     console.log("Adding image by URL:", url);
     
-    const newImage = handleAddImage(url, car);
+    const newImage = handleAddImage(url);
     
     if (newImage) {
       const updatedImages = [...images, newImage];
@@ -123,7 +122,7 @@ const CarFormContainer: React.FC = () => {
     if (!car) return;
     console.log("Removing image at index:", index);
     
-    const updatedImages = handleRemoveImage(index, car);
+    const updatedImages = handleRemoveImage(index);
     
     if (updatedImages) {
       setImages(updatedImages);
