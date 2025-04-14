@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { CarImage, Car } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,7 +29,7 @@ export const useImageHandling = () => {
     setImagePreview(url);
   }, []);
   
-  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, car?: Car) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
