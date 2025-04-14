@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCars } from '@/hooks/useCars';
 import { Car } from '@/types/car';
 
-export const useCarFormData = (id: string | undefined, isNewCar: boolean) => {
+export const useCarFormData = (id?: string, isNewCar = false) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { 
