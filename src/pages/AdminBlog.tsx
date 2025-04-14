@@ -60,7 +60,7 @@ const AdminBlog = () => {
         throw error;
       }
       
-      setPosts(data || []);
+      setPosts(data as BlogPost[]);
     } catch (err) {
       console.error('Error fetching blog posts:', err);
       setError('Не удалось загрузить публикации блога');

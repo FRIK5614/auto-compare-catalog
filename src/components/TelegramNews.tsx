@@ -3,85 +3,32 @@ import React, { useEffect } from 'react';
 import { Rss, ExternalLink, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTelegramFeed } from '@/hooks/useTelegramFeed';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
+import { 
+  TelegramHeader, 
+  PostsGrid, 
+  LoadMoreButton 
+} from '@/components/telegram-feed';
 
-interface TelegramPost {
-  id: number;
-  text: string;
-  photos: string[];
-  date: string;
-  link: string;
+interface TelegramNewsProps {
+  channelName?: string;
+  limit?: number;
 }
 
-const TelegramNewsItem = ({ post }: { post: TelegramPost }) => {
-  const postDate = new Date(post.date);
-  const formattedDate = postDate.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
-  // Truncate long text
-  const maxLength = 200;
-  const displayText = post.text.length > maxLength
-    ? `${post.text.substring(0, maxLength)}...`
-    : post.text;
-
-  return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {post.photos && post.photos.length > 0 && (
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={post.photos[0]} 
-            alt="Telegram post image" 
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback image if the Telegram image fails to load
-              (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${post.id}/800/600`;
-            }}
-          />
-          {post.photos.length > 1 && (
-            <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
-              +{post.photos.length - 1} фото
-            </div>
-          )}
-        </div>
-      )}
-      <div className="p-4">
-        <p className="text-sm text-gray-500 mb-2">{formattedDate}</p>
-        <p className="text-gray-800 mb-3">{displayText}</p>
-        <a 
-          href={post.link} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="inline-flex items-center text-blue-600 hover:text-blue-800"
-        >
-          Читать полностью <ExternalLink className="ml-1 h-4 w-4" />
-        </a>
-      </div>
-    </div>
-  );
-};
-
-const TelegramNewsSkeleton = () => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    <Skeleton className="h-48 w-full" />
-    <div className="p-4">
-      <Skeleton className="h-4 w-24 mb-2" />
-      <Skeleton className="h-4 w-full mb-2" />
-      <Skeleton className="h-4 w-full mb-2" />
-      <Skeleton className="h-4 w-3/4 mb-3" />
-      <Skeleton className="h-4 w-32" />
-    </div>
-  </div>
-);
-
-const TelegramNews = () => {
+const TelegramNews: React.FC<TelegramNewsProps> = ({ 
+  channelName = "VoeAVTO",
+  limit = 9 
+}) => {
   const { toast } = useToast();
-  const { posts, loading, error, hasMore, loadMorePosts } = useTelegramFeed({
-    postsPerPage: 9,
-    channelName: "VoeAVTO" 
+  const { 
+    posts, 
+    loading, 
+    error, 
+    hasMore, 
+    loadMorePosts,
+    offset
+  } = useTelegramFeed({
+    postsPerPage: limit,
+    channelName
   });
 
   // Force refresh on component mount
@@ -90,74 +37,50 @@ const TelegramNews = () => {
     loadMorePosts(0);
   }, [loadMorePosts]);
 
+  const handleRefresh = () => {
+    loadMorePosts(0);
+    toast({
+      title: "Обновление",
+      description: "Обновляем ленту сообщений из Telegram"
+    });
+  };
+
   return (
     <div className="bg-gray-50 py-12">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-center mb-8">
-          <Rss className="text-blue-600 mr-2" />
-          <h2 className="text-2xl font-bold text-center">Новости и специальные предложения</h2>
-        </div>
+        <TelegramHeader 
+          title="Новости и специальные предложения"
+          description="Актуальные новости и специальные предложения из нашего Telegram-канала"
+          buttonText="Подписаться на Telegram"
+          telegramUrl={`https://t.me/${channelName}`}
+        />
         
         <div className="flex justify-center mb-6">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              loadMorePosts(0);
-              toast({
-                title: "Обновление",
-                description: "Обновляем ленту сообщений из Telegram"
-              });
-            }}
+          <button 
+            onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Обновить ленту
-          </Button>
+          </button>
         </div>
         
-        {error && (
-          <div className="text-center text-red-500 mb-8">
-            <p>{error}</p>
-            <button 
-              onClick={() => loadMorePosts(0)}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Попробовать снова
-            </button>
-          </div>
-        )}
+        <PostsGrid 
+          posts={posts}
+          loading={loading}
+          error={error}
+          offset={offset}
+          onRetry={() => loadMorePosts(0)}
+        />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading && posts.length === 0 ? (
-            <>
-              <TelegramNewsSkeleton />
-              <TelegramNewsSkeleton />
-              <TelegramNewsSkeleton />
-            </>
-          ) : posts.length > 0 ? (
-            posts.map(post => (
-              <TelegramNewsItem key={post.id} post={post} />
-            ))
-          ) : (
-            <div className="col-span-3 text-center py-8">
-              <p className="text-gray-500">Нет доступных новостей из Telegram-канала</p>
-              <p className="text-gray-400 text-sm mt-2">Проверьте настройки доступа бота к каналу</p>
-            </div>
-          )}
-        </div>
-        
-        {hasMore && posts.length > 0 && !loading && (
-          <div className="text-center mt-8">
-            <button
-              onClick={() => loadMorePosts()}
-              disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {loading ? "Загрузка..." : "Загрузить больше новостей"}
-            </button>
-          </div>
-        )}
+        <LoadMoreButton 
+          loading={loading}
+          hasMore={hasMore}
+          postsExist={posts.length > 0}
+          offset={offset}
+          onLoadMore={loadMorePosts}
+        />
       </div>
     </div>
   );

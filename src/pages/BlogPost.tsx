@@ -54,7 +54,7 @@ const BlogPost = () => {
         return;
       }
       
-      setPost(data);
+      setPost(data as BlogPost);
     } catch (err) {
       console.error('Error fetching blog post:', err);
       setError('Не удалось загрузить публикацию');

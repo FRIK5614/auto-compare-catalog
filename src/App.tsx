@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -26,6 +25,10 @@ import AdminSettings from "@/pages/AdminSettings";
 import AdminChat from "@/pages/AdminChat";
 import NotFound from "@/pages/NotFound";
 import AdminLayout from "@/components/AdminLayout";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
+import AdminBlog from "@/pages/AdminBlog";
+import AdminBlogEdit from "@/pages/AdminBlogEdit";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -60,6 +63,13 @@ function App() {
                   <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
                   <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
                   <Route path="/admin/chat" element={<AdminLayout><AdminChat /></AdminLayout>} />
+                  
+                  {/* Blog routes */}
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogPost />} />
+                  <Route path="/admin/blog" element={<AdminBlog />} />
+                  <Route path="/admin/blog/new" element={<AdminBlogEdit />} />
+                  <Route path="/admin/blog/edit/:id" element={<AdminBlogEdit />} />
                   
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />

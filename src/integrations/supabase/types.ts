@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string | null
+          content: string
+          created_at: string | null
+          excerpt: string | null
+          id: string
+          image_url: string | null
+          published: boolean | null
+          published_at: string | null
+          slug: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          author?: string | null
+          content: string
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           car_id: string

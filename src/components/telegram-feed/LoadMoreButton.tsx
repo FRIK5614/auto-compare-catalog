@@ -24,10 +24,10 @@ const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({
         <Button
           variant="outline"
           size="lg"
-          onClick={() => window.open('https://docs.lovable.dev/integrations/telegram-bot/', '_blank')}
+          onClick={() => window.open('https://t.me/VoeAVTO', '_blank')}
           className="min-w-[180px]"
         >
-          Настроить бота Telegram
+          Посетить канал Telegram
         </Button>
       </div>
     );
