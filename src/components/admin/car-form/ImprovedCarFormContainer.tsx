@@ -17,7 +17,7 @@ const ImprovedCarFormContainer = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { reloadCars } = useCars();
-  const isNewCar = !id;
+  const isNewCar = !id || id === 'new';
 
   // Use the refactored hooks
   const {
@@ -47,6 +47,22 @@ const ImprovedCarFormContainer = () => {
       reloadCars();
     }
   }, [loading, car, isNewCar, reloadCars]);
+
+  // Адаптеры для функций работы с изображениями
+  const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!car) return;
+    handleImageUpload(e, car);
+  };
+
+  const handleAddImageAdapter = (url: string) => {
+    if (!car) return;
+    handleAddImage(url, car);
+  };
+
+  const handleRemoveImageAdapter = (index: number) => {
+    if (!car) return;
+    handleRemoveImage(index, car);
+  };
 
   const handleSave = async (updatedCar: Car) => {
     setFormLoading(true);
@@ -128,8 +144,8 @@ const ImprovedCarFormContainer = () => {
   };
 
   // Render loading state
-  if (loading || (id && !car)) {
-    return <LoadingState />;
+  if (loading || (id && !car && !isNewCar)) {
+    return <LoadingState count={3} />;
   }
 
   // Render error state
@@ -155,9 +171,9 @@ const ImprovedCarFormContainer = () => {
       isDeleting={isDeleting}
       isNewCar={isNewCar}
       imagePreview={imagePreview}
-      handleImageUpload={handleImageUpload}
-      handleAddImage={handleAddImage}
-      handleRemoveImage={handleRemoveImage}
+      handleImageUpload={handleImageUploadAdapter}
+      handleAddImage={handleAddImageAdapter}
+      handleRemoveImage={handleRemoveImageAdapter}
       images={images || []}
     />
   ) : null;

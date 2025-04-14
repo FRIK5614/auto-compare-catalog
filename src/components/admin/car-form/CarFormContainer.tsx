@@ -41,7 +41,7 @@ const CarFormContainer: React.FC = () => {
     uploadImageFiles
   } = useImageHandling();
   
-  const { saving, saveCar } = useCarSave();
+  const { isSaving, saveCar } = useCarSave();
   
   const [showUrlFetcher, setShowUrlFetcher] = useState(isNewCar);
   
@@ -204,7 +204,7 @@ const CarFormContainer: React.FC = () => {
     <CarForm 
       car={car}
       isNewCar={isNewCar}
-      loading={formLoading || saving}
+      loading={formLoading || isSaving}
       onSave={handleSave}
       formErrors={formErrors}
       handleImageUrlChange={handleImageUrlChange}

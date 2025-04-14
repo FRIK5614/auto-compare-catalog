@@ -7,21 +7,29 @@ import { useToast } from "@/hooks/use-toast";
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const { saveCar: saveCarToDb, deleteCar: deleteCarFromDb } = useCars();
+  const { updateCar, addCar, deleteCar: deleteCarFromDb } = useCars();
   const { toast } = useToast();
 
   const saveCar = async (car: Car, isNewCar: boolean) => {
     setSaving(true);
     try {
-      const result = await saveCarToDb(car);
-      if (!result.success) {
+      let result;
+      if (isNewCar) {
+        result = await addCar(car);
+      } else {
+        result = await updateCar(car);
+      }
+      
+      if (!result || (typeof result === 'object' && !result.success)) {
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: result.message || "Не удалось сохранить автомобиль",
+          description: (result as any)?.message || "Не удалось сохранить автомобиль",
         });
+        return { success: false, message: (result as any)?.message || "Не удалось сохранить автомобиль" };
       }
-      return result;
+      
+      return { success: true, car: result };
     } catch (error) {
       console.error("Error saving car:", error);
       toast({

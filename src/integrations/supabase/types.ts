@@ -198,33 +198,42 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           car_id: string
           created_at: string
           customer_email: string
           customer_name: string
           customer_phone: string
           id: string
+          message: string | null
           status: string | null
+          sync_status: string | null
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           car_id: string
           created_at?: string
           customer_email: string
           customer_name: string
           customer_phone: string
           id?: string
+          message?: string | null
           status?: string | null
+          sync_status?: string | null
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           car_id?: string
           created_at?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string
           id?: string
+          message?: string | null
           status?: string | null
+          sync_status?: string | null
           updated_at?: string
         }
         Relationships: [
