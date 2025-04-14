@@ -2,6 +2,19 @@
 import { Car, Order } from "@/types/car";
 
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
+  // Handle case where images might be stored as JSONB in database
+  let carImages = vehicle.images || [];
+  
+  // Ensure images is an array
+  if (typeof carImages === 'string') {
+    try {
+      carImages = JSON.parse(carImages);
+    } catch (e) {
+      console.error("Failed to parse images string:", e);
+      carImages = [];
+    }
+  }
+  
   return {
     id: vehicle.id,
     brand: vehicle.brand,
@@ -33,12 +46,15 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
     image_url: vehicle.image_url,
     description: vehicle.description,
     viewCount: vehicle.view_count,
-    images: vehicle.images || [],
+    images: carImages,
   };
 };
 
 export const transformVehicleForSupabase = (car: Car) => {
   const { isPopular, ...carData } = car as any;
+  
+  // Ensure images is properly formatted as JSON
+  let carImages = carData.images || [];
   
   return {
     id: carData.id,
@@ -66,7 +82,7 @@ export const transformVehicleForSupabase = (car: Car) => {
     image_url: carData.image_url,
     description: carData.description,
     view_count: carData.viewCount || 0,
-    images: carData.images || []
+    images: carImages
   };
 };
 

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,7 @@ import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import { useCarSave } from "./hooks/useCarSave";
 import { useCars } from "@/contexts/cars/CarsProvider";
-import { useImageHandling } from "./hooks/image-handling";
+import { useImageHandling } from "./hooks/useImageHandling";
 
 const ImprovedCarFormContainer = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +38,8 @@ const ImprovedCarFormContainer = () => {
     handleImageUpload,
     handleAddImage,
     handleRemoveImage,
-    initializeImagesFromCar
+    initializeImagesFromCar,
+    uploadImageFiles
   } = useImageHandling();
 
   useEffect(() => {
@@ -47,24 +49,21 @@ const ImprovedCarFormContainer = () => {
   }, [loading, car, isNewCar, reloadCars]);
 
   useEffect(() => {
-    if (car && car.id && car.images && car.images.length > 0) {
+    if (car && car.id) {
       initializeImagesFromCar(car);
     }
   }, [car, initializeImagesFromCar]);
 
   const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!car) return;
-    handleImageUpload(e, car);
+    handleImageUpload(e);
   };
 
   const handleAddImageAdapter = (url: string) => {
-    if (!car) return;
     const newImage = handleAddImage(url);
     console.log("Added new image:", newImage);
   };
 
   const handleRemoveImageAdapter = (index: number) => {
-    if (!car) return;
     handleRemoveImage(index);
   };
 
@@ -72,7 +71,40 @@ const ImprovedCarFormContainer = () => {
     setFormLoading(true);
     
     try {
-      updatedCar.images = images;
+      // First upload any local images
+      if (images.some(img => img.file)) {
+        toast({
+          title: "Загрузка изображений",
+          description: "Идет загрузка изображений на сервер..."
+        });
+        
+        try {
+          const uploadedImages = await uploadImageFiles(updatedCar.id);
+          // Update car with uploaded images
+          updatedCar.images = uploadedImages;
+          
+          if (uploadedImages.length > 0) {
+            updatedCar.image_url = uploadedImages[0].url;
+          }
+        } catch (uploadError) {
+          console.error("Error uploading images:", uploadError);
+          toast({
+            variant: "destructive",
+            title: "Ошибка загрузки изображений",
+            description: "Произошла ошибка при загрузке изображений, но данные автомобиля будут сохранены"
+          });
+        }
+      } else {
+        // Just assign the images array from state
+        updatedCar.images = images;
+        
+        // Make sure image_url is set to the first image url
+        if (images.length > 0) {
+          updatedCar.image_url = images[0].url;
+        }
+      }
+      
+      console.log("Saving car with images:", updatedCar.images);
       
       const result = await saveCar(updatedCar, isNewCar);
       

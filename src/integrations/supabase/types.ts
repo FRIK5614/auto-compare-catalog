@@ -304,6 +304,7 @@ export type Database = {
           features: Json | null
           id: string
           image_url: string | null
+          images: Json | null
           is_new: boolean | null
           mileage: number | null
           model: string
@@ -334,6 +335,7 @@ export type Database = {
           features?: Json | null
           id?: string
           image_url?: string | null
+          images?: Json | null
           is_new?: boolean | null
           mileage?: number | null
           model: string
@@ -364,6 +366,7 @@ export type Database = {
           features?: Json | null
           id?: string
           image_url?: string | null
+          images?: Json | null
           is_new?: boolean | null
           mileage?: number | null
           model?: string

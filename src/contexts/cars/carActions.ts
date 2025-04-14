@@ -1,3 +1,4 @@
+
 import { Car } from "@/types/car";
 import { supabase } from "@/integrations/supabase/client";
 import { transformVehicleForSupabase } from "@/services/api/transformers";
@@ -100,18 +101,26 @@ export const updateCar = async (
   onError: (message: string) => void
 ) => {
   try {
-    // Update car in database
+    console.log("Updating car with data:", updatedCar);
+    
+    // Ensure images is properly formatted as a JSON object for the database
     const vehicle = transformVehicleForSupabase(updatedCar);
     
+    console.log("Transformed vehicle for database:", vehicle);
+    
     // Update in Supabase
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('vehicles')
       .update(vehicle)
-      .eq('id', updatedCar.id);
+      .eq('id', updatedCar.id)
+      .select();
     
     if (error) {
+      console.error("Supabase update error:", error);
       throw error;
     }
+    
+    console.log("Supabase update response:", data);
     
     const updatedCars = cars.map(car => 
       car.id === updatedCar.id ? updatedCar : car
@@ -125,16 +134,11 @@ export const updateCar = async (
     };
   } catch (err) {
     console.error("Failed to update car:", err);
-    
-    const updatedCars = cars.map(car => 
-      car.id === updatedCar.id ? updatedCar : car
-    );
-    
-    onSuccess(updatedCars);
+    onError(err instanceof Error ? err.message : "Произошла ошибка при обновлении автомобиля");
     
     return {
-      title: "Автомобиль обновлен",
-      description: "Информация об автомобиле была успешно обновлена (локально)"
+      title: "Ошибка обновления",
+      description: "Не удалось обновить информацию об автомобиле"
     };
   }
 };
@@ -147,19 +151,25 @@ export const addCar = async (
   onError: (message: string) => void
 ) => {
   try {
-    // Prepare car for saving
+    console.log("Adding new car with data:", newCar);
+    
+    // Prepare car for saving with proper image handling
     const vehicle = transformVehicleForSupabase(newCar);
+    
+    console.log("Transformed vehicle for database:", vehicle);
     
     // Save to Supabase
     const { data, error } = await supabase
       .from('vehicles')
       .insert(vehicle)
-      .select()
-      .single();
+      .select();
     
     if (error) {
+      console.error("Supabase insert error:", error);
       throw error;
     }
+    
+    console.log("Supabase insert response:", data);
     
     const savedCar = newCar; // Use the car that was passed in
     const updatedCars = [...cars, savedCar];
@@ -171,13 +181,11 @@ export const addCar = async (
     };
   } catch (err) {
     console.error("Failed to add car:", err);
-    
-    const updatedCars = [...cars, newCar];
-    onSuccess(updatedCars);
+    onError(err instanceof Error ? err.message : "Произошла ошибка при добавлении автомобиля");
     
     return {
-      title: "Автомобиль добавлен",
-      description: "Новый автомобиль был успешно добавлен в каталог (локально)"
+      title: "Ошибка добавления",
+      description: "Не удалось добавить новый автомобиль"
     };
   }
 };

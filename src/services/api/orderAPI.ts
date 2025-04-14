@@ -162,7 +162,7 @@ export const orderAPI = {
       return {
         success: true,
         message: 'Заявка успешно отправлена',
-        orderId: data[0]?.id
+        orderId: data && data.length > 0 ? data[0]?.id : newOrder.id
       };
     } catch (error) {
       console.error('Error in submitPurchaseRequest:', error);
