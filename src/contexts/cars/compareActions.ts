@@ -1,5 +1,6 @@
 
 import { saveCompareToLocalStorage } from "./utils";
+import { useToast } from "@/hooks/use-toast";
 
 // Add car to comparison
 export const addToCompare = (

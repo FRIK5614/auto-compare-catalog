@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Car } from "@/types/car";
 import { Heart, BarChart2, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface CarTitleProps {
   car: Car;
@@ -20,38 +21,50 @@ const CarTitle: React.FC<CarTitleProps> = ({
   toggleFavorite,
   toggleCompare
 }) => {
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${car.brand} ${car.model}`,
+          text: `Посмотрите ${car.brand} ${car.model} в нашем каталоге`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Ссылка скопирована",
+          description: "Ссылка скопирована в буфер обмена"
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   return (
     <div className="bg-white border-b border-auto-gray-200">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-auto-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-auto-gray-900">
               {car.brand} {car.model}
             </h1>
-            <p className="text-auto-gray-600 mt-1">
+            <p className="text-auto-gray-600 mt-1 text-sm sm:text-base">
               {car.year} • {car.engine.type} {car.engine.displacement}л • {car.engine.power} л.с. • {car.transmission.type}
             </p>
           </div>
           
-          <div className="flex items-center space-x-2 mt-4 md:mt-0">
+          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
             <Button
               variant="outline"
               size="sm"
               className="flex items-center"
-              onClick={(e) => {
-                e.preventDefault();
-                navigator.share({
-                  title: `${car.brand} ${car.model}`,
-                  text: `Посмотрите ${car.brand} ${car.model} в нашем каталоге`,
-                  url: window.location.href,
-                }).catch(() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert("Ссылка скопирована в буфер обмена");
-                });
-              }}
+              onClick={handleShare}
             >
               <Share2 className="h-4 w-4 mr-1" />
-              Поделиться
+              <span className="sm:inline">Поделиться</span>
             </Button>
             
             <Button
@@ -67,7 +80,10 @@ const CarTitle: React.FC<CarTitleProps> = ({
                 className="h-4 w-4 mr-1" 
                 fill={isFavorite ? "currentColor" : "none"} 
               />
-              {isFavorite ? "В избранном" : "В избранное"}
+              {isFavorite ? 
+                <span className="sm:inline">В избранном</span> : 
+                <span className="sm:inline">В избранное</span>
+              }
             </Button>
             
             <Button
@@ -80,7 +96,10 @@ const CarTitle: React.FC<CarTitleProps> = ({
               onClick={() => toggleCompare(car.id)}
             >
               <BarChart2 className="h-4 w-4 mr-1" />
-              {isInCompare ? "В сравнении" : "Сравнить"}
+              {isInCompare ? 
+                <span className="sm:inline">В сравнении</span> : 
+                <span className="sm:inline">Сравнить</span>
+              }
             </Button>
           </div>
         </div>

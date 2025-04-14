@@ -5,6 +5,7 @@ import { useCars } from "@/hooks/useCars";
 import { X, BarChart2, RefreshCw, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ComparePanel = () => {
   const { 
@@ -17,6 +18,7 @@ const ComparePanel = () => {
   } = useCars();
 
   const [expanded, setExpanded] = useState(false);
+  const isMobile = useIsMobile();
   
   // If there are no cars to compare, loading, or error, don't show the panel
   if (loading || error || comparisonCars.length === 0) {
@@ -24,15 +26,15 @@ const ComparePanel = () => {
   }
 
   // Limit the number of visible cars in collapsed state
-  const visibleCarsLimit = 3;
+  const visibleCarsLimit = isMobile ? 1 : 3;
   const visibleCars = expanded ? comparisonCars : comparisonCars.slice(0, visibleCarsLimit);
   const hasMoreCars = comparisonCars.length > visibleCarsLimit;
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white border-t border-auto-gray-200 shadow-lg z-40">
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+          <div className="flex items-center space-x-4 mb-2 sm:mb-0">
             <div className="flex items-center space-x-2">
               <BarChart2 className="h-5 w-5 text-auto-blue-600" />
               <span className="font-medium">Сравнение: {comparisonCars.length} {comparisonCars.length === 1 ? 'автомобиль' : comparisonCars.length < 5 ? 'автомобиля' : 'автомобилей'}</span>
@@ -62,7 +64,7 @@ const ComparePanel = () => {
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
             {hasMoreCars && (
               <Button
                 variant="ghost"
