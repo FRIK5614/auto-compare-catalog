@@ -96,14 +96,14 @@ const CarFormContainer: React.FC = () => {
   const handleImageUploadWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
     console.log("Uploading images:", e.target.files?.length || 0, "files");
-    handleImageUpload(e);
+    handleImageUpload(e, car);
   };
   
   const handleAddImageWrapper = (url: string) => {
     if (!car) return;
     console.log("Adding image by URL:", url);
     
-    const newImage = handleAddImage(url);
+    const newImage = handleAddImage(url, car);
     
     if (newImage) {
       const updatedImages = [...images, newImage];
@@ -123,7 +123,7 @@ const CarFormContainer: React.FC = () => {
     if (!car) return;
     console.log("Removing image at index:", index);
     
-    const updatedImages = handleRemoveImage(index);
+    const updatedImages = handleRemoveImage(index, car);
     
     if (updatedImages) {
       setImages(updatedImages);

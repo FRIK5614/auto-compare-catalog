@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -55,18 +54,18 @@ const ImprovedCarFormContainer = () => {
 
   const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
-    handleImageUpload(e);
+    handleImageUpload(e, car);
   };
 
   const handleAddImageAdapter = (url: string) => {
     if (!car) return;
-    const newImage = handleAddImage(url);
+    const newImage = handleAddImage(url, car);
     console.log("Added new image:", newImage);
   };
 
   const handleRemoveImageAdapter = (index: number) => {
     if (!car) return;
-    handleRemoveImage(index);
+    handleRemoveImage(index, car);
   };
 
   const handleSave = async (updatedCar: Car) => {
