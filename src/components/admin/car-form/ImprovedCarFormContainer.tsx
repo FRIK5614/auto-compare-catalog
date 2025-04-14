@@ -9,7 +9,149 @@ import { Car } from '@/types/car';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { transformVehicleFromSupabase, transformVehicleForSupabase } from '@/services/api/transformers';
-import { useImprovedImageHandling } from './hooks/image-handling/useImprovedImageHandling';
+
+// Simple Image Handling Hook
+const useSimpleImageHandling = () => {
+  const [images, setImages] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const initializeImagesFromCar = (car: Car) => {
+    if (!car.images || car.images.length === 0) {
+      // Set a single image from image_url if it exists
+      if (car.image_url) {
+        const newImages = [{ url: car.image_url, type: 'external' }];
+        setImages(newImages);
+        setImagePreview(car.image_url);
+      } else {
+        setImages([]);
+        setImagePreview(null);
+      }
+      return;
+    }
+
+    setImages(car.images);
+    
+    // Set preview to first image
+    if (car.images.length > 0 && car.images[0].url) {
+      setImagePreview(car.images[0].url);
+    }
+  };
+
+  const handleAddImage = (url: string, car: Car) => {
+    if (!url.trim()) return car;
+
+    const newImage = { url, type: 'external' };
+    const updatedImages = [...images, newImage];
+    setImages(updatedImages);
+    
+    if (!imagePreview) {
+      setImagePreview(url);
+    }
+
+    return {
+      ...car,
+      images: updatedImages,
+      image_url: imagePreview || url
+    };
+  };
+
+  const handleRemoveImage = (index: number, car: Car) => {
+    const updatedImages = [...images];
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+
+    // Update preview if needed
+    if (index === 0 && updatedImages.length > 0) {
+      setImagePreview(updatedImages[0].url);
+    } else if (updatedImages.length === 0) {
+      setImagePreview(null);
+    }
+
+    return {
+      ...car,
+      images: updatedImages,
+      image_url: updatedImages.length > 0 ? updatedImages[0].url : ''
+    };
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, car: Car) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return car;
+
+    const newImages = [...images];
+    let firstImageUrl = imagePreview;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const objectUrl = URL.createObjectURL(file);
+      
+      newImages.push({
+        url: objectUrl,
+        file: file,
+        type: 'local'
+      });
+      
+      if (!firstImageUrl) {
+        firstImageUrl = objectUrl;
+        setImagePreview(objectUrl);
+      }
+    }
+
+    setImages(newImages);
+
+    return {
+      ...car,
+      images: newImages,
+      image_url: firstImageUrl || ''
+    };
+  };
+
+  const uploadImageFiles = async (carId: string, imagesToUpload: any[]) => {
+    const imagePromises = imagesToUpload.map(async (image, index) => {
+      if (image.type === 'external' || !image.file) {
+        return image; // Skip external images
+      }
+
+      try {
+        const fileName = `${carId}/${Date.now()}-${index}.${image.file.name.split('.').pop()}`;
+        
+        const { data, error } = await supabase.storage
+          .from('vehicles')
+          .upload(fileName, image.file);
+
+        if (error) {
+          console.error("Error uploading image:", error);
+          return image; // Return original on error
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('vehicles')
+          .getPublicUrl(fileName);
+
+        return {
+          url: urlData.publicUrl,
+          type: 'uploaded'
+        };
+      } catch (err) {
+        console.error("Error in upload process:", err);
+        return image; // Return original on error
+      }
+    });
+
+    return Promise.all(imagePromises);
+  };
+
+  return {
+    images,
+    imagePreview,
+    initializeImagesFromCar,
+    handleAddImage,
+    handleImageUpload,
+    handleRemoveImage,
+    uploadImageFiles
+  };
+};
 
 const ImprovedCarFormContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +174,7 @@ const ImprovedCarFormContainer: React.FC = () => {
     handleImageUpload,
     handleRemoveImage,
     uploadImageFiles
-  } = useImprovedImageHandling();
+  } = useSimpleImageHandling();
   
   const [showUrlFetcher, setShowUrlFetcher] = useState(isNewCar);
   const [fetchLoading, setFetchLoading] = useState(false);
@@ -140,12 +282,6 @@ const ImprovedCarFormContainer: React.FC = () => {
     
     fetchCar();
   }, [id, isNewCar, navigate, toast, initializeImagesFromCar]);
-  
-  useEffect(() => {
-    if (car && car.id) {
-      initializeImagesFromCar(car);
-    }
-  }, [car?.id, initializeImagesFromCar]);
   
   const handleImageUrlAdd = (url: string) => {
     if (!car) return;

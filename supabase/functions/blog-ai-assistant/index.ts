@@ -1,11 +1,40 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// Configure CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Mock AI responses based on automotive questions
+function generateAIResponse(question: string): string {
+  question = question.toLowerCase();
+  
+  // Basic automotive question patterns
+  if (question.includes('какой расход') || question.includes('экономичный автомобиль')) {
+    return 'Самыми экономичными автомобилями считаются гибриды и электромобили. Из бензиновых автомобилей, малолитражки с двигателями 1.0-1.6л обычно имеют расход 5-7 литров на 100 км.';
+  }
+  
+  if (question.includes('лучший внедорожник') || question.includes('какой внедорожник')) {
+    return 'Среди лучших внедорожников можно выделить Toyota Land Cruiser и Lexus LX для премиум-сегмента, а также Mitsubishi Pajero Sport и Kia Mohave в среднем ценовом сегменте. Выбор зависит от ваших конкретных требований и бюджета.';
+  }
+  
+  if (question.includes('электромобиль') || question.includes('электрокар')) {
+    return 'Электромобили становятся все более популярными. Лидерами рынка являются Tesla Model 3, Nissan Leaf и Volkswagen ID.4. Основные преимущества: экологичность, низкие расходы на обслуживание и топливо. Недостатки: высокая стоимость, ограниченный запас хода и время зарядки.';
+  }
+  
+  if (question.includes('когда менять масло') || question.includes('замена масла')) {
+    return 'Обычно моторное масло рекомендуется менять каждые 10,000-15,000 км пробега или раз в год, в зависимости от того, что наступит раньше. Однако точный интервал зависит от марки и модели автомобиля, условий эксплуатации и типа используемого масла. Рекомендуем обратиться к руководству по эксплуатации вашего автомобиля.';
+  }
+  
+  if (question.includes('зимняя резина') || question.includes('когда менять шины')) {
+    return 'Зимнюю резину рекомендуется устанавливать, когда среднесуточная температура опускается ниже +7°C. В большинстве регионов России это примерно октябрь-ноябрь. На летнюю резину стоит переходить, когда температура стабильно держится выше +7°C, обычно в апреле-мае.';
+  }
+  
+  // Default response for questions not matching patterns
+  return 'В качестве ИИ-ассистента по автомобильной тематике, я могу ответить на ваши вопросы о различных марках и моделях автомобилей, их характеристиках, обслуживании, расходе топлива и других аспектах. Пожалуйста, задайте более конкретный вопрос, и я постараюсь на него ответить.';
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -17,60 +46,25 @@ serve(async (req) => {
     const { question } = await req.json();
     
     if (!question || typeof question !== 'string') {
-      throw new Error('Question is required');
+      return new Response(JSON.stringify({ error: 'Требуется текст вопроса' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
-
-    // Use car knowledge to answer the question
-    // Simple ruleset for demonstrative purposes
-    let answer = '';
-    const lowerQuestion = question.toLowerCase();
     
-    if (lowerQuestion.includes('страховк')) {
-      answer = 'Мы предлагаем различные варианты страхования для вашего автомобиля. У нас есть ОСАГО, КАСКО и дополнительные программы защиты. Для получения точной информации и расчета стоимости, пожалуйста, свяжитесь с нашими менеджерами или посетите наш автосалон.';
-    } else if (lowerQuestion.includes('кредит') || lowerQuestion.includes('рассрочк')) {
-      answer = 'В нашем автосалоне вы можете приобрести автомобиль в кредит или рассрочку. Мы сотрудничаем с ведущими банками и предлагаем выгодные условия финансирования. Процентные ставки начинаются от 4.9% годовых, а срок кредита может достигать 7 лет. Для оформления требуется минимальный пакет документов.';
-    } else if (lowerQuestion.includes('гарант') || lowerQuestion.includes('сервис')) {
-      answer = 'Все автомобили в нашем салоне имеют гарантию производителя. Кроме того, мы предлагаем расширенные программы гарантийного обслуживания. Наш сервисный центр оборудован современной техникой и укомплектован опытными специалистами, которые проведут техническое обслуживание вашего автомобиля на высшем уровне.';
-    } else if (lowerQuestion.includes('тест-драйв') || lowerQuestion.includes('тест драйв')) {
-      answer = 'Вы можете записаться на тест-драйв любого интересующего вас автомобиля. Для этого достаточно оставить заявку на нашем сайте или позвонить нам. Тест-драйв проводится в сопровождении нашего специалиста, который расскажет вам обо всех особенностях выбранной модели.';
-    } else if (lowerQuestion.includes('трейд-ин') || lowerQuestion.includes('трейд ин')) {
-      answer = 'Программа Trade-in позволяет вам обменять ваш текущий автомобиль на новый с доплатой. Мы бесплатно оценим ваш автомобиль и предложим выгодные условия обмена. Это удобный способ обновить автомобиль без хлопот по продаже старой машины.';
-    } else if (lowerQuestion.includes('доставк') || lowerQuestion.includes('привоз')) {
-      answer = 'Мы осуществляем доставку автомобилей по всей России. Сроки и стоимость доставки зависят от региона. Также у нас есть услуга персонального заказа автомобиля с нужной вам комплектацией, если такой модели нет в наличии.';
-    } else if (lowerQuestion.includes('комплектаци') || lowerQuestion.includes('опци')) {
-      answer = 'В нашем автосалоне представлены различные комплектации автомобилей: от базовых до максимальных. Вы можете выбрать автомобиль с дополнительными опциями, такими как климат-контроль, кожаный салон, панорамная крыша, системы помощи водителю и многое другое.';
-    } else {
-      // Default response for other questions
-      answer = 'Спасибо за ваш вопрос! Для получения более подробной информации по интересующей вас теме, рекомендуем связаться с нашими менеджерами по телефону или посетить наш автосалон. Мы будем рады помочь вам с выбором автомобиля и ответить на все ваши вопросы.';
-    }
-
-    // Return the answer
-    return new Response(
-      JSON.stringify({ 
-        answer,
-        question
-      }),
-      {
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        },
-        status: 200
-      }
-    );
+    // Generate a response to the automotive question
+    const answer = generateAIResponse(question);
+    
+    return new Response(JSON.stringify({ answer }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
   } catch (error) {
-    console.error("Error in blog-ai-assistant function:", error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || "Произошла ошибка при обработке запроса"
-      }),
-      {
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        },
-        status: 400
-      }
-    );
+    console.error('Error in blog-ai-assistant function:', error);
+    
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
 });

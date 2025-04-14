@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,7 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,43 +26,44 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@/components/ui/alert-dialog';
 import AdminLayout from '@/components/AdminLayout';
 
 interface BlogPost {
   id: string;
   title: string;
-  excerpt: string;
   author: string;
-  published_at: string;
   published: boolean;
+  published_at: string;
+  views: number;
   slug: string;
-  created_at: string;
 }
 
 const AdminBlog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, author, published, published_at, views, slug')
+        .order('published_at', { ascending: false });
       
       if (error) {
         throw error;
       }
       
-      setPosts(data as BlogPost[]);
+      setPosts(data || []);
+      setFilteredPosts(data || []);
     } catch (err) {
       console.error('Error fetching blog posts:', err);
       setError('Не удалось загрузить публикации блога');
@@ -78,12 +81,32 @@ const AdminBlog = () => {
     fetchPosts();
   }, []);
 
-  const handleOpenDeleteDialog = (id: string) => {
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredPosts(posts);
+    } else {
+      const filtered = posts.filter(post =>
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.author && post.author.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredPosts(filtered);
+    }
+  }, [searchTerm, posts]);
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/blog/edit/${id}`);
+  };
+
+  const handleView = (slug: string) => {
+    window.open(`/blog/${slug}`, '_blank');
+  };
+
+  const handleDelete = (id: string) => {
     setPostToDelete(id);
     setDeleteDialogOpen(true);
   };
 
-  const handleDeletePost = async () => {
+  const confirmDelete = async () => {
     if (!postToDelete) return;
     
     try {
@@ -98,7 +121,7 @@ const AdminBlog = () => {
       
       setPosts(posts.filter(post => post.id !== postToDelete));
       toast({
-        title: 'Пост удален',
+        title: 'Успешно!',
         description: 'Публикация успешно удалена'
       });
     } catch (err) {
@@ -114,127 +137,93 @@ const AdminBlog = () => {
     }
   };
 
-  const handleTogglePublished = async (post: BlogPost) => {
-    try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .update({ published: !post.published })
-        .eq('id', post.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      setPosts(posts.map(p => 
-        p.id === post.id ? { ...p, published: !p.published } : p
-      ));
-      
-      toast({
-        title: post.published ? 'Публикация скрыта' : 'Публикация опубликована',
-        description: post.published 
-          ? 'Публикация больше не видна посетителям' 
-          : 'Публикация теперь видна посетителям'
-      });
-    } catch (err) {
-      console.error('Error updating blog post:', err);
-      toast({
-        variant: 'destructive',
-        title: 'Ошибка',
-        description: 'Не удалось изменить статус публикации'
-      });
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd MMM yyyy', { locale: ru });
-  };
-
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Управление блогом</h1>
-          
           <Button onClick={() => navigate('/admin/blog/new')}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Добавить публикацию
+            <Plus className="mr-2 h-4 w-4" />
+            Новая публикация
           </Button>
         </div>
         
+        <div className="flex items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Поиск публикаций..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+        
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>
         ) : error ? (
-          <div className="p-6 text-center">
+          <div className="text-center py-8">
             <p className="text-red-500 mb-4">{error}</p>
             <Button onClick={fetchPosts}>Попробовать снова</Button>
           </div>
-        ) : posts.length === 0 ? (
-          <div className="p-12 text-center border rounded-lg">
-            <h3 className="text-lg font-medium mb-2">Нет публикаций</h3>
-            <p className="text-gray-500 mb-6">Создайте первую публикацию в блоге</p>
-            <Button onClick={() => navigate('/admin/blog/new')}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Добавить публикацию
-            </Button>
-          </div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
+        ) : filteredPosts.length > 0 ? (
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Название</TableHead>
+                  <TableHead>Заголовок</TableHead>
                   <TableHead>Автор</TableHead>
-                  <TableHead>Дата создания</TableHead>
                   <TableHead>Статус</TableHead>
-                  <TableHead>Действия</TableHead>
+                  <TableHead>Дата публикации</TableHead>
+                  <TableHead>Просмотры</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {posts.map(post => (
+                {filteredPosts.map((post) => (
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
-                    <TableCell>{post.author || 'Не указан'}</TableCell>
-                    <TableCell>{formatDate(post.created_at)}</TableCell>
+                    <TableCell>{post.author || '—'}</TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        post.published 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        post.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
                         {post.published ? 'Опубликовано' : 'Черновик'}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
+                      {post.published_at
+                        ? format(new Date(post.published_at), 'dd MMM yyyy', { locale: ru })
+                        : '—'}
+                    </TableCell>
+                    <TableCell>{post.views || 0}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
                           size="icon"
-                          onClick={() => navigate(`/admin/blog/edit/${post.id}`)}
+                          onClick={() => handleView(post.slug)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleEdit(post.id)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="icon"
-                          onClick={() => handleTogglePublished(post)}
-                        >
-                          {post.published ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                        
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleOpenDeleteDialog(post.id)}
+                          onClick={() => handleDelete(post.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -245,21 +234,29 @@ const AdminBlog = () => {
               </TableBody>
             </Table>
           </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">Записей не найдено</p>
+            <Button onClick={() => navigate('/admin/blog/new')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Добавить первую публикацию
+            </Button>
+          </div>
         )}
       </div>
       
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+            <AlertDialogTitle>Удаление публикации</AlertDialogTitle>
             <AlertDialogDescription>
-              Это действие нельзя отменить. Публикация будет безвозвратно удалена.
+              Вы уверены, что хотите удалить эту публикацию? Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeletePost}
+            <AlertDialogAction
+              onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600"
             >
               Удалить

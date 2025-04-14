@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -29,6 +30,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEdit from "@/pages/AdminBlogEdit";
+import SpecialOffers from "@/pages/SpecialOffers";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -49,9 +51,13 @@ function App() {
                   <Route path="/car/:id" element={<CarDetails />} /> {/* Added direct car ID route */}
                   <Route path="/cars/type/:bodyType" element={<BodyTypeCatalog />} />
                   <Route path="/cars/brand/:brand" element={<BrandCatalog />} />
-                  <Route path="/special-offers" element={<HotOffers />} />
+                  <Route path="/special-offers" element={<SpecialOffers />} />
                   <Route path="/compare" element={<CompareCars />} />
                   <Route path="/favorites" element={<Favorites />} />
+                  
+                  {/* Blog routes */}
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogPost />} />
                   
                   {/* Admin routes */}
                   <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
@@ -64,12 +70,10 @@ function App() {
                   <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
                   <Route path="/admin/chat" element={<AdminLayout><AdminChat /></AdminLayout>} />
                   
-                  {/* Blog routes */}
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:slug" element={<BlogPost />} />
-                  <Route path="/admin/blog" element={<AdminBlog />} />
-                  <Route path="/admin/blog/new" element={<AdminBlogEdit />} />
-                  <Route path="/admin/blog/edit/:id" element={<AdminBlogEdit />} />
+                  {/* Admin Blog routes */}
+                  <Route path="/admin/blog" element={<AdminLayout><AdminBlog /></AdminLayout>} />
+                  <Route path="/admin/blog/new" element={<AdminLayout><AdminBlogEdit /></AdminLayout>} />
+                  <Route path="/admin/blog/edit/:id" element={<AdminLayout><AdminBlogEdit /></AdminLayout>} />
                   
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />

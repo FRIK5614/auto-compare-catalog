@@ -7,7 +7,8 @@ import {
   LogOut, 
   FileArchive, 
   Settings,
-  MessageCircle
+  MessageCircle,
+  Newspaper
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -30,6 +31,7 @@ export const getMenuItems = (newOrdersCount: number): MenuItem[] => [
   { icon: BarChart3, label: 'Главная', path: '/admin' },
   { icon: CarFront, label: 'Автомобили', path: '/admin/cars' },
   { icon: ShoppingCart, label: 'Заказы', path: '/admin/orders', badge: newOrdersCount },
+  { icon: Newspaper, label: 'Блог', path: '/admin/blog' },
   { icon: FileArchive, label: 'Импорт данных', path: '/admin/import' },
   { icon: MessageCircle, label: 'Чат', path: '/admin/chat' },
   { icon: Settings, label: 'Настройки', path: '/admin/settings' },

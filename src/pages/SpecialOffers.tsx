@@ -39,7 +39,7 @@ const SpecialOffers = () => {
           </div>
         </div>
         
-        <TelegramNews />
+        <TelegramNews channelName="VoeAVTO" limit={9} />
         
         <div className="bg-white py-12">
           <div className="container mx-auto px-4 text-center">

@@ -1,14 +1,82 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Use the provided Telegram bot token
-const TELEGRAM_BOT_TOKEN = "7829427763:AAEbz_SNa835tCr0u4tJ2wcDx68MuIsbftM";
-const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
-
+// Configure CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Telegram bot token from environment variables
+const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN') || '7829427763:AAEbz_SNa835tCr0u4tJ2wcDx68MuIsbftM';
+
+// Function to fetch posts from Telegram channel
+async function fetchTelegramPosts(channelName: string, limit: number = 10, offset: number = 0) {
+  console.log(`Fetching Telegram posts from ${channelName}, limit: ${limit}, offset: ${offset}`);
+  
+  try {
+    const apiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?limit=${limit}&offset=${offset}`;
+    console.log(`Making API request to: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Telegram API error: ${response.status} ${errorText}`);
+      throw new Error(`Failed to fetch from Telegram API: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Received response from Telegram API:`, data);
+    
+    if (!data.ok) {
+      throw new Error(`Telegram API returned error: ${data.description}`);
+    }
+    
+    // Transform Telegram updates into our standard format
+    const posts = data.result
+      .filter(update => update.message && update.message.chat && 
+              (update.message.chat.username === channelName || 
+               update.message.chat.title?.includes(channelName)))
+      .map(update => {
+        const message = update.message;
+        const photos = [];
+        
+        // Extract photos if available
+        if (message.photo && message.photo.length > 0) {
+          // Get the largest photo
+          const largestPhoto = message.photo.reduce((prev, current) => 
+            (prev.file_size > current.file_size) ? prev : current
+          );
+          
+          if (largestPhoto && largestPhoto.file_id) {
+            photos.push(`https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${largestPhoto.file_id}`);
+          }
+        }
+        
+        return {
+          id: update.update_id,
+          text: message.text || message.caption || '',
+          photos: photos,
+          date: new Date(message.date * 1000).toISOString(),
+          link: `https://t.me/${channelName}/${message.message_id}`
+        };
+      });
+    
+    return {
+      success: true,
+      posts,
+    };
+  } catch (error) {
+    console.error('Error fetching Telegram posts:', error);
+    return {
+      success: false,
+      error: error.message,
+      posts: [],
+    };
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -17,124 +85,26 @@ serve(async (req) => {
   }
 
   try {
-    const { channelName, limit, offset } = await req.json();
+    // Get request parameters
+    const { channel = 'VoeAVTO', limit = 10, offset = 0 } = await req.json();
     
-    if (!channelName) {
-      throw new Error("Channel name is required");
-    }
-
-    console.log(`Fetching ${limit || 10} posts from @${channelName} with offset ${offset || 0}`);
+    // Fetch posts from Telegram
+    const result = await fetchTelegramPosts(channel, limit, offset);
     
-    // Get channel info to find its ID
-    const channelInfoResponse = await fetch(`${TELEGRAM_API}/getChat?chat_id=@${channelName}`);
-    
-    if (!channelInfoResponse.ok) {
-      const errorText = await channelInfoResponse.text();
-      console.error("Error getting channel info:", errorText);
-      throw new Error(`Failed to fetch channel info: ${errorText}`);
-    }
-    
-    const channelInfo = await channelInfoResponse.json();
-    
-    if (!channelInfo.ok) {
-      throw new Error(`Telegram API error: ${channelInfo.description}`);
-    }
-    
-    const chatId = channelInfo.result.id;
-    
-    // Get messages from the channel using the chat ID
-    const postsResponse = await fetch(
-      `${TELEGRAM_API}/getUpdates?allowed_updates=["channel_post"]&limit=${limit || 10}&offset=${offset || 0}`
-    );
-    
-    if (!postsResponse.ok) {
-      const errorText = await postsResponse.text();
-      console.error("Error getting posts:", errorText);
-      throw new Error(`Failed to fetch posts: ${errorText}`);
-    }
-    
-    const updatesData = await postsResponse.json();
-    
-    if (!updatesData.ok) {
-      throw new Error(`Telegram API error: ${updatesData.description}`);
-    }
-    
-    // Filter updates that are from our target channel
-    const channelPosts = updatesData.result
-      .filter(update => update.channel_post && update.channel_post.chat.id === chatId)
-      .map(update => {
-        const post = update.channel_post;
-        const photos = post.photo || [];
-        const fileIds = photos.map(photo => photo.file_id);
-        
-        // Get photo URLs if there are any
-        let photoUrls = [];
-        if (fileIds.length > 0) {
-          photoUrls = await Promise.all(
-            fileIds.map(async (fileId) => {
-              const fileResponse = await fetch(`${TELEGRAM_API}/getFile?file_id=${fileId}`);
-              if (fileResponse.ok) {
-                const fileData = await fileResponse.json();
-                if (fileData.ok) {
-                  return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
-                }
-              }
-              return null;
-            })
-          );
-          
-          // Filter out any nulls
-          photoUrls = photoUrls.filter(url => url !== null);
-        }
-        
-        return {
-          id: post.message_id,
-          text: post.text || post.caption || "",
-          photos: photoUrls,
-          date: new Date(post.date * 1000).toISOString(),
-          link: `https://t.me/${channelName}/${post.message_id}`
-        };
-      });
-    
-    // For demonstration, generate sample data if no actual posts are found
-    let posts = channelPosts;
-    if (posts.length === 0) {
-      // Generate sample data
-      posts = Array(5).fill(null).map((_, i) => ({
-        id: i + 1,
-        text: `Пост ${i + 1} из канала ${channelName}: Специальное предложение на автомобили в нашем салоне! Скидки до 15% на все модели 2023 года.`,
-        photos: [`https://picsum.photos/seed/${i + 1}/800/600`],
-        date: new Date(Date.now() - i * 86400000).toISOString(),
-        link: `https://t.me/${channelName}/${i+1}`
-      }));
-    }
-    
-    return new Response(
-      JSON.stringify({ 
-        posts,
-        hasMore: posts.length >= (limit || 10),
-        total: posts.length
-      }),
-      {
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        }
-      }
-    );
+    // Return the result
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: result.success ? 200 : 500,
+    });
   } catch (error) {
-    console.error("Error in telegram-feed function:", error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || "An error occurred while fetching Telegram posts"
-      }),
-      {
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        },
-        status: 400
-      }
-    );
+    console.error('Error in telegram-feed edge function:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message,
+      posts: [],
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
 });
