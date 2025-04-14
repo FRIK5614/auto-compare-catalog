@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +18,6 @@ const ImprovedCarFormContainer = () => {
   const { reloadCars } = useCars();
   const isNewCar = !id || id === 'new';
 
-  // Use the refactored hooks
   const {
     car,
     setCar,
@@ -29,7 +27,7 @@ const ImprovedCarFormContainer = () => {
     setFormLoading,
     loading,
     error,
-  } = useCarFormData(id, isNewCar);
+  } = useCarFormData(id);
 
   const { saveCar, deleteCar, isSaving, isDeleting } = useCarSave();
   
@@ -41,14 +39,12 @@ const ImprovedCarFormContainer = () => {
     handleRemoveImage
   } = useImageHandling(car, setCar);
 
-  // Pre-load cars data if necessary
   useEffect(() => {
     if (loading === false && !car && !isNewCar) {
       reloadCars();
     }
   }, [loading, car, isNewCar, reloadCars]);
 
-  // Адаптеры для функций работы с изображениями
   const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
     handleImageUpload(e, car);
@@ -68,7 +64,6 @@ const ImprovedCarFormContainer = () => {
     setFormLoading(true);
     
     try {
-      // Attempt to save the car
       const result = await saveCar(updatedCar, isNewCar);
       
       if (result.success) {
@@ -79,10 +74,8 @@ const ImprovedCarFormContainer = () => {
             : "Изменения сохранены успешно",
         });
         
-        // Reload cars data to ensure we have the latest
         await reloadCars();
         
-        // Navigate back to the cars list after saving
         if (isNewCar) {
           navigate("/admin/cars");
         }
@@ -117,10 +110,8 @@ const ImprovedCarFormContainer = () => {
           description: "Автомобиль успешно удален из каталога",
         });
         
-        // Reload cars to update the list
         await reloadCars();
         
-        // Navigate back to the cars list
         navigate("/admin/cars");
       } else {
         toast({
@@ -143,12 +134,10 @@ const ImprovedCarFormContainer = () => {
     navigate("/admin/cars");
   };
 
-  // Render loading state
   if (loading || (id && !car && !isNewCar)) {
     return <LoadingState count={3} />;
   }
 
-  // Render error state
   if (error) {
     return (
       <ErrorState 
@@ -158,7 +147,6 @@ const ImprovedCarFormContainer = () => {
     );
   }
 
-  // Render the form once data is available
   return car ? (
     <ImprovedCarForm
       car={car}
