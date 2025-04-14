@@ -39,7 +39,7 @@ export const useImageHandling = () => {
     // Image preview and management
     handleImageUrlChange: previewHook.handleImageUrlChange,
     handleAddImage: previewHook.addImage,
-    handleRemoveImage: (index: number, car: Car) => previewHook.removeImage(index, car, initHook.images),
+    handleRemoveImage: (index: number) => previewHook.removeImage(index, initHook.images),
     
     // Image storage
     uploadImageFiles: (carId: string) => storageHook.uploadImageFiles(carId, initHook.images)

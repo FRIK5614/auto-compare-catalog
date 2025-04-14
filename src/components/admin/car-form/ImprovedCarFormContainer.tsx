@@ -28,7 +28,7 @@ const ImprovedCarFormContainer = () => {
     setFormLoading,
     loading,
     error,
-  } = useCarFormData(id);
+  } = useCarFormData(id, isNewCar);
 
   const { saveCar, deleteCar, isSaving, isDeleting } = useCarSave();
   
