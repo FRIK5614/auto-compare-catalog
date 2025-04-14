@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -236,6 +237,11 @@ const ImprovedCarFormContainer: React.FC = () => {
       if (newCar.images && newCar.images.length > 0) {
         initializeImagesFromCar(newCar);
       }
+      
+      toast({
+        title: "Данные загружены",
+        description: "Данные автомобиля успешно загружены из внешнего источника"
+      });
       
       return true;
     } catch (error) {

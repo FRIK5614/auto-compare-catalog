@@ -81,13 +81,12 @@ const TelegramNews = () => {
   const { toast } = useToast();
   const { posts, loading, error, hasMore, loadMorePosts } = useTelegramFeed({
     postsPerPage: 9,
-    channelName: "VoeAVTO" // This should be your actual Telegram channel name
+    channelName: "VoeAVTO" 
   });
 
-  // Force refresh on component mount to ensure we get the latest data
+  // Force refresh on component mount
   useEffect(() => {
     console.log("TelegramNews component mounted - forcing refresh from server");
-    // Load data from the beginning
     loadMorePosts(0);
   }, [loadMorePosts]);
 
@@ -102,7 +101,13 @@ const TelegramNews = () => {
         <div className="flex justify-center mb-6">
           <Button 
             variant="outline" 
-            onClick={() => loadMorePosts(0)}
+            onClick={() => {
+              loadMorePosts(0);
+              toast({
+                title: "Обновление",
+                description: "Обновляем ленту сообщений из Telegram"
+              });
+            }}
             disabled={loading}
             className="flex items-center gap-2"
           >
