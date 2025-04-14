@@ -10,6 +10,7 @@ import LoadingState from "@/components/LoadingState";
 import ErrorState from "@/components/ErrorState";
 import { useCarSave } from "./hooks/useCarSave";
 import { useCars } from "@/contexts/cars/CarsProvider";
+import { useImageHandling } from "./hooks/image-handling";
 
 const ImprovedCarFormContainer = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,14 @@ const ImprovedCarFormContainer = () => {
   } = useCarFormData(id, isNewCar);
 
   const { saveCar, deleteCar, isSaving, isDeleting } = useCarSave();
+  
+  const {
+    images,
+    imagePreview,
+    handleImageUpload,
+    handleAddImage,
+    handleRemoveImage
+  } = useImageHandling(car, setCar);
 
   // Pre-load cars data if necessary
   useEffect(() => {
@@ -44,9 +53,9 @@ const ImprovedCarFormContainer = () => {
     
     try {
       // Attempt to save the car
-      const success = await saveCar(updatedCar);
+      const result = await saveCar(updatedCar, isNewCar);
       
-      if (success) {
+      if (result.success) {
         toast({
           title: isNewCar ? "Автомобиль добавлен" : "Автомобиль обновлен",
           description: isNewCar
@@ -65,7 +74,7 @@ const ImprovedCarFormContainer = () => {
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: "Не удалось сохранить автомобиль",
+          description: result.message || "Не удалось сохранить автомобиль",
         });
       }
     } catch (error) {
@@ -120,18 +129,15 @@ const ImprovedCarFormContainer = () => {
 
   // Render loading state
   if (loading || (id && !car)) {
-    return <LoadingState type="content" text="Загрузка данных автомобиля..." />;
+    return <LoadingState type="card" text="Загрузка данных автомобиля..." />;
   }
 
   // Render error state
   if (error) {
     return (
-      <ErrorState
-        title="Ошибка загрузки"
-        description="Не удалось загрузить данные автомобиля"
-        action={
-          <Button onClick={() => reloadCars()}>Попробовать снова</Button>
-        }
+      <ErrorState 
+        message="Не удалось загрузить данные автомобиля" 
+        onRetry={() => reloadCars()}
       />
     );
   }
@@ -140,15 +146,19 @@ const ImprovedCarFormContainer = () => {
   return car ? (
     <ImprovedCarForm
       car={car}
-      onChange={setCar}
       onSave={handleSave}
       onDelete={handleDelete}
       onCancel={handleCancel}
       errors={formErrors}
       setErrors={setFormErrors}
-      isLoading={isSaving || formLoading}
+      loading={isSaving || formLoading}
       isDeleting={isDeleting}
       isNewCar={isNewCar}
+      imagePreview={imagePreview}
+      handleImageUpload={handleImageUpload}
+      handleAddImage={handleAddImage}
+      handleRemoveImage={handleRemoveImage}
+      images={images || []}
     />
   ) : null;
 };

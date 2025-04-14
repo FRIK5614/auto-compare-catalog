@@ -1,6 +1,6 @@
 
 -- Create table for chat sessions
-CREATE TABLE public.chat_sessions (
+CREATE TABLE IF NOT EXISTS public.chat_sessions (
   id TEXT PRIMARY KEY,
   user_name TEXT NOT NULL,
   user_contact TEXT,
@@ -13,7 +13,7 @@ CREATE TABLE public.chat_sessions (
 );
 
 -- Create table for chat messages
-CREATE TABLE public.chat_messages (
+CREATE TABLE IF NOT EXISTS public.chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id TEXT NOT NULL REFERENCES public.chat_sessions(id) ON DELETE CASCADE,
   sender_id TEXT NOT NULL,

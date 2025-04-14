@@ -1,7 +1,41 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.6';
-import { ChatMessage, ChatSession } from '../../../src/types/chat';
 import { v4 as uuidv4 } from 'https://deno.land/std@0.119.0/uuid/mod.ts';
+
+// Define chat types locally for the edge function
+interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderType: 'user' | 'admin' | 'system' | 'telegram';
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+  attachments?: ChatAttachment[];
+}
+
+interface ChatAttachment {
+  id: string;
+  type: 'image' | 'file' | 'link';
+  url: string;
+  name: string;
+  size?: number;
+  mimeType?: string;
+}
+
+interface ChatSession {
+  id: string;
+  userId?: string;
+  userName: string;
+  userContact?: string;
+  status: 'active' | 'closed' | 'pending';
+  lastActivity: string;
+  unreadCount: number;
+  messages: ChatMessage[];
+  awaitingPhoneNumber?: boolean;
+  telegramChatId?: string;
+  source?: 'website' | 'telegram';
+}
 
 // Define CORS headers
 const corsHeaders = {

@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Sparkles, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Alert as AlertIcon } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -184,7 +183,7 @@ const AIChat: React.FC = () => {
                   
                   {error && (
                     <Alert variant="destructive" className="my-4">
-                      <AlertIcon className="h-4 w-4 mr-2" />
+                      <AlertTriangle className="h-4 w-4 mr-2" />
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}

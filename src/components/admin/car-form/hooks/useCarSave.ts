@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
   const { reloadCars } = useCars();
   
@@ -107,8 +108,43 @@ export const useCarSave = () => {
     }
   };
   
+  const deleteCar = async (carId: string): Promise<boolean> => {
+    setDeleting(true);
+    try {
+      console.log("Deleting car:", carId);
+      const { error } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('id', carId);
+      
+      if (error) {
+        throw new Error(`Failed to delete car: ${error.message}`);
+      }
+      
+      await reloadCars();
+      toast({
+        title: "Автомобиль удален",
+        description: "Автомобиль успешно удален из каталога"
+      });
+      return true;
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка удаления",
+        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
+      return false;
+    } finally {
+      setDeleting(false);
+    }
+  };
+  
   return {
     saving,
+    isSaving: saving,
+    isDeleting: deleting,
     saveCar,
+    deleteCar
   };
 };

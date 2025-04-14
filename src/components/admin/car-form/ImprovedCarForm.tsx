@@ -3,9 +3,8 @@ import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Car } from "@/types/car";
+import { ArrowLeft, Save, Trash } from "lucide-react";
+import { Car, CarImage } from "@/types/car";
 import { CarFormBasicInfo, CarFormTechnical } from "./index";
 import { CarFormValues, carFormSchema, mapCarToFormValues, mapFormValuesToCar } from "./validation";
 import ImprovedCarFormImage from "./ImprovedCarFormImage";
@@ -15,28 +14,35 @@ interface ImprovedCarFormProps {
   car: Car;
   isNewCar: boolean;
   loading: boolean;
+  isDeleting: boolean;
   onSave: (car: Car) => Promise<void>;
-  formErrors: Record<string, any>;
+  onDelete: () => Promise<void>;
+  onCancel: () => void;
+  errors: Record<string, any>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   imagePreview: string | null;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleAddImage?: (url: string) => void;
   handleRemoveImage?: (index: number) => void;
-  images: any[];
+  images: CarImage[];
 }
 
 const ImprovedCarForm = ({ 
   car, 
   isNewCar, 
   loading, 
+  isDeleting,
   onSave, 
-  formErrors,
+  onDelete,
+  onCancel,
+  errors: formErrors,
+  setErrors: setFormErrors,
   imagePreview,
   handleImageUpload,
   handleAddImage,
   handleRemoveImage,
   images
 }: ImprovedCarFormProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const methods = useForm<CarFormValues>({
@@ -89,7 +95,7 @@ const ImprovedCarForm = ({
             <div className="flex items-center">
               <Button
                 variant="outline"
-                onClick={() => navigate("/admin/cars")}
+                onClick={onCancel}
                 className="mr-2"
                 type="button"
               >
@@ -100,14 +106,27 @@ const ImprovedCarForm = ({
                 {isNewCar ? "Добавление автомобиля" : "Редактирование автомобиля"}
               </h1>
             </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex items-center"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              Сохранить
-            </Button>
+            <div className="flex gap-2">
+              {!isNewCar && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={onDelete}
+                  disabled={isDeleting || loading}
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Удалить
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex items-center"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Сохранить
+              </Button>
+            </div>
           </div>
 
           {/* Отображение ошибок формы */}
