@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Car } from "@/types/car";
-import { Heart, BarChart2, Share2 } from "lucide-react";
+import { Heart, BarChart2, Share2, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -48,30 +48,30 @@ const CarTitle: React.FC<CarTitleProps> = ({
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-auto-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-auto-gray-900 truncate">
               {car.brand} {car.model}
             </h1>
-            <p className="text-auto-gray-600 mt-1 text-sm sm:text-base">
+            <p className="text-auto-gray-600 mt-1 text-sm sm:text-base truncate">
               {car.year} • {car.engine.type} {car.engine.displacement}л • {car.engine.power} л.с. • {car.transmission.type}
             </p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 mt-4 md:mt-0 w-full sm:w-auto overflow-x-auto">
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center"
+              className="flex-shrink-0 flex items-center w-full sm:w-auto justify-center"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4 mr-1" />
-              <span className="sm:inline">Поделиться</span>
+              <span className="truncate">Поделиться</span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               className={cn(
-                "flex items-center",
+                "flex-shrink-0 flex items-center w-full sm:w-auto justify-center",
                 isFavorite && "text-red-500 hover:text-red-700 border-red-500 hover:bg-red-50"
               )}
               onClick={() => toggleFavorite(car.id)}
@@ -80,26 +80,24 @@ const CarTitle: React.FC<CarTitleProps> = ({
                 className="h-4 w-4 mr-1" 
                 fill={isFavorite ? "currentColor" : "none"} 
               />
-              {isFavorite ? 
-                <span className="sm:inline">В избранном</span> : 
-                <span className="sm:inline">В избранное</span>
-              }
+              <span className="truncate">
+                {isFavorite ? "В избранном" : "В избранное"}
+              </span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               className={cn(
-                "flex items-center",
+                "flex-shrink-0 flex items-center w-full sm:w-auto justify-center",
                 isInCompare && "text-auto-blue-600 hover:text-auto-blue-700 border-auto-blue-600 hover:bg-auto-blue-50"
               )}
               onClick={() => toggleCompare(car.id)}
             >
-              <BarChart2 className="h-4 w-4 mr-1" />
-              {isInCompare ? 
-                <span className="sm:inline">В сравнении</span> : 
-                <span className="sm:inline">Сравнить</span>
-              }
+              <Menu className="h-4 w-4 mr-1" />
+              <span className="truncate">
+                {isInCompare ? "В сравнении" : "Сравнить"}
+              </span>
             </Button>
           </div>
         </div>
