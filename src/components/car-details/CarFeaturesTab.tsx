@@ -7,7 +7,8 @@ interface CarFeaturesTabProps {
 }
 
 const CarFeaturesTab: React.FC<CarFeaturesTabProps> = ({ car }) => {
-  if (!car.features || car.features.length === 0) {
+  // Early return if features is not available or empty
+  if (!car.features || !Array.isArray(car.features) || car.features.length === 0) {
     return <p className="text-auto-gray-600">Информация о комплектации отсутствует.</p>;
   }
 
