@@ -55,45 +55,41 @@ export const telegramAPI = {
     }
   },
   
-  // Get Telegram chat sessions - using direct SQL queries for now since we're setting up tables
+  // Get Telegram chat sessions from our new chat_sessions table
   async getTelegramSessions(): Promise<any[]> {
     try {
-      // This will be a placeholder until we create the actual tables
       const { data, error } = await supabase
-        .from('messages')
+        .from('chat_sessions')
         .select('*')
-        .limit(0);
+        .eq('source', 'telegram');
         
       if (error) {
         console.error('Error fetching Telegram sessions:', error);
         return [];
       }
       
-      // For now, return an empty array until the tables are created
-      return [];
+      return data || [];
     } catch (error) {
       console.error('Error fetching Telegram sessions:', error);
       return [];
     }
   },
   
-  // Get messages for a specific chat session
+  // Get messages for a specific chat session from our new chat_messages table
   async getSessionMessages(sessionId: string): Promise<any[]> {
     try {
-      // This will be a placeholder until we create the actual tables
       const { data, error } = await supabase
-        .from('messages')
+        .from('chat_messages')
         .select('*')
-        .eq('user_id', sessionId)
-        .limit(0);
+        .eq('session_id', sessionId)
+        .order('timestamp', { ascending: true });
         
       if (error) {
         console.error('Error fetching session messages:', error);
         return [];
       }
       
-      // For now, return an empty array until the tables are created
-      return [];
+      return data || [];
     } catch (error) {
       console.error('Error fetching session messages:', error);
       return [];

@@ -1,150 +1,64 @@
 
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Car } from '@/types/car';
-import { useCars } from '@/hooks/useCars';
-import { formatVehicleForSupabase } from '@/contexts/cars/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { Car } from "@/types/car";
+import { useCars } from "@/contexts/cars/CarsProvider";
+import { useToast } from "@/hooks/use-toast";
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { saveCar: saveCarToDb, deleteCar: deleteCarFromDb } = useCars();
   const { toast } = useToast();
-  const { reloadCars } = useCars();
-  
-  const saveCar = async (car: Car, isNewCar: boolean): Promise<{success: boolean; message?: string}> => {
+
+  const saveCar = async (car: Car, isNewCar: boolean) => {
     setSaving(true);
-    console.log("Saving car:", isNewCar ? "new car" : "update car", car);
-    console.log("Images to save:", car.images?.length || 0, "images");
-    
     try {
-      // Ensure basic validation is done
-      if (!car.brand || !car.model) {
+      const result = await saveCarToDb(car);
+      if (!result.success) {
         toast({
           variant: "destructive",
-          title: "Ошибка валидации",
-          description: "Пожалуйста, заполните обязательные поля (Марка и Модель)",
+          title: "Ошибка",
+          description: result.message || "Не удалось сохранить автомобиль",
         });
-        return { success: false, message: "Пожалуйста, заполните обязательные поля" };
       }
-      
-      // Ensure images are properly formatted before save
-      if (car.images && car.images.length > 0) {
-        // Make sure the main image URL is in sync with the first image
-        car.image_url = car.images[0].url;
-        
-        // Clean up file properties on images before saving to database
-        car.images = car.images.map(img => ({
-          id: img.id,
-          url: img.url,
-          alt: img.alt || `${car.brand} ${car.model}`
-        }));
-        
-        console.log("Prepared images for saving:", car.images.length, "images", car.images);
-      } else {
-        console.warn("No images to save for this car");
-        // Initialize with empty array if no images
-        car.images = [];
-      }
-      
-      try {
-        // Format vehicle data for Supabase
-        const vehicleData = formatVehicleForSupabase(car);
-        
-        if (isNewCar) {
-          console.log("Adding new car to Supabase directly:", vehicleData);
-          const { data, error } = await supabase
-            .from('vehicles')
-            .insert(vehicleData)
-            .select()
-            .single();
-          
-          if (error) {
-            throw error;
-          }
-          
-          console.log("Successfully added new car:", data);
-          await reloadCars(); // Reload cars to refresh the list
-          toast({
-            title: "Автомобиль добавлен",
-            description: `${car.brand} ${car.model} успешно добавлен`,
-          });
-          return { success: true };
-        } else {
-          console.log("Updating existing car in Supabase directly:", vehicleData);
-          const { data, error } = await supabase
-            .from('vehicles')
-            .update(vehicleData)
-            .eq('id', car.id)
-            .select()
-            .single();
-          
-          if (error) {
-            throw error;
-          }
-          
-          console.log("Successfully updated car:", data);
-          await reloadCars(); // Reload cars to refresh the list
-          toast({
-            title: "Автомобиль обновлен",
-            description: `${car.brand} ${car.model} успешно обновлен`,
-          });
-          return { success: true };
-        }
-      } catch (error) {
-        console.error("Error with Supabase API call:", error);
-        throw error;
-      }
+      return result;
     } catch (error) {
       console.error("Error saving car:", error);
       toast({
         variant: "destructive",
-        title: "Ошибка сохранения",
-        description: `Не удалось сохранить автомобиль: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
+        title: "Ошибка",
+        description: "Произошла ошибка при сохранении",
       });
-      return { success: false, message: error instanceof Error ? error.message : "Неизвестная ошибка" };
+      return { success: false, message: "Произошла ошибка при сохранении" };
     } finally {
       setSaving(false);
     }
   };
-  
-  const deleteCar = async (carId: string): Promise<boolean> => {
+
+  const deleteCar = async (carId: string) => {
     setDeleting(true);
     try {
-      console.log("Deleting car:", carId);
-      const { error } = await supabase
-        .from('vehicles')
-        .delete()
-        .eq('id', carId);
-      
-      if (error) {
-        throw new Error(`Failed to delete car: ${error.message}`);
+      const success = await deleteCarFromDb(carId);
+      if (!success) {
+        toast({
+          variant: "destructive",
+          title: "Ошибка",
+          description: "Не удалось удалить автомобиль",
+        });
       }
-      
-      await reloadCars();
-      toast({
-        title: "Автомобиль удален",
-        description: "Автомобиль успешно удален из каталога"
-      });
-      return true;
+      return success;
     } catch (error) {
       console.error("Error deleting car:", error);
       toast({
         variant: "destructive",
-        title: "Ошибка удаления",
-        description: error instanceof Error ? error.message : "Неизвестная ошибка"
+        title: "Ошибка",
+        description: "Произошла ошибка при удалении",
       });
       return false;
     } finally {
       setDeleting(false);
     }
   };
-  
-  return {
-    saving,
-    isSaving: saving,
-    isDeleting: deleting,
-    saveCar,
-    deleteCar
-  };
+
+  return { saveCar, deleteCar, isSaving: saving, isDeleting: deleting };
 };

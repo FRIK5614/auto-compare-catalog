@@ -57,6 +57,86 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          id: string
+          is_read: boolean
+          sender_id: string
+          sender_name: string
+          sender_type: string
+          session_id: string
+          timestamp: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          id?: string
+          is_read?: boolean
+          sender_id: string
+          sender_name: string
+          sender_type: string
+          session_id: string
+          timestamp?: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+          sender_name?: string
+          sender_type?: string
+          session_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_activity: string
+          source: string | null
+          status: string
+          telegram_chat_id: string | null
+          unread_count: number
+          user_contact: string | null
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          last_activity?: string
+          source?: string | null
+          status?: string
+          telegram_chat_id?: string | null
+          unread_count?: number
+          user_contact?: string | null
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_activity?: string
+          source?: string | null
+          status?: string
+          telegram_chat_id?: string | null
+          unread_count?: number
+          user_contact?: string | null
+          user_name?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           car_id: string

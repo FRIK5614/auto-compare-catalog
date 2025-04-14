@@ -129,7 +129,7 @@ const ImprovedCarFormContainer = () => {
 
   // Render loading state
   if (loading || (id && !car)) {
-    return <LoadingState type="card" text="Загрузка данных автомобиля..." />;
+    return <LoadingState />;
   }
 
   // Render error state
