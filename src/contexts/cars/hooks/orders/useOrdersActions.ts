@@ -24,7 +24,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
     try {
       console.log("Обновление заказов из базы данных...");
       
-      // Use the new orderAPI to load orders
+      // Use the orderAPI.getAllOrders function from the new structure
       const ordersData = await orderAPI.getAllOrders();
       
       console.log("Number of orders returned:", ordersData ? ordersData.length : 0);
@@ -67,7 +67,7 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
     try {
       console.log("Processing order:", orderId, "New status:", status);
       
-      // Update in database using the new orderAPI
+      // Use the orderAPI.updateOrderStatus function from the new structure
       const success = await orderAPI.updateOrderStatus(orderId, status);
       
       if (!success) {
