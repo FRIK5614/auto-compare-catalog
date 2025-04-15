@@ -76,7 +76,8 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (typeof addToCompare === 'function') {
         // Execute the addToCompare function
-        addToCompare(carId);
+        const result = addToCompare(carId);
+        console.log("Add to compare result:", result, "for car ID:", carId, "Current compareCars:", compareCars);
         // Always return true since we don't have a way to determine success/failure
         return true;
       }

@@ -1,125 +1,70 @@
 
-import { Car, Order } from "@/types/car";
-import { supabase } from "@/integrations/supabase/client";
-
-// Function to format vehicle data for Supabase
-export const formatVehicleForSupabase = (car: Car) => {
-  return {
-    id: car.id,
-    brand: car.brand,
-    model: car.model,
-    year: car.year,
-    body_type: car.bodyType,
-    colors: car.colors,
-    price: car.price.base,
-    price_discount: car.price.discount,
-    engine_type: car.engine.type,
-    engine_capacity: car.engine.displacement,
-    engine_power: car.engine.power,
-    engine_torque: car.engine.torque,
-    engine_fuel_type: car.engine.fuelType,
-    transmission_type: car.transmission.type,
-    transmission_gears: car.transmission.gears,
-    drivetrain: car.drivetrain,
-    dimensions: JSON.stringify(car.dimensions),
-    performance: JSON.stringify(car.performance),
-    features: JSON.stringify(car.features),
-    image_url: car.images && car.images.length > 0 ? car.images[0].url : null,
-    description: car.description,
-    is_new: car.isNew,
-    country: car.country,
-    view_count: car.viewCount || 0
-  };
+// Favorites storage
+export const saveFavoritesToLocalStorage = (favorites: string[]) => {
+  try {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  } catch (error) {
+    console.error('Error saving favorites to localStorage:', error);
+  }
 };
 
-// Database-only functions - local storage is completely removed
-export const loadFavoritesFromSupabase = async (): Promise<string[]> => {
+export const loadFavoritesFromLocalStorage = (): string[] => {
   try {
-    console.log('[API] Loading favorites from database');
-    
-    const { data, error } = await supabase
-      .from('favorites')
-      .select('car_id');
-    
-    if (error) {
-      console.error('Error fetching favorites:', error);
+    const favorites = localStorage.getItem('favorites');
+    if (!favorites) {
       return [];
     }
-    
-    if (!data || data.length === 0) {
-      console.log('[API] No favorites found in database');
-      return [];
-    }
-    
-    const favorites = data.map(item => item.car_id);
-    console.log(`[API] Loaded ${favorites.length} favorites from database`);
-    
-    return favorites;
+    return JSON.parse(favorites);
   } catch (error) {
-    console.error("Error loading favorites from database:", error);
+    console.error('Error loading favorites from localStorage:', error);
     return [];
   }
 };
 
-export const saveFavoritesToSupabase = async (favorites: string[]): Promise<boolean> => {
+// Compare storage
+export const saveCompareToLocalStorage = (compareCars: string[]) => {
   try {
-    console.log(`[API] Saving ${favorites.length} favorites to database`);
-    
-    // Clear existing favorites
-    const { error: deleteError } = await supabase
-      .from('favorites')
-      .delete()
-      .eq('user_id', 'anonymous');
-    
-    if (deleteError) {
-      console.error('Error clearing favorites:', deleteError);
-      return false;
-    }
-    
-    // Insert new favorites
-    if (favorites.length > 0) {
-      const favoritesToInsert = favorites.map(car_id => ({
-        car_id,
-        user_id: 'anonymous'
-      }));
-      
-      const { error: insertError } = await supabase
-        .from('favorites')
-        .insert(favoritesToInsert);
-      
-      if (insertError) {
-        console.error('Error inserting favorites:', insertError);
-        return false;
-      }
-    }
-    
-    console.log(`[API] Successfully saved favorites to database`);
-    return true;
+    console.log("Saving compare cars to localStorage:", compareCars);
+    localStorage.setItem('compareCars', JSON.stringify(compareCars));
   } catch (error) {
-    console.error("Error saving favorites to database:", error);
-    return false;
+    console.error('Error saving compare cars to localStorage:', error);
   }
 };
 
-export const loadCompareFromSupabase = async (): Promise<string[]> => {
-  // Since we don't have a compare table in the database yet,
-  // we'll use an empty array for now
-  console.log('[API] Loading comparison list from database not implemented yet');
-  return [];
+export const loadCompareFromLocalStorage = (): string[] => {
+  try {
+    const compareCars = localStorage.getItem('compareCars');
+    console.log("Raw compareCars from localStorage:", compareCars);
+    if (!compareCars) {
+      return [];
+    }
+    const parsed = JSON.parse(compareCars);
+    console.log("Parsed compareCars:", parsed);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error('Error loading compare cars from localStorage:', error);
+    return [];
+  }
 };
 
-export const saveCompareToSupabase = async (compareCars: string[]): Promise<boolean> => {
-  // Since we don't have a compare table in the database yet
-  console.log('[API] Saving comparison list to database not implemented yet');
-  return true;
+// Orders storage
+export const saveOrdersToLocalStorage = (orders: any[]) => {
+  try {
+    localStorage.setItem('pendingOrders', JSON.stringify(orders));
+  } catch (error) {
+    console.error('Error saving pending orders to localStorage:', error);
+  }
 };
 
-// Export old function names for compatibility
-export const loadFavoritesFromLocalStorage = loadFavoritesFromSupabase;
-export const saveFavoritesToLocalStorage = saveFavoritesToSupabase;
-export const loadCompareFromLocalStorage = loadCompareFromSupabase;
-export const saveCompareToLocalStorage = saveCompareToSupabase;
-
-// Add the missing export for loadOrdersFromLocalStorage
-export { loadOrdersFromSupabase as loadOrdersFromLocalStorage } from './hooks/orders/useLocalStorage';
-export { saveOrdersToSupabase as saveOrdersToLocalStorage } from './hooks/orders/useLocalStorage';
+export const loadOrdersFromLocalStorage = (): any[] => {
+  try {
+    const orders = localStorage.getItem('pendingOrders');
+    if (!orders) {
+      return [];
+    }
+    return JSON.parse(orders);
+  } catch (error) {
+    console.error('Error loading pending orders from localStorage:', error);
+    return [];
+  }
+};

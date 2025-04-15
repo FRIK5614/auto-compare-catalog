@@ -12,18 +12,26 @@ export const loadCars = async (): Promise<Car[]> => {
     const { data, error } = await supabase
       .from('vehicles')
       .select('*')
-      .order('id');
+      .order('created_at', { ascending: false });
     
     if (error) {
       console.error("Error loading cars:", error);
       throw error;
     }
     
-    console.log(`Loaded ${data.length} cars from API`);
+    console.log(`Loaded ${data?.length || 0} cars from API`);
+    
+    if (!data || data.length === 0) {
+      console.log("No cars found in database");
+      return [];
+    }
     
     // Transform cars to application format
-    // Limit to maximum 50 cars for better performance
-    const cars = data.slice(0, 50).map(vehicle => transformVehicleFromSupabase(vehicle));
+    const cars = data.map(vehicle => {
+      const car = transformVehicleFromSupabase(vehicle);
+      console.log(`Transformed car: ${car.brand} ${car.model} (ID: ${car.id})`);
+      return car;
+    });
     
     return cars;
   } catch (err) {
@@ -37,11 +45,54 @@ export const loadOrders = async (): Promise<Order[]> => {
   try {
     console.log("Loading orders from API");
     
-    // Use the orderAPI to fetch orders
-    const orders = await orderAPI.getAllOrders();
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        vehicles:car_id (
+          id,
+          brand,
+          model,
+          image_url
+        )
+      `)
+      .order('created_at', { ascending: false });
     
-    console.log(`Loaded ${orders.length} orders from API`);
-    return orders;
+    if (error) {
+      console.error("Error loading orders:", error);
+      throw error;
+    }
+    
+    console.log(`Loaded ${data?.length || 0} orders from database`);
+    
+    if (!data || data.length === 0) {
+      console.log("No orders found in database");
+      return [];
+    }
+    
+    // Transform data to match Order type
+    const transformedOrders: Order[] = data.map(order => {
+      return {
+        id: order.id,
+        carId: order.car_id,
+        customerName: order.customer_name,
+        customerPhone: order.customer_phone,
+        customerEmail: order.customer_email,
+        message: order.message || '',
+        status: (order.status || 'new') as Order['status'],
+        createdAt: order.created_at,
+        updatedAt: order.updated_at || order.created_at,
+        car: order.vehicles ? {
+          id: order.vehicles.id,
+          brand: order.vehicles.brand,
+          model: order.vehicles.model,
+          image_url: order.vehicles.image_url
+        } : undefined
+      };
+    });
+    
+    console.log("Transformed orders:", transformedOrders);
+    return transformedOrders;
   } catch (err) {
     console.error("Failed to load orders:", err);
     return []; // Return empty array on error to prevent application crash

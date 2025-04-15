@@ -10,13 +10,17 @@ export const useCompareActions = (state: CompareState): CompareActions => {
 
   // Add car to comparison
   const addToCompare = useCallback((carId: string): boolean => {
+    console.log("Adding to compare:", carId, "Current state:", compareCars);
+    
     if (compareCars.includes(carId)) {
       // Already in comparison list
+      console.log("Car already in compare list");
       return false;
     }
     
     if (compareCars.length >= 3) {
       // Comparison limit reached
+      console.log("Compare limit reached");
       toast({
         variant: "destructive",
         title: "Ограничение сравнения",
@@ -27,6 +31,7 @@ export const useCompareActions = (state: CompareState): CompareActions => {
     
     // Add to comparison list
     const newCompareCars = [...compareCars, carId];
+    console.log("New compare list:", newCompareCars);
     setCompareCars(newCompareCars);
     saveCompareToLocalStorage(newCompareCars);
     
@@ -40,7 +45,10 @@ export const useCompareActions = (state: CompareState): CompareActions => {
 
   // Remove car from comparison
   const removeFromCompare = useCallback((carId: string): boolean => {
+    console.log("Removing from compare:", carId, "Current state:", compareCars);
+    
     const newCompareCars = compareCars.filter(id => id !== carId);
+    console.log("New compare list after removal:", newCompareCars);
     setCompareCars(newCompareCars);
     saveCompareToLocalStorage(newCompareCars);
     
@@ -54,6 +62,8 @@ export const useCompareActions = (state: CompareState): CompareActions => {
 
   // Clear all cars from comparison
   const clearCompare = useCallback((): boolean => {
+    console.log("Clearing compare list");
+    
     setCompareCars([]);
     saveCompareToLocalStorage([]);
     

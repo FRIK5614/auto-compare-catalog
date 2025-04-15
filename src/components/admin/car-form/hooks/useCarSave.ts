@@ -17,8 +17,6 @@ export const useCarSave = () => {
     console.log(`Saving car with ${isNewCar ? 'CREATE' : 'UPDATE'} operation:`, car);
     
     try {
-      let result;
-      
       // Make sure we're working with a proper Car object
       const carToSave: Car = {
         ...car,
@@ -30,7 +28,7 @@ export const useCarSave = () => {
       if (carToSave.images && carToSave.images.length > 0) {
         // Ensure all images have the correct format
         carToSave.images = carToSave.images.map(img => ({
-          id: img.id,
+          id: img.id || crypto.randomUUID(),
           url: typeof img.url === 'string' ? img.url : '',
           alt: img.alt || ''
         }));
@@ -38,25 +36,34 @@ export const useCarSave = () => {
       
       // Directly use Supabase for more reliable results
       const vehicle = transformVehicleForSupabase(carToSave);
+      console.log("Transformed vehicle for Supabase:", vehicle);
+      
+      let result;
       
       if (isNewCar) {
-        console.log("Directly inserting new car with:", vehicle);
+        console.log("Directly inserting new car with ID:", vehicle.id);
         const { data, error } = await supabase
           .from('vehicles')
-          .insert(vehicle)
-          .select();
+          .insert(vehicle);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase insert error:", error);
+          throw error;
+        }
+        console.log("Insert result:", data);
         result = carToSave;
       } else {
-        console.log("Directly updating car with:", vehicle);
+        console.log("Directly updating car with ID:", vehicle.id);
         const { data, error } = await supabase
           .from('vehicles')
           .update(vehicle)
-          .eq('id', carToSave.id)
-          .select();
+          .eq('id', carToSave.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase update error:", error);
+          throw error;
+        }
+        console.log("Update result:", data);
         result = carToSave;
       }
       
@@ -111,7 +118,10 @@ export const useCarSave = () => {
         .delete()
         .eq('id', carId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting car from Supabase:", error);
+        throw error;
+      }
       
       // Force reload cars immediately
       await reloadCars();

@@ -1,33 +1,25 @@
 
 import { useState, useEffect } from "react";
-import { loadCompareFromSupabase } from "../../utils";
+import { CompareState } from "./types";
+import { loadCompareFromLocalStorage } from "../../utils";
 
-export const useCompareState = () => {
+export const useCompareState = (): CompareState => {
   const [compareCars, setCompareCars] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load initial compare list
+  // Load compare cars from localStorage on initial mount
   useEffect(() => {
-    const loadInitialCompare = async () => {
-      try {
-        setLoading(true);
-        const initialCompare = await loadCompareFromSupabase();
-        setCompareCars(initialCompare);
-      } catch (error) {
-        console.error("Error loading comparison list:", error);
-        setCompareCars([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialCompare();
+    const storedCompareCars = loadCompareFromLocalStorage();
+    console.log("Loaded compare cars from localStorage:", storedCompareCars);
+    setCompareCars(storedCompareCars);
+    setLoading(false);
   }, []);
 
   return {
     compareCars,
     setCompareCars,
     loading,
-    setLoading
+    setLoading,
+    isOnline: true // Default to true for compare functionality
   };
 };

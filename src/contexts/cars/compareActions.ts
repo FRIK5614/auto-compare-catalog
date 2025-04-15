@@ -9,9 +9,12 @@ export const addToCompare = (
   onSuccess: (newCompareCars: string[]) => void,
   onMaxLimitReached: () => void
 ) => {
+  console.log("Adding to compare:", carId, "Current:", compareCars);
+  
   if (!compareCars.includes(carId)) {
     if (compareCars.length < 3) {
       const newCompareCars = [...compareCars, carId];
+      console.log("New compare cars list:", newCompareCars);
       saveCompareToLocalStorage(newCompareCars);
       onSuccess(newCompareCars);
       
@@ -38,7 +41,10 @@ export const removeFromCompare = (
   compareCars: string[],
   onSuccess: (newCompareCars: string[]) => void
 ) => {
+  console.log("Removing from compare:", carId, "Current:", compareCars);
+  
   const newCompareCars = compareCars.filter(id => id !== carId);
+  console.log("New compare cars list after removal:", newCompareCars);
   saveCompareToLocalStorage(newCompareCars);
   onSuccess(newCompareCars);
   
@@ -52,6 +58,8 @@ export const removeFromCompare = (
 export const clearCompare = (
   onSuccess: (newCompareCars: string[]) => void
 ) => {
+  console.log("Clearing compare list");
+  
   const emptyCompare: string[] = [];
   saveCompareToLocalStorage(emptyCompare);
   onSuccess(emptyCompare);
