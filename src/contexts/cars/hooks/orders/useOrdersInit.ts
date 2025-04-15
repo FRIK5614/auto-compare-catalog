@@ -124,8 +124,7 @@ export const useOrdersInit = (state: OrdersState) => {
             id,
             brand,
             model,
-            image_url,
-            images
+            image_url
           )
         `)
         .order('created_at', { ascending: false });
@@ -169,8 +168,7 @@ export const useOrdersInit = (state: OrdersState) => {
               id: order.vehicles.id,
               brand: order.vehicles.brand || 'Unknown',
               model: order.vehicles.model || 'Unknown',
-              image_url: order.vehicles.image_url,
-              images: order.vehicles.images
+              image_url: order.vehicles.image_url
             } : undefined
           });
         }
