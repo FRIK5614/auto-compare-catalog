@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,14 +29,14 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   // Safely convert input to an array, ensuring we always have at least one image
   const displayImages: CarImage[] = images && Array.isArray(images) && images.length > 0 
     ? images
-        .filter(img => img && (img.url || img.id)) // Filter out invalid images
+        .filter(img => img && (img.url || img.id))
         .map(img => ({
           ...img,
           id: img.id || `img-${Math.random().toString(36).substr(2, 9)}`,
-          url: img.url || "/placeholder.svg", // Ensure URL is never undefined
+          url: img.url || "/placeholder.svg",
           alt: img.alt || "Изображение автомобиля"
         }))
-    : [defaultImage]; // Fallback to default image
+    : [defaultImage];
 
   // Handle thumbnail click
   const handleThumbnailClick = (index: number) => {
@@ -47,15 +46,14 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative">
-        {/* "Новинка" badge */}
         {isNew && (
           <Badge className="absolute top-4 left-4 z-10 bg-auto-blue-600">Новинка</Badge>
         )}
 
         <Carousel 
           className="w-full"
-          onSelect={(index) => setActiveImageIndex(index)}
-          defaultIndex={activeImageIndex}
+          onSelect={(index: number) => setActiveImageIndex(index)}
+          selectedIndex={activeImageIndex}
         >
           <CarouselContent>
             {displayImages.map((image, index) => (
@@ -67,7 +65,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                     className="w-full h-full object-cover"
                     draggable="false"
                     onError={(e) => {
-                      // Fallback to placeholder if image fails to load
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
@@ -76,7 +73,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
             ))}
           </CarouselContent>
           
-          {/* Custom carousel navigation buttons with semi-transparent background */}
           {displayImages.length > 1 && (
             <>
               <div className="absolute inset-y-0 left-0 flex items-center">
@@ -98,7 +94,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
             </>
           )}
           
-          {/* Image pagination indicators */}
           {displayImages.length > 1 && (
             <div className="absolute bottom-2 left-0 right-0 flex justify-center">
               <div className="flex space-x-1 bg-black/20 rounded-full px-2 py-1">
@@ -119,7 +114,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
         </Carousel>
       </div>
 
-      {/* Thumbnails - shown only if more than one image */}
       {displayImages.length > 1 && (
         <div className="p-4 overflow-x-auto">
           <div className="flex space-x-2">
@@ -139,7 +133,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                   className="w-full h-full object-cover rounded-md"
                   draggable="false"
                   onError={(e) => {
-                    // Fallback to placeholder if image fails to load
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
