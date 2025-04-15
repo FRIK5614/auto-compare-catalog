@@ -95,7 +95,7 @@ const CarFormContainer: React.FC = () => {
   const handleImageUploadWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!car) return;
     console.log("Uploading images:", e.target.files?.length || 0, "files");
-    handleImageUpload(e, car);
+    handleImageUpload(e);
   };
   
   const handleAddImageWrapper = (url: string) => {
