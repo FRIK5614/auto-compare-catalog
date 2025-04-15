@@ -7,7 +7,7 @@ import { orderAPI, getAllOrders, getOrderById, submitPurchaseRequest, updateOrde
 export { orderAPI };
 
 // Re-export individual functions for backward compatibility
-export { fetchOrders, updateOrderStatus, submitPurchaseRequest };
+export { getAllOrders, getOrderById, submitPurchaseRequest, updateOrderStatus };
 
 // Alias for getAllOrders with original name
 export const fetchOrders = getAllOrders;
