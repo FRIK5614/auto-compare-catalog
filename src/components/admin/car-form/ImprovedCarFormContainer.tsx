@@ -69,7 +69,11 @@ const ImprovedCarFormContainer = () => {
   const handleRetry = () => {
     if (id) {
       loadCarDirectlyFromSupabase(id)
-        .catch(() => reloadCars());
+        .catch(() => {
+          // Fix: Explicitly return void to match the expected return type
+          reloadCars();
+          return;
+        });
     }
   };
 

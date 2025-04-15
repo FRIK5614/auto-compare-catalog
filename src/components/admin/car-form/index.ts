@@ -13,6 +13,9 @@ import ImprovedCarFormContainer from './ImprovedCarFormContainer';
 import ImprovedCarFormImage from './ImprovedCarFormImage';
 import CarFormLoadingState from './CarFormLoadingState';
 
+// Image form components
+import { ImageFormTabs, UploadTab, UrlTab, GalleryTab } from './image-form';
+
 // Hooks
 import { useCarFormData } from './hooks/useCarFormData';
 import { useImageHandling } from './hooks/image-handling';
@@ -39,6 +42,12 @@ export {
   ImprovedCarFormContainer,
   ImprovedCarFormImage,
   CarFormLoadingState,
+  
+  // Image form components
+  ImageFormTabs,
+  UploadTab,
+  UrlTab,
+  GalleryTab,
   
   // Hooks
   useCarFormData,
