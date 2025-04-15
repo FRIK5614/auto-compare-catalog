@@ -8,15 +8,24 @@ import CarForm from './CarForm';
 import CarFormContainer from './CarFormContainer';
 import CarUrlFetcher from './CarUrlFetcher';
 import CarDeleteDialog from './CarDeleteDialog';
+import ImprovedCarForm from './ImprovedCarForm';
+import ImprovedCarFormContainer from './ImprovedCarFormContainer';
+import ImprovedCarFormImage from './ImprovedCarFormImage';
+import CarFormLoadingState from './CarFormLoadingState';
 
-// New hooks and utilities
+// Hooks
 import { useCarFormData } from './hooks/useCarFormData';
 import { useImageHandling } from './hooks/image-handling';
 import { useCarSave } from './hooks/useCarSave';
 import { useExternalCarData } from './hooks/useExternalCarData';
+import { useCarFormLoader } from './hooks/useCarFormLoader';
+import { useCarFormHandlers } from './hooks/useCarFormHandlers';
+
+// Utilities
 import { createCarFromImportData } from './utils/carUrlFetcher';
 
 export {
+  // Components
   CarFormBasicInfo,
   CarFormImage,
   CarFormTechnical,
@@ -26,10 +35,19 @@ export {
   CarFormContainer,
   CarUrlFetcher,
   CarDeleteDialog,
-  // Export hooks and utilities
+  ImprovedCarForm,
+  ImprovedCarFormContainer,
+  ImprovedCarFormImage,
+  CarFormLoadingState,
+  
+  // Hooks
   useCarFormData,
   useImageHandling,
   useCarSave,
   useExternalCarData,
+  useCarFormLoader,
+  useCarFormHandlers,
+  
+  // Utilities
   createCarFromImportData
 };
