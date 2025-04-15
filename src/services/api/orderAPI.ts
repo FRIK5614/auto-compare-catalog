@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Order } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,17 +31,9 @@ export const orderAPI = {
         throw new Error(error.message);
       }
       
-      if (!orders || orders.length === 0) {
-        console.log('No orders found');
-        return [];
-      }
-      
-      console.log(`Retrieved ${orders.length} orders`);
-      
       // Transform data to match Order type
-      const transformedOrders: Order[] = orders.map(order => {
-        return transformOrder(order);
-      });
+      const transformedOrders: Order[] = orders?.map(order => transformOrder(order)) || [];
+      console.log(`Retrieved ${transformedOrders.length} orders:`, transformedOrders);
       
       return transformedOrders;
     } catch (error) {

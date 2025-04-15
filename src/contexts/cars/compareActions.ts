@@ -50,10 +50,11 @@ export const removeFromCompare = (
 
 // Clear all cars from comparison
 export const clearCompare = (
-  onSuccess: () => void
+  onSuccess: (newCompareCars: string[]) => void
 ) => {
-  saveCompareToLocalStorage([]);
-  onSuccess();
+  const emptyCompare: string[] = [];
+  saveCompareToLocalStorage(emptyCompare);
+  onSuccess(emptyCompare);
   
   return {
     title: "Список сравнения очищен",

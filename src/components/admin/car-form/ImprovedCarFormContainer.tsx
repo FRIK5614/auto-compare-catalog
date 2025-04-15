@@ -1,5 +1,4 @@
-
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import ImprovedCarForm from "./ImprovedCarForm";
@@ -16,8 +15,9 @@ const ImprovedCarFormContainer = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { reloadCars } = useCars();
+  const { reloadCars, getCarById } = useCars();
   const isNewCar = !id || id === 'new';
+  const [loadAttempted, setLoadAttempted] = useState(false);
 
   const {
     car,
@@ -42,6 +42,32 @@ const ImprovedCarFormContainer = () => {
     uploadImageFiles
   } = useImageHandling();
 
+  // Load car data directly if needed
+  useEffect(() => {
+    if (!isNewCar && !car && !loading && !loadAttempted) {
+      setLoadAttempted(true);
+      console.log("Directly loading car data for ID:", id);
+      
+      // Force reload cars to ensure we have the latest data
+      reloadCars().then(() => {
+        // After reloading, try to get the car again
+        const loadedCar = getCarById(id || '');
+        if (loadedCar) {
+          console.log("Found car after reload:", loadedCar);
+          setCar(loadedCar);
+          initializeImagesFromCar(loadedCar);
+        } else {
+          console.error("Car still not found after reload");
+          toast({
+            variant: "destructive",
+            title: "Ошибка",
+            description: "Автомобиль не найден"
+          });
+        }
+      });
+    }
+  }, [id, car, loading, isNewCar, reloadCars, getCarById, setCar, initializeImagesFromCar, loadAttempted, toast]);
+
   // Listen for reload-cars event
   useEffect(() => {
     const handleReloadCars = () => {
@@ -55,13 +81,6 @@ const ImprovedCarFormContainer = () => {
       window.removeEventListener('reload-cars', handleReloadCars);
     };
   }, [reloadCars]);
-
-  useEffect(() => {
-    if (loading === false && !car && !isNewCar) {
-      console.log("Car not found, reloading cars");
-      reloadCars();
-    }
-  }, [loading, car, isNewCar, reloadCars]);
 
   useEffect(() => {
     if (car && car.id) {
@@ -199,7 +218,7 @@ const ImprovedCarFormContainer = () => {
     navigate("/admin/cars");
   };
 
-  if (loading || (id && !car && !isNewCar)) {
+  if (loading || (id && !car && !isNewCar && !loadAttempted)) {
     return <LoadingState count={3} />;
   }
 
@@ -207,7 +226,10 @@ const ImprovedCarFormContainer = () => {
     return (
       <ErrorState 
         message="Не удалось загрузить данные автомобиля" 
-        onRetry={() => reloadCars()}
+        onRetry={() => {
+          setLoadAttempted(false);
+          reloadCars();
+        }}
       />
     );
   }
@@ -216,8 +238,8 @@ const ImprovedCarFormContainer = () => {
     <ImprovedCarForm
       car={car}
       onSave={handleSave}
-      onDelete={handleDelete}
-      onCancel={handleCancel}
+      onDelete={deleteCar}
+      onCancel={() => navigate("/admin/cars")}
       errors={formErrors}
       setErrors={setFormErrors}
       loading={isSaving || formLoading}

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { CarImage, Car } from '@/types/car';
 import { v4 as uuidv4 } from 'uuid';
@@ -96,7 +95,7 @@ export const useImageHandling = () => {
         if (!image.file) return image; // Skip if no file
         
         try {
-          // Make sure to pass carId to uploadCarImage
+          // Make sure to pass both parameters to uploadCarImage
           const url = await uploadCarImage(image.file, carId);
           // Return a new image object with the uploaded URL
           return {
@@ -113,20 +112,27 @@ export const useImageHandling = () => {
       const uploadedImages = await Promise.all(uploadPromises);
       
       // Replace the old images with the uploaded ones
-      const updatedImages = images.map((img, index) => {
+      const updatedImages = images.map((img) => {
         const uploadedImage = uploadedImages.find(u => u.id === img.id);
         return uploadedImage || img;
       });
       
-      // Use type assertion to satisfy TypeScript
-      setImages(updatedImages as CarImage[]);
+      // Ensure all images have the correct type
+      const typedImages: CarImage[] = updatedImages.map(img => ({
+        id: img.id,
+        url: typeof img.url === 'string' ? img.url : '',
+        alt: img.alt || '',
+        file: img.file
+      }));
+      
+      setImages(typedImages);
       
       // Update preview if needed
-      if (updatedImages.length > 0 && updatedImages[0].url !== imagePreview) {
-        setImagePreview(updatedImages[0].url as string);
+      if (typedImages.length > 0 && typedImages[0].url !== imagePreview) {
+        setImagePreview(typedImages[0].url);
       }
       
-      return updatedImages as CarImage[];
+      return typedImages;
     } catch (error) {
       console.error("Error uploading images:", error);
       return images; // Return original images on error

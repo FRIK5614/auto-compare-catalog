@@ -3,11 +3,13 @@ import { useState } from "react";
 import { Car } from "@/types/car";
 import { useCars } from "@/contexts/cars/CarsProvider";
 import { useToast } from "@/hooks/use-toast";
+import { transformVehicleForSupabase } from "@/services/api/transformers";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCarSave = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const { updateCar, addCar, deleteCar: deleteCarFromDb } = useCars();
+  const { updateCar, addCar, deleteCar: deleteCarFromDb, reloadCars } = useCars();
   const { toast } = useToast();
 
   const saveCar = async (car: Car, isNewCar: boolean) => {
@@ -23,15 +25,39 @@ export const useCarSave = () => {
         // Make sure imageUrl is consistent
         image_url: car.image_url || (car.images && car.images.length > 0 ? car.images[0].url : ''),
       };
+
+      // Make sure images is properly formatted
+      if (carToSave.images && carToSave.images.length > 0) {
+        // Ensure all images have the correct format
+        carToSave.images = carToSave.images.map(img => ({
+          id: img.id,
+          url: typeof img.url === 'string' ? img.url : '',
+          alt: img.alt || ''
+        }));
+      }
+      
+      // Directly use Supabase for more reliable results
+      const vehicle = transformVehicleForSupabase(carToSave);
       
       if (isNewCar) {
-        console.log("Calling addCar with:", carToSave);
-        result = await addCar(carToSave);
-        console.log("Result from addCar:", result);
+        console.log("Directly inserting new car with:", vehicle);
+        const { data, error } = await supabase
+          .from('vehicles')
+          .insert(vehicle)
+          .select();
+          
+        if (error) throw error;
+        result = carToSave;
       } else {
-        console.log("Calling updateCar with:", carToSave);
-        result = await updateCar(carToSave);
-        console.log("Result from updateCar:", result);
+        console.log("Directly updating car with:", vehicle);
+        const { data, error } = await supabase
+          .from('vehicles')
+          .update(vehicle)
+          .eq('id', carToSave.id)
+          .select();
+          
+        if (error) throw error;
+        result = carToSave;
       }
       
       if (!result) {
@@ -44,27 +70,18 @@ export const useCarSave = () => {
         return { success: false, message: "Не удалось сохранить автомобиль - пустой результат операции" };
       }
       
-      if (typeof result === 'object' && !result.success && result.message) {
-        console.error("Error from car save operation:", result.message);
-        toast({
-          variant: "destructive",
-          title: "Ошибка",
-          description: result.message || "Не удалось сохранить автомобиль",
-        });
-        return { success: false, message: result.message || "Не удалось сохранить автомобиль" };
-      }
+      // Force reload cars immediately
+      await reloadCars();
       
-      // Force reloadCars for immediate updates in the catalog
-      setTimeout(() => {
-        try {
-          if (typeof window !== 'undefined') {
-            console.log("Triggering cars reload after save");
-            window.dispatchEvent(new CustomEvent('reload-cars'));
-          }
-        } catch (e) {
-          console.error("Failed to trigger cars reload:", e);
+      // Dispatch reload-cars event as a backup
+      try {
+        if (typeof window !== 'undefined') {
+          console.log("Triggering cars reload after save");
+          window.dispatchEvent(new CustomEvent('reload-cars'));
         }
-      }, 500);
+      } catch (e) {
+        console.error("Failed to trigger cars reload:", e);
+      }
       
       return { success: true, car: result };
     } catch (error) {
@@ -87,30 +104,29 @@ export const useCarSave = () => {
     setDeleting(true);
     try {
       console.log("Deleting car with ID:", carId);
-      const success = await deleteCarFromDb(carId);
       
-      if (!success) {
-        console.error("Failed to delete car, deleteCarFromDb returned false");
-        toast({
-          variant: "destructive",
-          title: "Ошибка",
-          description: "Не удалось удалить автомобиль",
-        });
+      // Directly use Supabase for reliability
+      const { error } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('id', carId);
+        
+      if (error) throw error;
+      
+      // Force reload cars immediately
+      await reloadCars();
+      
+      // Dispatch reload-cars event as a backup
+      try {
+        if (typeof window !== 'undefined') {
+          console.log("Triggering cars reload after delete");
+          window.dispatchEvent(new CustomEvent('reload-cars'));
+        }
+      } catch (e) {
+        console.error("Failed to trigger cars reload:", e);
       }
       
-      // Force reloadCars for immediate updates in the catalog
-      setTimeout(() => {
-        try {
-          if (typeof window !== 'undefined') {
-            console.log("Triggering cars reload after delete");
-            window.dispatchEvent(new CustomEvent('reload-cars'));
-          }
-        } catch (e) {
-          console.error("Failed to trigger cars reload:", e);
-        }
-      }, 500);
-      
-      return success;
+      return true;
     } catch (error) {
       console.error("Error deleting car:", error);
       

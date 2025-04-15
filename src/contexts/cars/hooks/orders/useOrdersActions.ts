@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OrdersState, OrdersActions } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
 import { orderAPI } from "@/services/api/orderAPI";
+import { transformOrder } from "@/services/api/transformers";
 
 export const useOrdersActions = (state: OrdersState): OrdersActions => {
   const { orders, setOrders, loading, setLoading, isOnline } = state;
@@ -20,52 +21,49 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
     
     try {
       console.log("Обновление заказов из базы данных...");
-      // Use direct Supabase query to ensure we get fresh data from the database
-      const { data: ordersData, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          vehicles:car_id (
-            id,
-            brand,
-            model,
-            image_url
-          )
-        `)
-        .order('created_at', { ascending: false });
       
-      if (error) {
-        throw error;
+      // Use the orderAPI to get fresh orders
+      const freshOrders = await orderAPI.getAllOrders();
+      
+      if (freshOrders && freshOrders.length > 0) {
+        console.log("Заказы обновлены:", freshOrders);
+        setOrders(freshOrders);
+        
+        toast({
+          title: "Заказы обновлены",
+          description: `Загружено ${freshOrders.length} заказов`
+        });
+      } else {
+        // Fallback to direct Supabase query if API returns empty
+        const { data: ordersData, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            vehicles:car_id (
+              id,
+              brand,
+              model,
+              image_url
+            )
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Transform data to match Order type
+        const transformedOrders: Order[] = ordersData ? ordersData.map(order => transformOrder(order)) : [];
+        
+        console.log("Заказы загружены напрямую из Supabase:", transformedOrders);
+        
+        setOrders(transformedOrders);
+        
+        toast({
+          title: "Заказы обновлены",
+          description: `Загружено ${transformedOrders.length} заказов напрямую из базы данных`
+        });
       }
-      
-      // Transform data to match Order type
-      const transformedOrders: Order[] = ordersData ? ordersData.map(order => ({
-        id: order.id,
-        carId: order.car_id,
-        customerName: order.customer_name,
-        customerPhone: order.customer_phone,
-        customerEmail: order.customer_email,
-        message: (order as any).message || '',
-        status: (order.status || 'new') as Order['status'],
-        createdAt: order.created_at,
-        updatedAt: order.updated_at || order.created_at,
-        car: order.vehicles ? {
-          id: order.vehicles.id,
-          brand: order.vehicles.brand,
-          model: order.vehicles.model,
-          image_url: order.vehicles.image_url
-        } : undefined
-      })) : [];
-      
-      console.log("Заказы обновлены:", transformedOrders);
-      
-      setOrders(transformedOrders);
-      
-      toast({
-        title: "Заказы обновлены",
-        description: `Загружено ${transformedOrders.length} заказов`
-      });
-      
     } catch (error) {
       console.error("Не удалось обновить заказы:", error);
       toast({

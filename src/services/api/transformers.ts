@@ -2,6 +2,37 @@
 import { Car, Order } from "@/types/car";
 
 export const transformVehicleFromSupabase = (vehicle: any): Car => {
+  if (!vehicle) {
+    console.error("Attempted to transform undefined or null vehicle");
+    return {
+      id: '',
+      brand: '',
+      model: '',
+      year: new Date().getFullYear(),
+      bodyType: '',
+      price: { base: 0 },
+      engine: {
+        type: '',
+        displacement: 0,
+        power: 0,
+        torque: 0,
+        fuelType: ''
+      },
+      transmission: {
+        type: '',
+        gears: 0
+      },
+      drivetrain: '',
+      dimensions: {},
+      performance: {},
+      features: [],
+      colors: [],
+      isNew: true,
+      description: '',
+      images: []
+    };
+  }
+  
   // Handle case where images might be stored as JSONB in database
   let carImages = vehicle.images || [];
   
@@ -18,9 +49,19 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
   // Make sure carImages isn't null
   if (!carImages) carImages = [];
   
+  // Ensure each image has the correct structure
+  carImages = Array.isArray(carImages) ? carImages.map(img => {
+    if (!img) return null;
+    return {
+      id: img.id || crypto.randomUUID(),
+      url: img.url || '',
+      alt: img.alt || 'Car image'
+    };
+  }).filter(Boolean) : [];
+  
   // Generate a proper car object
   return {
-    id: vehicle.id,
+    id: vehicle.id || '',
     brand: vehicle.brand || '',
     model: vehicle.model || '',
     year: vehicle.year || new Date().getFullYear(),
@@ -59,6 +100,22 @@ export const transformVehicleForSupabase = (car: Car) => {
   
   // Ensure images is properly formatted for the database
   let carImages = carData.images || [];
+  
+  // Clean and validate images
+  if (Array.isArray(carImages)) {
+    carImages = carImages.map(img => {
+      if (!img) return null;
+      // Remove any file property as it shouldn't be stored in the database
+      const { file, ...imgWithoutFile } = img;
+      return {
+        id: imgWithoutFile.id || crypto.randomUUID(),
+        url: typeof imgWithoutFile.url === 'string' ? imgWithoutFile.url : '',
+        alt: imgWithoutFile.alt || 'Car image'
+      };
+    }).filter(Boolean);
+  } else {
+    carImages = [];
+  }
   
   // Make sure we have a valid image_url from the first image if available
   if (carImages && carImages.length > 0 && carImages[0].url && !carData.image_url) {
