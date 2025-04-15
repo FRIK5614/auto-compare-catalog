@@ -60,9 +60,6 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
   };
   
   const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
     if (!touchStartX.current || !touchEndX.current) return;
     
     const diff = touchStartX.current - touchEndX.current;
@@ -91,7 +88,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
   const currentImage = displayImages[currentIndex] || defaultImage;
   
   return (
-    <Link to={`/car/${carId}`} className="block relative group overflow-hidden rounded-t-lg">
+    <Link to={`/cars/${carId}`} className="block relative group overflow-hidden rounded-t-lg">
       <div 
         className="relative aspect-[4/3] overflow-hidden bg-auto-gray-100"
         onTouchStart={hasMultipleImages ? handleTouchStart : undefined}
@@ -109,30 +106,27 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, carId, isNew 
           }}
         />
         
-        {/* Страна происхождения */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {/* Компоненты для отображения маркеров будут вставлены здесь */}
-        </div>
-        
         {/* Новинка */}
         {isNew && (
-          <Badge className="absolute top-12 left-3 bg-auto-blue-600">
+          <Badge className="absolute top-3 left-3 bg-auto-blue-600">
             Новинка
           </Badge>
         )}
         
-        {/* Navigation buttons */}
+        {/* Navigation buttons with semi-transparent background */}
         {hasMultipleImages && (
           <>
             <button
               onClick={handlePrevClick}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
+              aria-label="Предыдущее изображение"
             >
               <ChevronLeft className="h-4 w-4 text-auto-gray-700" />
             </button>
             <button
               onClick={handleNextClick}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
+              aria-label="Следующее изображение"
             >
               <ChevronRight className="h-4 w-4 text-auto-gray-700" />
             </button>

@@ -24,12 +24,6 @@ export const useOrdersInit = (state: OrdersState) => {
       if (!loading && !loadingRef.current) {
         loadOrdersFromDatabase();
       }
-    } else {
-      // When offline, show notification
-      toast({
-        title: "Офлайн режим",
-        description: "Работа с заказами будет ограничена. Данные синхронизируются при подключении к интернету",
-      });
     }
   }, [isOnline]);
 
@@ -71,12 +65,6 @@ export const useOrdersInit = (state: OrdersState) => {
           console.error("Ошибка при загрузке заказов из локального хранилища:", fallbackError);
           setOrders([]);
         }
-        
-        toast({
-          variant: "destructive",
-          title: "Ошибка загрузки заказов",
-          description: "Не удалось загрузить заказы из базы данных"
-        });
       } finally {
         setLoading(false);
         loadingRef.current = false;
@@ -87,7 +75,7 @@ export const useOrdersInit = (state: OrdersState) => {
     
     // Set up real-time subscription for orders
     const ordersSubscription = supabase
-      .channel('public:orders')
+      .channel('order-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -118,20 +106,20 @@ export const useOrdersInit = (state: OrdersState) => {
       // Use the new orderAPI to load orders
       const ordersData = await orderAPI.getAllOrders();
       
-      console.log("Number of orders returned:", ordersData ? ordersData.length : 0);
+      console.log("Получено заказов из API:", ordersData ? ordersData.length : 0);
       
       if (!ordersData || ordersData.length === 0) {
-        console.log("No orders found in database");
+        console.log("В базе данных не найдено заказов");
         setOrders([]);
         saveOrdersToLocalStorage([]);
         return;
       }
       
-      console.log(`Loaded ${ordersData.length} orders from database:`, ordersData);
+      console.log(`Загружено ${ordersData.length} заказов из базы:`, ordersData);
       setOrders(ordersData);
       saveOrdersToLocalStorage(ordersData);
     } catch (err) {
-      console.error('Error in loadOrdersFromDatabase:', err);
+      console.error('Ошибка при загрузке заказов из базы данных:', err);
       throw err;
     } finally {
       setLoading(false);

@@ -1,13 +1,16 @@
 
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CarImage } from "@/types/car";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, A11y } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import { cn } from "@/lib/utils";
 
 interface CarImageGalleryProps {
   images: CarImage[] | null | undefined;
@@ -36,13 +39,10 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
         }))
     : [defaultImage]; // Fallback to default image
 
-  console.log("CarImageGallery: Изображения для отображения:", displayImages);
-  console.log("CarImageGallery: URLs изображений:", displayImages.map(img => img.url));
-
-  // Ensure the activeImageIndex is valid
-  if (activeImageIndex >= displayImages.length) {
-    setActiveImageIndex(0);
-  }
+  // Handle thumbnail click
+  const handleThumbnailClick = (index: number) => {
+    setActiveImageIndex(index);
+  };
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
@@ -52,96 +52,100 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
           <Badge className="absolute top-4 left-4 z-10 bg-auto-blue-600">Новинка</Badge>
         )}
 
-        <Swiper
-          modules={[Navigation, Pagination, A11y]}
-          spaceBetween={0}
-          slidesPerView={1}
-          navigation={{
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-          }}
-          pagination={{ 
-            clickable: true,
-            bulletClass: 'swiper-pagination-bullet',
-            bulletActiveClass: 'swiper-pagination-bullet-active',
-          }}
-          onSlideChange={(swiper) => setActiveImageIndex(swiper.activeIndex)}
-          className="h-[300px] sm:h-[400px] md:h-[500px]"
+        <Carousel 
+          className="w-full"
+          onSelect={(index) => setActiveImageIndex(index)}
+          defaultIndex={activeImageIndex}
         >
-          {displayImages.map((image, index) => (
-            <SwiperSlide key={image.id || `image-${index}`}>
-              <img
-                src={image.url}
-                alt={image.alt || `Изображение ${index + 1}`}
-                className="w-full h-full object-cover"
-                draggable="false"
-                onError={(e) => {
-                  // Fallback to placeholder if image fails to load
-                  console.error(`Failed to load image at URL: ${image.url}`);
-                  e.currentTarget.src = "/placeholder.svg";
-                }}
-                onLoad={() => console.log(`Successfully loaded image at URL: ${image.url}`)}
-              />
-            </SwiperSlide>
-          ))}
-          
-          {/* Custom navigation buttons - show only if more than one image */}
-          {displayImages.length > 1 && (
-            <>
-              <button 
-                className="swiper-button-prev bg-white/80 hover:bg-white text-auto-gray-700 rounded-full w-10 h-10 flex items-center justify-center shadow-sm absolute top-1/2 left-2 z-10 transform -translate-y-1/2"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button 
-                className="swiper-button-next bg-white/80 hover:bg-white text-auto-gray-700 rounded-full w-10 h-10 flex items-center justify-center shadow-sm absolute top-1/2 right-2 z-10 transform -translate-y-1/2"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            </>
-          )}
-        </Swiper>
-      </div>
-
-      {/* Thumbnails - shown only if more than one image */}
-      {displayImages.length > 1 && (
-        <div className="p-4">
-          <Swiper
-            spaceBetween={8}
-            slidesPerView="auto"
-            className="thumbnails-swiper"
-            key={`thumbs-${displayImages.length}`} // Force re-render when images change
-          >
+          <CarouselContent>
             {displayImages.map((image, index) => (
-              <SwiperSlide 
-                key={`thumb-${image.id || index}`}
-                className="w-20 h-20 cursor-pointer"
-                onClick={() => setActiveImageIndex(index)}
-              >
-                <div 
-                  className={`w-full h-full border-2 rounded overflow-hidden ${
-                    activeImageIndex === index 
-                      ? 'border-auto-blue-600 shadow-md' 
-                      : 'border-transparent opacity-70 hover:opacity-100'
-                  }`}
-                >
+              <CarouselItem key={image.id || `image-${index}`}>
+                <div className="relative aspect-video md:aspect-[16/9] lg:aspect-[16/10] w-full h-full">
                   <img
                     src={image.url}
-                    alt={image.alt || `Миниатюра ${index + 1}`}
+                    alt={image.alt || `Изображение ${index + 1}`}
                     className="w-full h-full object-cover"
                     draggable="false"
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
-                      console.error(`Failed to load thumbnail at URL: ${image.url}`);
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
                 </div>
-              </SwiperSlide>
+              </CarouselItem>
             ))}
-          </Swiper>
+          </CarouselContent>
+          
+          {/* Custom carousel navigation buttons with semi-transparent background */}
+          {displayImages.length > 1 && (
+            <>
+              <div className="absolute inset-y-0 left-0 flex items-center">
+                <CarouselPrevious 
+                  className="relative h-9 w-9 rounded-full bg-white/70 hover:bg-white/90 -translate-x-1/2 border-0"
+                  variant="outline"
+                >
+                  <ChevronLeft className="h-5 w-5 text-auto-gray-700" />
+                </CarouselPrevious>
+              </div>
+              <div className="absolute inset-y-0 right-0 flex items-center">
+                <CarouselNext 
+                  className="relative h-9 w-9 rounded-full bg-white/70 hover:bg-white/90 translate-x-1/2 border-0"
+                  variant="outline"
+                >
+                  <ChevronRight className="h-5 w-5 text-auto-gray-700" />
+                </CarouselNext>
+              </div>
+            </>
+          )}
+          
+          {/* Image pagination indicators */}
+          {displayImages.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center">
+              <div className="flex space-x-1 bg-black/20 rounded-full px-2 py-1">
+                {displayImages.map((_, idx) => (
+                  <div 
+                    key={idx}
+                    className={cn(
+                      "rounded-full transition-all duration-200",
+                      activeImageIndex === idx 
+                        ? "w-2 h-2 bg-white" 
+                        : "w-1.5 h-1.5 bg-white/50"
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </Carousel>
+      </div>
+
+      {/* Thumbnails - shown only if more than one image */}
+      {displayImages.length > 1 && (
+        <div className="p-4 overflow-x-auto">
+          <div className="flex space-x-2">
+            {displayImages.map((image, index) => (
+              <div 
+                key={`thumb-${image.id || index}`}
+                className={`w-20 h-20 flex-shrink-0 cursor-pointer transition-all duration-200 ${
+                  activeImageIndex === index 
+                    ? 'ring-2 ring-auto-blue-600 ring-offset-1' 
+                    : 'opacity-70 hover:opacity-100'
+                }`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                <img
+                  src={image.url}
+                  alt={image.alt || `Миниатюра ${index + 1}`}
+                  className="w-full h-full object-cover rounded-md"
+                  draggable="false"
+                  onError={(e) => {
+                    // Fallback to placeholder if image fails to load
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
