@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { Order } from "@/types/car";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,14 +15,17 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
 
   // Reload orders from database
   const reloadOrdersFromDB = useCallback(async (): Promise<void> => {
-    if (loading) return;
+    if (loading) {
+      console.log("Already loading orders, skipping reload");
+      return;
+    }
     
     setLoading(true);
     
     try {
       console.log("Обновление заказов из базы данных...");
       
-      // Direct Supabase query for reliable order fetching
+      // Direct Supabase query with better logging
       const { data: ordersData, error } = await supabase
         .from('orders')
         .select(`
@@ -30,7 +34,8 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
             id,
             brand,
             model,
-            image_url
+            image_url,
+            images
           )
         `)
         .order('created_at', { ascending: false });
@@ -41,11 +46,47 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
       }
       
       console.log("Raw orders data from Supabase:", ordersData);
+      console.log("Number of orders returned:", ordersData ? ordersData.length : 0);
       
-      // Transform data to match Order type
-      const transformedOrders: Order[] = ordersData ? ordersData.map(order => {
-        return transformOrder(order);
-      }) : [];
+      // Better handling of no orders case
+      if (!ordersData || ordersData.length === 0) {
+        console.log("No orders found in database");
+        setOrders([]);
+        saveOrdersToLocalStorage([]);
+        toast({
+          title: "Заказы обновлены",
+          description: "В базе данных не найдено ни одного заказа"
+        });
+        return;
+      }
+      
+      // Transform data to match Order type with better validation
+      const transformedOrders: Order[] = ordersData.map(order => {
+        try {
+          return transformOrder(order);
+        } catch (transformError) {
+          console.error(`Error transforming order ${order.id}:`, transformError);
+          // Provide a fallback transformation to not lose the order
+          return {
+            id: order.id,
+            carId: order.car_id,
+            customerName: order.customer_name || 'Unknown',
+            customerPhone: order.customer_phone || 'Unknown',
+            customerEmail: order.customer_email || 'Unknown',
+            message: order.message || '',
+            status: (order.status || 'new') as Order['status'],
+            createdAt: order.created_at,
+            updatedAt: order.updated_at || order.created_at,
+            car: order.vehicles ? {
+              id: order.vehicles.id,
+              brand: order.vehicles.brand || 'Unknown',
+              model: order.vehicles.model || 'Unknown',
+              image_url: order.vehicles.image_url,
+              images: order.vehicles.images
+            } : undefined
+          };
+        }
+      });
       
       console.log("Transformed orders:", transformedOrders);
       

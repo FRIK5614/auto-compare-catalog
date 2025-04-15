@@ -6,12 +6,14 @@ import { OrdersState } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
 import { loadOrdersFromLocalStorage, saveOrdersToLocalStorage } from "../../utils";
 import { useToast } from "@/hooks/use-toast";
+import { transformOrder } from "@/services/api/transformers";
 
 export const useOrdersInit = (state: OrdersState) => {
   const { orders, setOrders, loading, setLoading, isOnline } = state;
   const loadingRef = useRef(false);
   const { toast } = useToast();
   const { syncPendingOrders } = useOrdersSync(orders, setOrders, isOnline);
+  const initCompletedRef = useRef(false);
 
   // Network status effects
   useEffect(() => {
@@ -33,7 +35,7 @@ export const useOrdersInit = (state: OrdersState) => {
 
   // Initial load
   useEffect(() => {
-    if (loadingRef.current) return;
+    if (loadingRef.current || initCompletedRef.current) return;
     
     const initializeOrders = async () => {
       loadingRef.current = true;
@@ -53,6 +55,9 @@ export const useOrdersInit = (state: OrdersState) => {
             setOrders([]);
           }
         }
+        
+        // Mark initialization as completed
+        initCompletedRef.current = true;
       } catch (error) {
         console.error("Ошибка при инициализации заказов:", error);
         
@@ -79,14 +84,38 @@ export const useOrdersInit = (state: OrdersState) => {
     };
     
     initializeOrders();
+    
+    // Set up real-time subscription for orders
+    const ordersSubscription = supabase
+      .channel('public:orders')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'orders'
+      }, (payload) => {
+        console.log('Orders table change detected:', payload);
+        // Reload orders when there's a change
+        if (!loadingRef.current) {
+          loadOrdersFromDatabase();
+        }
+      })
+      .subscribe();
+    
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(ordersSubscription);
+    };
   }, []);
 
   // Function to load orders directly from the database
   const loadOrdersFromDatabase = async () => {
     try {
+      setLoading(true);
+      loadingRef.current = true;
+      
       console.log("Загрузка заказов напрямую из Supabase...");
       
-      // Direct query to Supabase
+      // Direct query to Supabase with enhanced logging
       const { data: ordersData, error } = await supabase
         .from('orders')
         .select(`
@@ -95,7 +124,8 @@ export const useOrdersInit = (state: OrdersState) => {
             id,
             brand,
             model,
-            image_url
+            image_url,
+            images
           )
         `)
         .order('created_at', { ascending: false });
@@ -106,32 +136,55 @@ export const useOrdersInit = (state: OrdersState) => {
       }
       
       console.log("Raw orders data from Supabase:", ordersData);
+      console.log("Number of orders returned:", ordersData ? ordersData.length : 0);
       
-      // Transform data to match Order type
-      const transformedOrders: Order[] = ordersData ? ordersData.map(order => ({
-        id: order.id,
-        carId: order.car_id,
-        customerName: order.customer_name,
-        customerPhone: order.customer_phone,
-        customerEmail: order.customer_email,
-        message: order.message || '',
-        status: (order.status || 'new') as Order['status'],
-        createdAt: order.created_at,
-        updatedAt: order.updated_at || order.created_at,
-        car: order.vehicles ? {
-          id: order.vehicles.id,
-          brand: order.vehicles.brand,
-          model: order.vehicles.model,
-          image_url: order.vehicles.image_url
-        } : undefined
-      })) : [];
+      if (!ordersData || ordersData.length === 0) {
+        console.log("No orders found in database");
+        setOrders([]);
+        saveOrdersToLocalStorage([]);
+        return;
+      }
       
-      console.log(`Loaded ${transformedOrders.length} orders from Supabase:`, transformedOrders);
+      // Transform data to match Order type with robust error handling
+      const transformedOrders: Order[] = [];
+      
+      for (const order of ordersData) {
+        try {
+          const transformedOrder = transformOrder(order);
+          transformedOrders.push(transformedOrder);
+        } catch (transformError) {
+          console.error(`Error transforming order ${order.id}:`, transformError);
+          // Add a safe fallback transformation
+          transformedOrders.push({
+            id: order.id,
+            carId: order.car_id,
+            customerName: order.customer_name || 'Unknown',
+            customerPhone: order.customer_phone || 'Unknown',
+            customerEmail: order.customer_email || 'Unknown',
+            message: order.message || '',
+            status: (order.status || 'new') as Order['status'],
+            createdAt: order.created_at,
+            updatedAt: order.updated_at || order.created_at,
+            car: order.vehicles ? {
+              id: order.vehicles.id,
+              brand: order.vehicles.brand || 'Unknown',
+              model: order.vehicles.model || 'Unknown',
+              image_url: order.vehicles.image_url,
+              images: order.vehicles.images
+            } : undefined
+          });
+        }
+      }
+      
+      console.log(`Loaded ${transformedOrders.length} orders from database:`, transformedOrders);
       setOrders(transformedOrders);
       saveOrdersToLocalStorage(transformedOrders);
-    } catch (error) {
-      console.error('Error in loadOrdersFromDatabase:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error in loadOrdersFromDatabase:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
     }
   };
 

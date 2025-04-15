@@ -36,7 +36,8 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
         }))
     : [defaultImage]; // Fallback to default image
 
-  console.log("CarImageGallery: Отображение изображений:", displayImages.length);
+  console.log("CarImageGallery: Изображения для отображения:", displayImages);
+  console.log("CarImageGallery: URLs изображений:", displayImages.map(img => img.url));
 
   // Ensure the activeImageIndex is valid
   if (activeImageIndex >= displayImages.length) {
@@ -76,8 +77,10 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                 draggable="false"
                 onError={(e) => {
                   // Fallback to placeholder if image fails to load
+                  console.error(`Failed to load image at URL: ${image.url}`);
                   e.currentTarget.src = "/placeholder.svg";
                 }}
+                onLoad={() => console.log(`Successfully loaded image at URL: ${image.url}`)}
               />
             </SwiperSlide>
           ))}
@@ -131,6 +134,7 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
                     draggable="false"
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
+                      console.error(`Failed to load thumbnail at URL: ${image.url}`);
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />

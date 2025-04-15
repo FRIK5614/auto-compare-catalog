@@ -18,6 +18,19 @@ export const setupCarImagesBucket = async (): Promise<boolean> => {
     
     if (bucketExists) {
       console.log("car-images bucket already exists");
+      
+      // Make sure the bucket is public
+      try {
+        await supabase.storage.updateBucket('car-images', {
+          public: true,
+          fileSizeLimit: 10485760 // 10MB
+        });
+        console.log("Updated car-images bucket to ensure it's public");
+      } catch (updateError) {
+        console.error("Error updating bucket:", updateError);
+        // Continue even if update fails, the bucket exists
+      }
+      
       return true;
     }
     
