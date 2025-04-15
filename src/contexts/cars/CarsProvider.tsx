@@ -49,7 +49,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
   // Fix the clearCompare function to ensure it has the correct signature
   const handleClearCompare = () => {
     if (typeof originalClearCompare === 'function') {
-      originalClearCompare([]);
+      originalClearCompare();
     }
   };
 
@@ -136,7 +136,7 @@ export const CarsProvider = ({ children }: { children: ReactNode }) => {
         getOrders,
         reloadOrders,
         exportCarsData: handleExportCarsData,
-        importCarsData: handleImportCarsDataAdapter,
+        importCarsData: handleImportCarsData,
         uploadCarImage: handleUploadCarImage,
         refreshFavorites
       }}

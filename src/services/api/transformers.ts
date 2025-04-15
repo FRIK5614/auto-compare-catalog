@@ -23,8 +23,23 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
         gears: 0
       },
       drivetrain: '',
-      dimensions: {},
-      performance: {},
+      dimensions: {
+        length: 0,
+        width: 0,
+        height: 0,
+        wheelbase: 0,
+        weight: 0,
+        trunkVolume: 0
+      },
+      performance: {
+        acceleration: 0,
+        topSpeed: 0,
+        fuelConsumption: {
+          city: 0,
+          highway: 0,
+          combined: 0
+        }
+      },
       features: [],
       colors: [],
       isNew: true,
@@ -59,6 +74,30 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
     };
   }).filter(Boolean) : [];
   
+  // Ensure dimensions and performance have proper structure with default values
+  const dimensions = typeof vehicle.dimensions === 'object' && vehicle.dimensions !== null 
+    ? vehicle.dimensions 
+    : {
+        length: 0,
+        width: 0,
+        height: 0,
+        wheelbase: 0,
+        weight: 0,
+        trunkVolume: 0
+      };
+      
+  const performance = typeof vehicle.performance === 'object' && vehicle.performance !== null
+    ? vehicle.performance
+    : {
+        acceleration: 0,
+        topSpeed: 0,
+        fuelConsumption: {
+          city: 0,
+          highway: 0,
+          combined: 0
+        }
+      };
+  
   // Generate a proper car object
   return {
     id: vehicle.id || '',
@@ -82,8 +121,8 @@ export const transformVehicleFromSupabase = (vehicle: any): Car => {
       gears: vehicle.transmission_gears || 0,
     },
     drivetrain: vehicle.drivetrain || '',
-    dimensions: vehicle.dimensions || {},
-    performance: vehicle.performance || {},
+    dimensions: dimensions,
+    performance: performance,
     features: vehicle.features || [],
     colors: vehicle.colors || [],
     isNew: vehicle.is_new === undefined ? true : vehicle.is_new,
@@ -138,8 +177,23 @@ export const transformVehicleForSupabase = (car: Car) => {
     transmission_type: carData.transmission?.type || '',
     transmission_gears: carData.transmission?.gears || 0,
     drivetrain: carData.drivetrain || '',
-    dimensions: typeof carData.dimensions === 'object' ? carData.dimensions : {},
-    performance: typeof carData.performance === 'object' ? carData.performance : {},
+    dimensions: typeof carData.dimensions === 'object' ? carData.dimensions : {
+      length: 0,
+      width: 0,
+      height: 0,
+      wheelbase: 0,
+      weight: 0,
+      trunkVolume: 0
+    },
+    performance: typeof carData.performance === 'object' ? carData.performance : {
+      acceleration: 0,
+      topSpeed: 0,
+      fuelConsumption: {
+        city: 0,
+        highway: 0,
+        combined: 0
+      }
+    },
     features: carData.features || [],
     colors: carData.colors || [],
     color: carData.colors && carData.colors.length > 0 ? carData.colors[0] : null,
