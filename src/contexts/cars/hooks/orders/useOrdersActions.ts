@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { Order } from "@/types/car";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OrdersState, OrdersActions } from "./types";
 import { useOrdersSync } from "./useOrdersSync";
 import { transformOrder } from "@/services/api/transformers";
+import { saveOrdersToLocalStorage } from "../../utils";
 
 export const useOrdersActions = (state: OrdersState): OrdersActions => {
   const { orders, setOrders, loading, setLoading, isOnline } = state;
@@ -44,13 +44,13 @@ export const useOrdersActions = (state: OrdersState): OrdersActions => {
       
       // Transform data to match Order type
       const transformedOrders: Order[] = ordersData ? ordersData.map(order => {
-        console.log("Processing order:", order);
         return transformOrder(order);
       }) : [];
       
       console.log("Transformed orders:", transformedOrders);
       
       setOrders(transformedOrders);
+      saveOrdersToLocalStorage(transformedOrders);
       
       toast({
         title: "Заказы обновлены",
