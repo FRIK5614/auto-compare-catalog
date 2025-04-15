@@ -22,16 +22,10 @@ export const useCarFormLoader = () => {
   const imageHandling = useImageHandling();
   
   // Set up saving
-  const { saving, handleSaveCar, handleDelete, isDeleting } = useCarSave(
-    id,
-    car,
-    imageHandling.images,
-    imageHandling.uploadImageFiles,
-    navigate
-  );
+  const { isSaving, saveCar, deleteCar, isDeleting } = useCarSave();
   
   // Set up form handlers
-  const { handleCancelEdit } = useCarFormHandlers(navigate);
+  const { handleCancel } = useCarFormHandlers(navigate);
   
   // Initialize car images when car data is loaded
   useEffect(() => {
@@ -45,19 +39,55 @@ export const useCarFormLoader = () => {
     await reloadCars();
     return;
   };
+
+  // Create the save handler using the saveCar function
+  const handleSave = async (updatedCar: any) => {
+    if (!car) return;
+    
+    try {
+      // Upload any local images if needed
+      if (imageHandling.images.some(img => img.file)) {
+        const uploadedImages = await imageHandling.uploadImageFiles(updatedCar.id);
+        updatedCar.images = uploadedImages;
+      } else {
+        updatedCar.images = imageHandling.images;
+      }
+      
+      // Save the car
+      await saveCar(updatedCar, isNewCar);
+      
+      if (isNewCar) {
+        navigate('/admin/cars');
+      }
+    } catch (error) {
+      console.error("Error saving car:", error);
+    }
+  };
+
+  // Create delete handler
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await deleteCar(id);
+      navigate('/admin/cars');
+    } catch (error) {
+      console.error("Error deleting car:", error);
+    }
+  };
   
   return {
     car,
     loading,
     error,
     isNewCar,
-    saving,
+    isSaving,
     isDeleting,
     formErrors: carForm.formErrors,
     setFormErrors: carForm.setFormErrors,
-    handleSaveCar,
+    handleSave,
     handleDelete,
-    handleCancelEdit,
+    handleCancel,
     reloadCars: handleReloadCars,
     ...imageHandling
   };
