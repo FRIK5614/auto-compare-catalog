@@ -96,6 +96,7 @@ export const useImageHandling = () => {
         if (!image.file) return image; // Skip if no file
         
         try {
+          // Make sure to pass carId to uploadCarImage
           const url = await uploadCarImage(image.file, carId);
           // Return a new image object with the uploaded URL
           return {
@@ -117,6 +118,7 @@ export const useImageHandling = () => {
         return uploadedImage || img;
       });
       
+      // Use type assertion to satisfy TypeScript
       setImages(updatedImages as CarImage[]);
       
       // Update preview if needed

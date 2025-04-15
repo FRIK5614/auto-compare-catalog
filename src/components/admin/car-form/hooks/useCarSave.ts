@@ -17,11 +17,20 @@ export const useCarSave = () => {
     try {
       let result;
       
+      // Make sure we're working with a proper Car object
+      const carToSave: Car = {
+        ...car,
+        // Make sure imageUrl is consistent
+        image_url: car.image_url || (car.images && car.images.length > 0 ? car.images[0].url : ''),
+      };
+      
       if (isNewCar) {
-        result = await addCar(car);
+        console.log("Calling addCar with:", carToSave);
+        result = await addCar(carToSave);
         console.log("Result from addCar:", result);
       } else {
-        result = await updateCar(car);
+        console.log("Calling updateCar with:", carToSave);
+        result = await updateCar(carToSave);
         console.log("Result from updateCar:", result);
       }
       
@@ -44,6 +53,18 @@ export const useCarSave = () => {
         });
         return { success: false, message: result.message || "Не удалось сохранить автомобиль" };
       }
+      
+      // Force reloadCars for immediate updates in the catalog
+      setTimeout(() => {
+        try {
+          if (typeof window !== 'undefined') {
+            console.log("Triggering cars reload after save");
+            window.dispatchEvent(new CustomEvent('reload-cars'));
+          }
+        } catch (e) {
+          console.error("Failed to trigger cars reload:", e);
+        }
+      }, 500);
       
       return { success: true, car: result };
     } catch (error) {
@@ -76,6 +97,18 @@ export const useCarSave = () => {
           description: "Не удалось удалить автомобиль",
         });
       }
+      
+      // Force reloadCars for immediate updates in the catalog
+      setTimeout(() => {
+        try {
+          if (typeof window !== 'undefined') {
+            console.log("Triggering cars reload after delete");
+            window.dispatchEvent(new CustomEvent('reload-cars'));
+          }
+        } catch (e) {
+          console.error("Failed to trigger cars reload:", e);
+        }
+      }, 500);
       
       return success;
     } catch (error) {

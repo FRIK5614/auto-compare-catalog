@@ -42,20 +42,36 @@ const ImprovedCarFormContainer = () => {
     uploadImageFiles
   } = useImageHandling();
 
+  // Listen for reload-cars event
+  useEffect(() => {
+    const handleReloadCars = () => {
+      console.log("Handling reload-cars event");
+      reloadCars();
+    };
+    
+    window.addEventListener('reload-cars', handleReloadCars);
+    
+    return () => {
+      window.removeEventListener('reload-cars', handleReloadCars);
+    };
+  }, [reloadCars]);
+
   useEffect(() => {
     if (loading === false && !car && !isNewCar) {
+      console.log("Car not found, reloading cars");
       reloadCars();
     }
   }, [loading, car, isNewCar, reloadCars]);
 
   useEffect(() => {
     if (car && car.id) {
+      console.log("Initializing images from car:", car);
       initializeImagesFromCar(car);
     }
   }, [car, initializeImagesFromCar]);
 
   const handleImageUploadAdapter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleImageUpload(e);
+    handleImageUpload(e, car);
   };
 
   const handleAddImageAdapter = (url: string) => {
@@ -71,6 +87,8 @@ const ImprovedCarFormContainer = () => {
     setFormLoading(true);
     
     try {
+      console.log("Handling save for car:", updatedCar);
+      
       // First upload any local images
       if (images.some(img => img.file)) {
         toast({
@@ -79,7 +97,10 @@ const ImprovedCarFormContainer = () => {
         });
         
         try {
+          console.log("Uploading images for car ID:", updatedCar.id);
           const uploadedImages = await uploadImageFiles(updatedCar.id);
+          console.log("Uploaded images:", uploadedImages);
+          
           // Update car with uploaded images
           updatedCar.images = uploadedImages;
           
@@ -116,6 +137,7 @@ const ImprovedCarFormContainer = () => {
             : "Изменения сохранены успешно",
         });
         
+        console.log("Reloading cars after successful save");
         await reloadCars();
         
         if (isNewCar) {
@@ -152,6 +174,7 @@ const ImprovedCarFormContainer = () => {
           description: "Автомобиль успешно удален из каталога",
         });
         
+        console.log("Reloading cars after successful delete");
         await reloadCars();
         
         navigate("/admin/cars");

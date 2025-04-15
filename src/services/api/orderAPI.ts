@@ -47,7 +47,8 @@ export const orderAPI = {
       return transformedOrders;
     } catch (error) {
       console.error('Error in getAllOrders:', error);
-      throw error;
+      // Return empty array instead of throwing to avoid breaking the UI
+      return [];
     }
   },
   
