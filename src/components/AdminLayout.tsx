@@ -8,7 +8,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   AdminHeader, 
   MobileAdminSidebar, 
-  DesktopAdminSidebar 
+  DesktopAdminSidebar,
+  AdminNavigation 
 } from '@/components/admin/layout';
 import { Sheet } from '@/components/ui/sheet';
 import { Drawer } from '@/components/ui/drawer';
@@ -77,6 +78,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         onLogout={handleLogout}
         onOpenMenu={() => setIsMenuOpen(true)}
       />
+      
+      {/* Добавляем навигационное меню здесь, под заголовком */}
+      <div className="bg-white border-b py-2 px-4">
+        <div className="container mx-auto">
+          <AdminNavigation 
+            newOrdersCount={newOrdersCount} 
+            onNavigate={handleMenuItemClick}
+          />
+        </div>
+      </div>
       
       {isMobile ? (
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>

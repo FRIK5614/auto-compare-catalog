@@ -2,7 +2,6 @@
 import React from 'react';
 import { LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AdminNavigation } from './AdminNavigation';
 
 type AdminHeaderProps = {
   newOrdersCount: number;
@@ -26,10 +25,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               <h2 className="text-xl font-semibold">Админ панель</h2>
             </div>
             
-            <AdminNavigation 
-              newOrdersCount={newOrdersCount} 
-              onNavigate={onNavigate}
-            />
+            {/* Убрали AdminNavigation отсюда, чтобы избежать дублирования */}
           </div>
           
           <div className="flex items-center gap-2">
