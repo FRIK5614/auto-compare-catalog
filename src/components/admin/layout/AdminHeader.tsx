@@ -43,7 +43,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               Выйти
             </Button>
             
-            {/* Replace SheetTrigger with Button */}
             <Button 
               variant="outline" 
               size="sm"
@@ -59,7 +58,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               )}
             </Button>
             
-            {/* Replace DrawerTrigger with Button */}
             <Button 
               variant="outline" 
               size="sm"
