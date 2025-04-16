@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,6 +44,11 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
     setActiveImageIndex(index);
   };
 
+  // Handle carousel slide change - now correctly typed
+  const handleSelect = (index: number) => {
+    setActiveImageIndex(index);
+  };
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <div className="relative">
@@ -52,8 +58,14 @@ const CarImageGallery: React.FC<CarImageGalleryProps> = ({ images, isNew }) => {
 
         <Carousel 
           className="w-full"
-          onSelect={(index: number) => setActiveImageIndex(index)}
-          selectedIndex={activeImageIndex}
+          opts={{ startIndex: activeImageIndex }}
+          setApi={(api) => {
+            api?.on('select', () => {
+              // Get the current selected index from the API
+              const currentIndex = api.selectedScrollSnap();
+              setActiveImageIndex(currentIndex);
+            });
+          }}
         >
           <CarouselContent>
             {displayImages.map((image, index) => (
