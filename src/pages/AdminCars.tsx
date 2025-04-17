@@ -8,7 +8,6 @@ import { FileUp, FileDown, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminCarsList from "@/components/AdminCarsList";
 import { useExportImport } from "@/hooks/useExportImport";
-import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminCars = () => {
@@ -91,64 +90,62 @@ const AdminCars = () => {
   };
 
   return (
-    <AdminLayout>
-      <div className="p-0">
-        <div className="flex justify-between items-center mb-6 p-4">
-          <h1 className="text-2xl font-bold">Управление автомобилями</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleOpenImportDialog} className="flex items-center">
-              <FileUp className="mr-2 h-4 w-4" />
-              Импорт
-            </Button>
-            <Button variant="outline" onClick={handleExport} disabled={isExporting} className="flex items-center">
-              <FileDown className="mr-2 h-4 w-4" />
-              {isExporting ? "Экспорт..." : "Экспорт"}
-            </Button>
-            <Button onClick={() => navigate("/admin/cars/new")} className="flex items-center">
-              <Plus className="mr-2 h-4 w-4" />
-              Добавить автомобиль
-            </Button>
-          </div>
+    <div className="p-0">
+      <div className="flex justify-between items-center mb-6 p-4">
+        <h1 className="text-2xl font-bold">Управление автомобилями</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleOpenImportDialog} className="flex items-center">
+            <FileUp className="mr-2 h-4 w-4" />
+            Импорт
+          </Button>
+          <Button variant="outline" onClick={handleExport} disabled={isExporting} className="flex items-center">
+            <FileDown className="mr-2 h-4 w-4" />
+            {isExporting ? "Экспорт..." : "Экспорт"}
+          </Button>
+          <Button onClick={() => navigate("/admin/cars/new")} className="flex items-center">
+            <Plus className="mr-2 h-4 w-4" />
+            Добавить автомобиль
+          </Button>
         </div>
-
-        <AdminCarsList 
-          cars={cars} 
-          loading={isLoading}
-          onEdit={id => navigate(`/admin/cars/edit/${id}`)} 
-          onDelete={handleDeleteCar}
-          onView={id => navigate(`/cars/${cars.find(car => car.id === id)?.brand.toLowerCase() || 'brand'}/${cars.find(car => car.id === id)?.model.toLowerCase() || 'model'}/${id}`)} 
-        />
-
-        <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Импорт данных</AlertDialogTitle>
-              <AlertDialogDescription>
-                Вставьте JSON данные для импорта автомобилей. Существующие данные
-                будут заменены.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="my-4">
-              <textarea 
-                className="w-full h-64 p-2 border rounded-md" 
-                value={importData} 
-                onChange={e => setImportData(e.target.value)} 
-                placeholder='[{"id": "1", "brand": "BMW", ...}]' 
-              />
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleImport}
-                disabled={isImporting}
-              >
-                {isImporting ? "Импорт..." : "Импортировать"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
-    </AdminLayout>
+
+      <AdminCarsList 
+        cars={cars} 
+        loading={isLoading}
+        onEdit={id => navigate(`/admin/cars/edit/${id}`)} 
+        onDelete={handleDeleteCar}
+        onView={id => navigate(`/cars/${cars.find(car => car.id === id)?.brand.toLowerCase() || 'brand'}/${cars.find(car => car.id === id)?.model.toLowerCase() || 'model'}/${id}`)} 
+      />
+
+      <AlertDialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Импорт данных</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вставьте JSON данные для импорта автомобилей. Существующие данные
+              будут заменены.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <textarea 
+              className="w-full h-64 p-2 border rounded-md" 
+              value={importData} 
+              onChange={e => setImportData(e.target.value)} 
+              placeholder='[{"id": "1", "brand": "BMW", ...}]' 
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleImport}
+              disabled={isImporting}
+            >
+              {isImporting ? "Импорт..." : "Импортировать"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };
 

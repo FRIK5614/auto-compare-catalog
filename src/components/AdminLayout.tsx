@@ -79,7 +79,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         onOpenMenu={() => setIsMenuOpen(true)}
       />
       
-      {/* Добавляем навигационное меню здесь, под заголовком */}
+      {/* Навигационное меню под заголовком */}
       <div className="bg-white border-b py-2 px-4">
         <div className="container mx-auto">
           <AdminNavigation 
