@@ -46,7 +46,7 @@ const AdminOrders = () => {
   });
 
   // Custom function to handle updating order status since it's not directly available in useCars
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       // Call the orderAPI directly
       const success = await orderAPI.updateOrderStatus(orderId, newStatus);
@@ -62,7 +62,7 @@ const AdminOrders = () => {
     }
   };
 
-  const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+  const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
     setProcessing(orderId);
     try {
       await updateOrderStatus(orderId, newStatus);

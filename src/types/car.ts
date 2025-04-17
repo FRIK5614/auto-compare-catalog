@@ -121,7 +121,7 @@ export interface Order {
   customerPhone: string;
   customerEmail: string;
   message?: string;
-  status: 'new' | 'processing' | 'completed' | 'canceled';
+  status: 'new' | 'processing' | 'completed' | 'cancelled'; // Note: using 'cancelled' with double 'l'
   createdAt: string;
   updatedAt: string;
   car?: {

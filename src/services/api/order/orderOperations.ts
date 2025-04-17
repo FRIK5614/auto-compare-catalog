@@ -84,7 +84,7 @@ export const orderOperations = {
    */
   async updateOrderStatus(
     orderId: string,
-    status: 'new' | 'processing' | 'completed' | 'canceled'
+    status: 'new' | 'processing' | 'completed' | 'cancelled'
   ): Promise<boolean> {
     try {
       console.log(`[API] Updating order ${orderId} status to ${status}`);
