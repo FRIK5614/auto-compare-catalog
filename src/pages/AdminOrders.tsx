@@ -11,9 +11,10 @@ import { Order } from '@/types/car';
 import { Check, Clock, Loader2, MailCheck, ShoppingCart, UserRound, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/utils/formatters';
+import { orderAPI } from '@/services/api/orderAPI';
 
 const AdminOrders = () => {
-  const { orders, reloadOrders, updateOrderStatus } = useCars();
+  const { orders, reloadOrders } = useCars();
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -43,6 +44,23 @@ const AdminOrders = () => {
     if (activeTab === 'all') return true;
     return order.status === activeTab;
   });
+
+  // Custom function to handle updating order status since it's not directly available in useCars
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      // Call the orderAPI directly
+      const success = await orderAPI.updateOrderStatus(orderId, newStatus);
+      if (!success) {
+        throw new Error("Failed to update order status");
+      }
+      // After updating in the database, reload orders to refresh the UI
+      await reloadOrders();
+      return true;
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      return false;
+    }
+  };
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setProcessing(orderId);
@@ -169,9 +187,9 @@ const AdminOrders = () => {
                             Заказанный автомобиль
                           </div>
                           <div className="flex items-center gap-3">
-                            {order.car?.imageUrl && (
+                            {order.car?.image_url && (
                               <img 
-                                src={order.car.imageUrl} 
+                                src={order.car.image_url} 
                                 alt={`${order.car.brand} ${order.car.model}`} 
                                 className="w-16 h-16 object-cover rounded border"
                               />
