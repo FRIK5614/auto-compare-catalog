@@ -306,7 +306,7 @@ const AdminSettings = () => {
         <title>Настройки | Admin Dashboard</title>
       </Helmet>
       
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto py-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Настройки системы</h1>
           <p className="text-muted-foreground">Управление основными настройками системы</p>

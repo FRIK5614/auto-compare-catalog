@@ -24,8 +24,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             <div className="mr-4">
               <h2 className="text-xl font-semibold">Админ панель</h2>
             </div>
-            
-            {/* Убрали AdminNavigation отсюда, чтобы избежать дублирования */}
           </div>
           
           <div className="flex items-center gap-2">
