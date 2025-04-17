@@ -113,7 +113,7 @@ export const orderNotifications = {
         'new': 'Новый',
         'processing': 'В обработке',
         'completed': 'Завершен',
-        'canceled': 'Отменен'
+        'cancelled': 'Отменен'
       }[status] || status;
       
       // Create message

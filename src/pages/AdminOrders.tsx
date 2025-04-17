@@ -68,7 +68,7 @@ const AdminOrders = () => {
       await updateOrderStatus(orderId, newStatus);
       toast({
         title: "Статус обновлен",
-        description: `Заказ успешно отмечен как "${newStatus === 'completed' ? 'Завершен' : newStatus === 'processing' ? 'В обработке' : 'Отменен'}"`,
+        description: `Заказ успешно отмечен как "${newStatus === 'completed' ? 'Завершен' : newStatus === 'processing' ? 'В обработке' : newStatus === 'cancelled' ? 'Отменен' : 'Новый'}"`,
       });
     } catch (error) {
       console.error('Failed to update order status:', error);
