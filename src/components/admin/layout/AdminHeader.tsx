@@ -1,29 +1,73 @@
 
 import React from 'react';
-import { LogOut, Menu } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
+import { Link } from 'react-router-dom';
 
 type AdminHeaderProps = {
   newOrdersCount: number;
   onNavigate: (path: string) => void;
   onLogout: () => void;
-  onOpenMenu: () => void;
 };
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   newOrdersCount,
   onNavigate,
   onLogout,
-  onOpenMenu
 }) => {
   return (
     <header className="bg-white border-b sticky top-0 z-30">
       <div className="container mx-auto py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="mr-4">
-              <h2 className="text-xl font-semibold">Админ панель</h2>
-            </div>
+            <Link to="/" className="text-xl font-bold text-auto-primary">
+              AutoDeal
+            </Link>
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/admin">
+                    <Button variant="ghost" size="sm">
+                      Главная
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/admin/cars">
+                    <Button variant="ghost" size="sm">
+                      Автомобили
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/admin/orders">
+                    <Button variant="ghost" size="sm" className="relative">
+                      Заказы
+                      {newOrdersCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                          {newOrdersCount}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/admin/blog">
+                    <Button variant="ghost" size="sm">
+                      Блог
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/admin/settings">
+                    <Button variant="ghost" size="sm">
+                      Настройки
+                    </Button>
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
           
           <div className="flex items-center gap-2">
@@ -31,34 +75,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               variant="outline" 
               size="sm"
               onClick={onLogout}
-              className="hidden md:flex"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Выйти
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onOpenMenu}
-              className="md:hidden"
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              Меню
-              {newOrdersCount > 0 && (
-                <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-red-500 text-white">
-                  {newOrdersCount}
-                </span>
-              )}
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={onOpenMenu}
-              className="hidden md:flex"
-            >
-              Все разделы
             </Button>
           </div>
         </div>
